@@ -317,7 +317,7 @@ Freemium with foundations built in from day one. **During development, all users
 
 ## 7. UI / UX Guidelines
 
-**Aesthetic:** modern, minimal, developer-focused. References: Notion, Linear, Raycast.
+**Aesthetic:** modern, minimal, developer-focused.
 
 - Dark mode default; light mode optional
 - Clean typography, generous whitespace
@@ -327,12 +327,26 @@ Freemium with foundations built in from day one. **During development, all users
 - Toast notifications for user actions
 - Loading skeletons rather than spinners
 
+**Design References:**
+
+- **Notion** — clean organization
+- **Linear** — modern dev aesthetic
+- **Raycast** — quick-access patterns
+
 **Layout:**
 
 - Collapsible sidebar + main content
-- Sidebar: item type links (Snippets, Prompts, Commands, etc.) + latest collections
-- Main: grid of color-coded **collection cards** — background color reflects the dominant item type inside. Items shown beneath collections as cards with a colored border matching their type
-- Individual items open in a quick-access **drawer**, never a separate page
+- Sidebar: branded wordmark at top, then **Types** section (Snippets, Prompts, Commands, Notes, Files, Images, Links) each with icon and count, a **Collections / Favorites** group with starred collections, an **All Collections** list, and the signed-in user with a settings affordance pinned to the bottom
+- Top bar: global search input with a `⌘K` shortcut hint, plus **New Collection** and **New Item** actions on the right
+- Main: a **Dashboard** header ("Your developer knowledge hub"), a **Collections** grid of color-coded cards (background reflects the dominant item type, item count, description, and type-icon row; favorited collections show a star and a `…` overflow menu), followed by a **Pinned** section of item rows showing type icon, title, description, tags, and date
+- Individual items open in a quick-access **drawer**, never a separate page. The drawer shows the title with type tags, an action row (Favorite, Pin, Copy, Edit, Delete), Description, syntax-highlighted Content, Tags, the Collections the item belongs to, and Created / Updated details
+
+**Screenshots:**
+
+Use these as a visual base for the dashboard UI — approximate, not pixel-exact. The screenshots show the wordmark **DevStash**; that is outdated — the product is **DevMemory** (**DevMem** for short) everywhere:
+
+- Dashboard / collections grid: [`context/screencapture/dashboard-ui-main.png`](screencapture/dashboard-ui-main.png)
+- Item drawer overlay: [`context/screencapture/dashboard-ui-drawer.png`](screencapture/dashboard-ui-drawer.png)
 
 **Responsive:** desktop-first, mobile usable. Sidebar collapses into a drawer on mobile.
 
