@@ -19,6 +19,15 @@ Phase 1 of 3 for the dashboard UI layout. Roughly match the look in `@context/sc
 - Placeholder for sidebar and main area — just an `h2` with "Sidebar" and
   "Main" for now
 
+Phase 1 of 3 for the dashboard UI layout. See `@context/features/dashboard-phase-1-spec.md` and `@context/screenshots/dashboard-ui-main.png` for the target look.
+
+- ShadCN UI initialization and component installation
+- Dashboard route at `/dashboard`
+- Main dashboard layout and any global styles
+- Dark mode by default
+- Top bar with search and new item button (display only)
+- Placeholder sidebar and main area (just an `h2` with "Sidebar" and "Main" for now)
+
 ## Notes
 
 - This is phase 1 of 3; phase 2 and 3 specs exist in `context/features/`
@@ -30,6 +39,8 @@ Phase 1 of 3 for the dashboard UI layout. Roughly match the look in `@context/sc
   - `@src/lib/mock-data.ts`
   - `@context/features/dashboard-phase-2-spec.md`
   - `@context/features/dashboard-phase-3-spec.md`
+
+- Part of a 3-phase dashboard effort; phases 2 and 3 specs are in `@context/features/`.
 
 ## History
 
