@@ -27,7 +27,7 @@ The cost: context switching, lost knowledge, and inconsistent workflows. **DevMe
 |---|---|
 | Everyday Developer | Grab snippets, prompts, commands, and links quickly |
 | AI-first Developer | Save prompts, context files, workflows, system messages |
-| Content Creator / Educator | Store code blocks, explanations, course notes |
+| Content Creator/Educator | Store code blocks, explanations, course notes |
 | Full-stack Builder | Collect patterns, boilerplates, API examples |
 
 ---
