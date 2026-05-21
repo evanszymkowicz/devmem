@@ -1,6 +1,6 @@
 # Current Feature
 
-Dashboard UI — Phase 2 (Sidebar)
+Dashboard UI — Phase 3 (Main Area)
 
 ## Status
 
@@ -8,27 +8,26 @@ In progress
 
 ## Goals
 
-Phase 2 of 3 for the dashboard UI layout. See `@context/features/dashboard-phase-2-spec.md` and `@context/screenshots/dashboard-ui-main.png` for the target look. Use data from `@src/lib/mock-data.ts` directly (no database yet).
+Phase 3 of 3 for the dashboard UI layout. See `@context/features/dashboard-phase-3-spec.md` and `@context/screenshots/dashboard-ui-main.png` for the target look. Use data from `@src/lib/mock-data.ts` directly (no database yet).
 
-- Collapsible sidebar
-- Items/types with links to `/items/[type]` (e.g. `/items/snippets`)
-- Favorite collections
-- Most recent collections
-- User avatar area at the bottom
-- Drawer icon to open/close sidebar
-- Always a drawer on mobile view
+- The main area to the right
+- Recent collections
+- Pinned Items
+- 10 Recent items
+- 4 stats cards at the top for number of items, collections, favorite items and favorite collections (not in screenshot)
 
 ## Notes
 
-- Part of a 3-phase dashboard effort; phase 1 is complete, phase 3 spec is in `@context/features/`
+- Final phase of the 3-phase dashboard effort; phases 1 and 2 are complete
 - Wordmark is **DevMemory** / **DevMem** — screenshots showing "DevStash"
   are outdated
 - References:
+  - `@context/features/dashboard-phase-3-spec.md`
   - `@context/screenshots/dashboard-ui-main.png`
   - `@context/project-overview.md`
   - `@src/lib/mock-data.ts`
   - `@context/features/dashboard-phase-1-spec.md`
-  - `@context/features/dashboard-phase-3-spec.md`
+  - `@context/features/dashboard-phase-2-spec.md`
 
 ## History
 
@@ -37,3 +36,7 @@ Phase 2 of 3 for the dashboard UI layout. See `@context/features/dashboard-phase
   - Dark mode default
   - `/dashboard` route with display-only top bar and placeholder sidebar/main
   - Build and lint passing
+- Phase 2 (Sidebar) completed and merged to main (PR #2)
+  - Collapsible sidebar with item types, favorite collections, recent collections
+  - User avatar area at bottom
+  - Drawer icon to toggle; always a drawer on mobile
