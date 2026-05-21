@@ -1,33 +1,18 @@
 # Current Feature
 
-Dashboard UI — Phase 3 (Main Area)
+_None — ready for next feature._
 
 ## Status
 
-In progress
+Not started
 
 ## Goals
 
-Phase 3 of 3 for the dashboard UI layout. See `@context/features/dashboard-phase-3-spec.md` and `@context/screenshots/dashboard-ui-main.png` for the target look. Use data from `@src/lib/mock-data.ts` directly (no database yet).
-
-- The main area to the right
-- Recent collections
-- Pinned Items
-- 10 Recent items
-- 4 stats cards at the top for number of items, collections, favorite items and favorite collections (not in screenshot)
+TBD
 
 ## Notes
 
-- Final phase of the 3-phase dashboard effort; phases 1 and 2 are complete
-- Wordmark is **DevMemory** / **DevMem** — screenshots showing "DevStash"
-  are outdated
-- References:
-  - `@context/features/dashboard-phase-3-spec.md`
-  - `@context/screenshots/dashboard-ui-main.png`
-  - `@context/project-overview.md`
-  - `@src/lib/mock-data.ts`
-  - `@context/features/dashboard-phase-1-spec.md`
-  - `@context/features/dashboard-phase-2-spec.md`
+TBD
 
 ## History
 
@@ -40,3 +25,11 @@ Phase 3 of 3 for the dashboard UI layout. See `@context/features/dashboard-phase
   - Collapsible sidebar with item types, favorite collections, recent collections
   - User avatar area at bottom
   - Drawer icon to toggle; always a drawer on mobile
+- Phase 3 (Main Area) completed
+  - Stats cards row (Items, Collections, Favorite Items, Favorite Collections)
+  - Recent Collections grid using shadcn Card with colored left border, favorite star, item count, description, and type-icon row
+  - Pinned Items section
+  - Recent Items section (10 most recent by `updatedAt`)
+  - Shared `ItemRow` component for Pinned + Recent
+  - Page remains SSR; `"use client"` confined to interactive leaves
+  - See `@context/change-log/dashboard-phase-3.md` for details
