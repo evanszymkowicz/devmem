@@ -1,6 +1,6 @@
 # Current Feature
 
-Dashboard UI — Phase 3 (Main Area)
+_None — ready for next feature._
 
 ## Status
 
@@ -8,25 +8,11 @@ Not started
 
 ## Goals
 
-Phase 3 of 3 for the dashboard UI layout. See `@context/features/dashboard-phase-3-spec.md` and `@context/screenshots/dashboard-ui-main.png` for the target look. Use data from `@src/lib/mock-data.ts` directly (no database yet).
-
-- Main area to the right
-- Recent collections
-- Pinned items
-- 10 most recent items
-- 4 stats cards at the top: number of items, collections, favorite items, favorite collections (not in screenshot)
+TBD
 
 ## Notes
 
-- Final phase of the 3-phase dashboard effort; phases 1 and 2 are complete
-- Wordmark is **DevMemory** / **DevMem** — screenshots showing "DevStash" are outdated
-- References:
-  - `@context/screenshots/dashboard-ui-main.png`
-  - `@context/project-overview.md`
-  - `@src/lib/mock-data.ts`
-  - `@context/features/dashboard-phase-1-spec.md`
-  - `@context/features/dashboard-phase-2-spec.md`
-  - `@context/features/dashboard-phase-3-spec.md`
+TBD
 
 ## History
 
@@ -36,7 +22,14 @@ Phase 3 of 3 for the dashboard UI layout. See `@context/features/dashboard-phase
   - `/dashboard` route with display-only top bar and placeholder sidebar/main
   - Build and lint passing
 - Phase 2 (Sidebar) completed and merged to main (PR #2)
-  - Collapsible sidebar with item types linking to `/items/[type]`
-  - Favorite collections and most recent collections sections
-  - User avatar area pinned to the bottom
-  - Drawer icon to open/close sidebar; always a drawer on mobile
+  - Collapsible sidebar with item types, favorite collections, recent collections
+  - User avatar area at bottom
+  - Drawer icon to toggle; always a drawer on mobile
+- Phase 3 (Main Area) completed
+  - Stats cards row (Items, Collections, Favorite Items, Favorite Collections)
+  - Recent Collections grid using shadcn Card with colored left border, favorite star, item count, description, and type-icon row
+  - Pinned Items section
+  - Recent Items section (10 most recent by `updatedAt`)
+  - Shared `ItemRow` component for Pinned + Recent
+  - Page remains SSR; `"use client"` confined to interactive leaves
+  - See `@context/change-log/dashboard-phase-3.md` for details

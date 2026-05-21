@@ -86,10 +86,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           onToggleSidebar={openSidebar}
         />
 
-        {/* Main area (placeholder — built in Phase 3) */}
-        <main className="flex flex-1 items-center justify-center overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );
