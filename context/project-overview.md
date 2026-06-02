@@ -38,7 +38,7 @@ The cost: context switching, lost knowledge, and inconsistent workflows. **DevMe
 
 Every saved piece of knowledge is an **Item**. Each item has a **type** that determines its shape and color.
 
-System types (locked, cannot be modified):
+System types (These cannot be modified):
 
 | Type | Content Kind | Icon | Color | Plan |
 |---|---|---|---|---|

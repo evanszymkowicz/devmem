@@ -35,8 +35,8 @@ Build the dashboard main area per the phase 3 spec.
 - Hit one build error along the way: an `onClick` inside the server-rendered `CollectionCard` → fixed by marking that one component `"use client"`
 - Audited the route: all `page.tsx`/`layout.tsx` files are server components; `"use client"` is confined to four genuinely interactive leaves (Shell, Sidebar, TopBar, CollectionCard)
 
-## Not done yet (per the workflow in `context/ai-interaction.md`)
+## Completed (per the workflow in `context/ai-interaction.md`)
 
 - Browser verification (step 4)
-- Commit, merge to main, delete branch (steps 6–8)
-- Mark Phase 3 complete in `context/current-feature.md` history (step 10)
+- Committed, merged to main via PR #3, branch deleted (steps 6–8)
+- Marked Phase 3 complete in `context/current-feature.md` history (step 10)
