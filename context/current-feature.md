@@ -16,6 +16,9 @@ TBD
 
 ## History
 
+> The "Phase" labels below are historical dashboard-UI build stages and predate the
+> ordered checklist now in `project-overview.md` §8; they do not map to that checklist.
+
 - Phase 1 (Foundation Layout) completed and merged to main (PR #1)
   - ShadCN init (radix-nova preset, Lucide icons, Geist fonts)
   - Dark mode default

@@ -7,9 +7,9 @@ Set up Prisma ORM with Neon PostgreSQL database.
 ## Requirements
 
 - Use Neon PostgreSQL (serverless)
-- Create initial schema based on data models in project-overview.md (this will evolve)
+- Create initial schema based on data models in project-overview.md (this will grow and evolve as this project expands)
 - Include NextAuth models (Account, Session, VerificationToken)
-- Add appropriate indexes and cascade deletes
+- Add appropriate indexes and cascade deletions
 
 ## References
 
