@@ -1,18 +1,42 @@
 # Current Feature
 
-_None — ready for next feature._
+## Prisma + Neon PostgreSQL Setup
+
+Set up Prisma 7 ORM with a Neon serverless PostgreSQL database, and create the initial schema based on the data models in `@context/project-overview.md`.
 
 ## Status
 
-Not started
+In progress
 
 ## Goals
 
-TBD
+- Provision Neon PostgreSQL (serverless) with separate development and production branches
+- Wire `DATABASE_URL` to the Neon **development** branch for local work; production branch used for deploys
+- Install and configure Prisma 7 (note: breaking changes — read the upgrade guide before schema work)
+- Define the initial schema from the data models in `@context/project-overview.md`:
+  - `User` (with email/password hash + OAuth fields, Stripe fields, `isPro`)
+  - NextAuth models: `Account`, `Session`, `VerificationToken`
+  - `Item`, `ItemType`, `Collection`, `ItemCollection` (join), `Tag`
+  - `ContentType` enum (`TEXT`, `FILE`, `URL`)
+- Add appropriate indexes and cascade deletions per the schema
+- Use snake_case table names via `@@map`
+- Create the initial migration with `prisma migrate dev` (never `prisma db push`)
+- Add the seed script for the 7 system item types and run it
 
 ## Notes
 
-TBD
+- **Migration rule:** ALWAYS create migrations (`prisma migrate dev` locally, `prisma migrate deploy` in prod). Never `prisma db push` unless explicitly specified.
+- **Prisma 7 has breaking changes** — read the full upgrade guide before non-trivial schema work: <https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7>
+- Setup reference: <https://www.prisma.io/docs/getting-started/prisma-orm/quickstart/prisma-postgres>
+- Two Neon branches: development (in `DATABASE_URL` for local work) and production.
+- Run `prisma migrate status` before committing to verify migrations are in sync.
+- Spec: `@context/features/database-spec.md`
+
+## References
+
+- Initial data models & full Prisma schema: `@context/project-overview.md` §4
+- Database standards: `@context/coding-standards.md`
+- Feature spec: `@context/features/database-spec.md`
 
 ## History
 
