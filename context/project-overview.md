@@ -50,7 +50,7 @@ System types (These cannot be modified):
 | File | file (R2 upload) | `File` | `#6b7280` gray | Pro |
 | Image | file (R2 upload) | `Image` | `#ec4899` pink | Pro |
 
-Users will eventually be able to create **custom types** (Pro, post-launch). Each type lists at `/items/[typeSlug]` (e.g. `/items/snippets`, `/items/prompts`).
+Users will eventually be able to create **custom types** (Pro, post-launch). Each type lists at `/items/[slug]`, where `slug` is a URL-safe key distinct from the display `name` (e.g. `/items/snippets`, `/items/prompts`).
 
 Items should be quick to create and view in a **drawer overlay**, not a full page.
 
@@ -101,14 +101,95 @@ Model: OpenAI `gpt-5-nano`.
 
 ## 4. Data Models
 
-A few cleanups from the original notes:
+Notes on the model:
 
-- `contentType` needs a `URL` variant (the original had only `text | file`, but links need their own kind).
-- `Tag` needs a join table (`ItemTag`) since items have many tags and tags belong to many items.
+- `contentType` has a `URL` variant (alongside `TEXT` and `FILE`) so links have their own kind.
+- `Tag` uses an implicit many-to-many with `Item` via the `"ItemTags"` relation; Prisma manages the join table.
 - `ItemType.userId` is nullable — system types have `null`, custom types are owned by a user.
+- `ItemType` has a URL-safe `slug` (distinct from the display `name`) used for `/items/[slug]` routes, unique per user via `@@unique([slug, userId])`.
+- `User.password` holds the hash for email/password credentials auth (null for OAuth-only users).
+- All tables use explicit snake_case names via `@@map`.
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    USER ||--o{ ITEM : creates
+    USER ||--o{ COLLECTION : creates
+    USER ||--o{ ITEMTYPE : creates
+    ITEM ||--o{ ITEMCOLLECTION : belongs_to
+    COLLECTION ||--o{ ITEMCOLLECTION : contains
+    ITEM }o--|| ITEMTYPE : has_type
+    ITEM }o--o{ TAG : tagged_with
+    COLLECTION }o--o| ITEMTYPE : has_default_type
+
+    USER {
+        string id PK
+        string email
+        string name
+        boolean isPro
+        string stripeCustomerId
+        string stripeSubscriptionId
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ITEM {
+        string id PK
+        string title
+        enum contentType
+        text content
+        string fileUrl
+        string fileName
+        int fileSize
+        string url
+        string description
+        boolean isFavorite
+        boolean isPinned
+        string language
+        datetime createdAt
+        datetime updatedAt
+        string userId FK
+        string itemTypeId FK
+    }
+
+    ITEMTYPE {
+        string id PK
+        string name
+        string slug
+        string icon
+        string color
+        boolean isSystem
+        string userId FK
+    }
+
+    COLLECTION {
+        string id PK
+        string name
+        string description
+        boolean isFavorite
+        string defaultTypeId FK
+        datetime createdAt
+        datetime updatedAt
+        string userId FK
+    }
+
+    ITEMCOLLECTION {
+        string itemId FK
+        string collectionId FK
+        datetime addedAt
+    }
+
+    TAG {
+        string id PK
+        string name
+    }
+```
+
+### Prisma Schema
 
 ```prisma
-// schema.prisma
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -119,100 +200,166 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// USER
+// ============================================
+model User {
+  id                   String       @id @default(cuid())
+  email                String       @unique
+  emailVerified        DateTime?
+  name                 String?
+  image                String?
+  password             String?
+  isPro                Boolean      @default(false)
+  stripeCustomerId     String?      @unique
+  stripeSubscriptionId String?      @unique
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  // Relations
+  items       Item[]
+  collections Collection[]
+  itemTypes   ItemType[]
+  accounts    Account[]
+  sessions    Session[]
+
+  @@map("users")
+}
+
+// ============================================
+// NEXTAUTH MODELS
+// ============================================
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// ITEM
+// ============================================
 enum ContentType {
   TEXT
   FILE
   URL
 }
 
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime?
-  name          String?
-  image         String?
-
-  // Monetization
-  isPro                Boolean  @default(false)
-  stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
-
-  // NextAuth relations
-  accounts Account[]
-  sessions Session[]
-
-  // Domain relations
-  items       Item[]
-  collections Collection[]
-  itemTypes   ItemType[] // custom types
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ItemType {
-  id       String  @id @default(cuid())
-  name     String
-  slug     String  // used in /items/[slug] routes
-  icon     String  // Lucide icon name
-  color    String  // hex
-  isSystem Boolean @default(false)
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  items Item[]
-
-  @@unique([userId, slug])
-}
-
 model Item {
   id          String      @id @default(cuid())
   title       String
   contentType ContentType
-  content     String?     // text content (null when file)
-  fileUrl     String?     // R2 URL (null when text)
-  fileName    String?
-  fileSize    Int?        // bytes
-  url         String?     // for link types
-  description String?
-  language    String?     // code language hint
+  content     String?     @db.Text // For TEXT types
+  fileUrl     String?     // R2 URL for FILE types
+  fileName    String?     // Original filename
+  fileSize    Int?        // Size in bytes
+  url         String?     // For URL/link types
+  description String?     @db.Text
   isFavorite  Boolean     @default(false)
   isPinned    Boolean     @default(false)
+  language    String?     // Programming language for syntax highlighting
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
+  // Relations
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   itemTypeId String
   itemType   ItemType @relation(fields: [itemTypeId], references: [id])
+  tags       Tag[]    @relation("ItemTags")
 
+  // Many-to-many with collections
   collections ItemCollection[]
-  tags        ItemTag[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([itemTypeId])
+  @@index([createdAt])
+  @@map("items")
 }
 
+// ============================================
+// ITEM TYPE
+// ============================================
+model ItemType {
+  id       String  @id @default(cuid())
+  name     String  // display name, e.g. "My API Stuff"
+  slug     String  // URL-safe, used in /items/[slug] routes
+  icon     String
+  color    String
+  isSystem Boolean @default(false)
+
+  // Relations
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  Item[]
+
+  // Collections that use this as default type
+  defaultForCollections Collection[]
+
+  @@unique([slug, userId])
+  @@map("item_types")
+}
+
+// ============================================
+// COLLECTION
+// ============================================
 model Collection {
-  id            String  @id @default(cuid())
-  name          String
-  description   String?
-  isFavorite    Boolean @default(false)
-  defaultTypeId String? // type used when creating items inside an empty collection
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  isFavorite  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relations
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultTypeId String?
+  defaultType   ItemType? @relation(fields: [defaultTypeId], references: [id])
 
+  // Many-to-many with items
   items ItemCollection[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
   @@index([userId])
+  @@map("collections")
 }
 
+// ============================================
+// ITEM-COLLECTION JOIN TABLE
+// ============================================
 model ItemCollection {
   itemId       String
   collectionId String
@@ -222,44 +369,64 @@ model ItemCollection {
   collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   @@id([itemId, collectionId])
-  @@index([collectionId])
+  @@map("item_collections")
 }
 
+// ============================================
+// TAG
+// ============================================
 model Tag {
-  id    String    @id @default(cuid())
-  name  String    @unique
-  items ItemTag[]
+  id    String @id @default(cuid())
+  name  String @unique
+  items Item[] @relation("ItemTags")
+
+  @@map("tags")
 }
-
-model ItemTag {
-  itemId String
-  tagId  String
-
-  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([itemId, tagId])
-  @@index([tagId])
-}
-
-// NextAuth models (Account, Session, VerificationToken) added per the
-// @auth/prisma-adapter requirements — omitted here for brevity.
 ```
 
 > **Migration rule:** never run `prisma db push` against any environment. All schema changes go through `prisma migrate dev` locally and `prisma migrate deploy` in production.
 
-### Entity Relationships
+### Seed Data for System Types
 
-```mermaid
-erDiagram
-    USER ||--o{ ITEM : owns
-    USER ||--o{ COLLECTION : owns
-    USER ||--o{ ITEMTYPE : "owns (custom)"
-    ITEMTYPE ||--o{ ITEM : categorizes
-    ITEM ||--o{ ITEMCOLLECTION : "in"
-    COLLECTION ||--o{ ITEMCOLLECTION : "contains"
-    ITEM ||--o{ ITEMTAG : "tagged"
-    TAG ||--o{ ITEMTAG : "applied to"
+```typescript
+// prisma/seed.ts
+
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+const systemItemTypes = [
+  { name: 'Snippet', slug: 'snippets', icon: 'Code', color: '#3b82f6', isSystem: true },
+  { name: 'Prompt', slug: 'prompts', icon: 'Sparkles', color: '#8b5cf6', isSystem: true },
+  { name: 'Command', slug: 'commands', icon: 'Terminal', color: '#f97316', isSystem: true },
+  { name: 'Note', slug: 'notes', icon: 'StickyNote', color: '#fde047', isSystem: true },
+  { name: 'File', slug: 'files', icon: 'File', color: '#6b7280', isSystem: true },
+  { name: 'Image', slug: 'images', icon: 'Image', color: '#ec4899', isSystem: true },
+  { name: 'Link', slug: 'links', icon: 'Link', color: '#10b981', isSystem: true },
+];
+
+async function main() {
+  console.log('Seeding system item types...');
+
+  for (const type of systemItemTypes) {
+    await prisma.itemType.upsert({
+      where: { slug_userId: { slug: type.slug, userId: null } },
+      update: {},
+      create: type,
+    });
+  }
+
+  console.log('Seeding complete!');
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
 ```
 
 ---
@@ -345,8 +512,8 @@ Freemium with foundations built in from day one. **During development, all users
 
 Use these as a visual base for the dashboard UI — approximate, not pixel-exact. The screenshots show the wordmark **DevStash**; that is outdated — the product is **DevMemory** (**DevMem** for short) everywhere:
 
-- Dashboard / collections grid: [`context/screencapture/dashboard-ui-main.png`](screencapture/dashboard-ui-main.png)
-- Item drawer overlay: [`context/screencapture/dashboard-ui-drawer.png`](screencapture/dashboard-ui-drawer.png)
+- Dashboard / collections grid: [`context/screencaptures/dashboard-ui-main.png`](screencaptures/dashboard-ui-main.png)
+- Item drawer overlay: [`context/screencaptures/dashboard-ui-drawer.png`](screencaptures/dashboard-ui-drawer.png)
 
 **Responsive:** desktop-first, mobile usable. Sidebar collapses into a drawer on mobile.
 
@@ -354,71 +521,23 @@ Use these as a visual base for the dashboard UI — approximate, not pixel-exact
 
 ## 8. Development Roadmap
 
-Six phases, sized to ship something usable early and layer Pro features on top.
+An ordered checklist, sized to ship something usable early and layer Pro features on top.
 
-### Phase 1 — Foundation
-
-- Next.js 16 + TypeScript + Tailwind v4 + ShadCN setup
-- Neon database + Prisma schema + initial migration
-- NextAuth v5 (email/password + GitHub)
-- Base layout (sidebar + main + drawer shell)
-- Dark mode toggle
-- Seed script for system `ItemType` rows
-
-### Phase 2 — Core CRUD
-
-- Item create / read / update / delete (text types only: snippet, prompt, note, command, link)
-- Collection CRUD
-- Add/remove items to/from collections via `ItemCollection`
-- Tag CRUD + attach to items
-- Item drawer UI with markdown editor + syntax highlighting
-- Type routes: `/items/snippets`, `/items/prompts`, etc.
-
-### Phase 3 — Discovery & Polish
-
-- Search across content, tags, titles, types
-- Favorites (items + collections)
-- Pin items to top
-- Recently used
-- Import code from file
-- Color-coded collection cards (background based on dominant type)
-- Loading skeletons, toasts, micro-interactions
-- Mobile responsive pass
-
-### Phase 4 — Pro Foundation
-
-- Stripe integration (checkout, customer portal, webhooks)
-- `isPro` flag enforcement (feature-flagged off in dev)
-- Cloudflare R2 signed upload URLs
-- File and Image item types
-- Free-tier limits (50 items, 3 collections)
-- Export data (JSON / ZIP)
-
-### Phase 5 — AI Features
-
-- OpenAI `gpt-5-nano` integration with usage tracking
-- AI auto-tag suggestions on item create/update
-- AI summaries for long notes / snippets
-- "Explain this code" action on snippets
-- Prompt optimizer for prompt items
-
-### Phase 6 — Extensions
-
-- Custom user-defined item types
-- Redis caching layer for hot collections and search
-- Advanced search (filters, operators)
-- Public shareable items / collections (stretch)
-
-### Phase Summary
-
-| Phase | Theme | Gate to next |
-|---|---|---|
-| 1 | Foundation | App boots, auth works, schema migrated |
-| 2 | Core CRUD | Items + collections usable end-to-end |
-| 3 | Discovery & Polish | Search + favorites + responsive |
-| 4 | Pro Foundation | Payments + uploads + limits live |
-| 5 | AI Features | All four AI actions shipping |
-| 6 | Extensions | Custom types + caching |
+1. [ ] Initialize Next.js 16 project with TypeScript
+2. [ ] Set up Prisma with Neon PostgreSQL
+3. [ ] Configure NextAuth v5 (email + GitHub)
+4. [ ] Create database migrations for initial schema
+5. [ ] Seed system item types
+6. [ ] Build core UI components with shadcn/ui
+7. [ ] Implement items CRUD
+8. [ ] Implement collections CRUD
+9. [ ] Add search functionality
+10. [ ] Set up Cloudflare R2 for file uploads
+11. [ ] Integrate Stripe for subscriptions
+12. [ ] Add AI features (OpenAI `gpt-5-nano` integration)
+13. [ ] Implement usage limits for free tier
+14. [ ] Testing & polish
+15. [ ] Deploy to production
 
 ---
 
@@ -434,10 +553,10 @@ Six phases, sized to ship something usable early and layer Pro features on top.
 
 ## 10. Open Questions
 
-A few things from the original notes worth deciding before Phase 2:
+A few things from the original notes worth deciding before core CRUD work (checklist steps 7–9):
 
 1. **Search backend** — Postgres full-text to start, or Meilisearch / Typesense from day one?
 2. **Markdown editor** — TipTap, Lexical, or a lighter option like `react-markdown` + textarea?
-3. **Redis** — wait until there's a real performance need, or wire it in during Phase 1?
+3. **Redis** — wait until there's a real performance need, or wire it in during initial setup?
 4. **Free-tier limits** — soft warnings or hard blocks when a user hits 50 items / 3 collections?
 5. **Item versioning** — out of scope for v1, or worth a lightweight history table?
