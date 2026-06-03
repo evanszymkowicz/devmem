@@ -12,7 +12,8 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:status": "prisma migrate status",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:test": "tsx scripts/test-db.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

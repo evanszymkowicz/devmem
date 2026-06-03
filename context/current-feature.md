@@ -6,7 +6,7 @@ Set up Prisma 7 ORM with a Neon serverless PostgreSQL database, and create the i
 
 ## Status
 
-In progress
+Complete
 
 ## Goals
 
@@ -60,3 +60,10 @@ In progress
   - Shared `ItemRow` component for Pinned + Recent
   - Page remains SSR; `"use client"` confined to interactive leaves
   - See `@context/change-log/dashboard-phase-3.md` for details
+- Prisma 7 + Neon PostgreSQL setup completed
+  - Neon provisioned with separate development/production branches; local `DATABASE_URL` on the dev branch
+  - Prisma 7 configured for its breaking changes: new `prisma-client` generator → `src/generated/prisma`, required Neon driver adapter (`@prisma/adapter-neon`), connection URL moved out of the schema into `prisma.config.ts` (Migrate) and the adapter (runtime)
+  - Initial schema from `@context/project-overview.md` §4: `User`, NextAuth models, `Item`, `ItemType`, `Collection`, `ItemCollection`, `Tag`, `ContentType` enum, with indexes, cascades, and snake_case `@@map`
+  - Initial migration created via `prisma migrate dev` (never `db push`); `prisma migrate status` clean
+  - Idempotent seed for the 7 system item types; `scripts/test-db.ts` + `db:test` for connectivity/sanity checks
+  - See `@context/change-log/prisma-neon-setup.md` for details
