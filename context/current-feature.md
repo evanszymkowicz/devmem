@@ -1,8 +1,10 @@
 # Current Feature
 
-## Prisma + Neon PostgreSQL Setup
+## Seed Sample Data
 
-Set up Prisma 7 ORM with a Neon serverless PostgreSQL database, and create the initial schema based on the data models in `@context/project-overview.md`.
+Expand `prisma/seed.ts` to populate the database with a demo user, the 7 system
+item types, and a set of sample collections and items for development and demos.
+Data comes from the seed spec at `@context/features/seed-spec.md`.
 
 ## Status
 
@@ -10,33 +12,51 @@ Complete
 
 ## Goals
 
-- Provision Neon PostgreSQL (serverless) with separate development and production branches
-- Wire `DATABASE_URL` to the Neon **development** branch for local work; production branch used for deploys
-- Install and configure Prisma 7 (note: breaking changes — read the upgrade guide before schema work)
-- Define the initial schema from the data models in `@context/project-overview.md`:
-  - `User` (with email/password hash + OAuth fields, Stripe fields, `isPro`)
-  - NextAuth models: `Account`, `Session`, `VerificationToken`
-  - `Item`, `ItemType`, `Collection`, `ItemCollection` (join), `Tag`
-  - `ContentType` enum (`TEXT`, `FILE`, `URL`)
-- Add appropriate indexes and cascade deletions per the schema
-- Use snake_case table names via `@@map`
-- Create the initial migration with `prisma migrate dev` (never `prisma db push`)
-- Add the seed script for the 7 system item types and run it
+- **Demo user** (idempotent upsert by email):
+  - Email: `demo@devmemory.io`
+  - Name: Demo User
+  - Password: `12345678`, hashed with `bcryptjs` at 12 rounds
+  - `isPro: false`
+  - `emailVerified`: current date
+- **System item types** — keep the existing idempotent upsert of the 7 system
+  types (`isSystem: true`, `userId: null`), matching the icons/colors in the spec.
+- **Collections & items** owned by the demo user (idempotent — safe to re-run):
+  - **React Patterns** — _Reusable React patterns and hooks_ — 3 TypeScript snippets
+    (custom hooks, component patterns, utility functions)
+  - **AI Workflows** — _AI prompts and workflow automations_ — 3 prompts
+    (code review, documentation generation, refactoring assistance)
+  - **DevOps** — _Infrastructure and deployment resources_ — 1 snippet (Docker/CI-CD),
+    1 command (deployment script), 2 links (real documentation URLs)
+  - **Terminal Commands** — _Useful shell commands for everyday development_ — 4 commands
+    (git, docker, process management, package manager)
+  - **Design Resources** — _UI/UX resources and references_ — 4 links, real URLs
+    (CSS/Tailwind reference, component library, design system, icon library)
+- Run the seed and verify the rows land correctly.
 
 ## Notes
 
-- **Migration rule:** ALWAYS create migrations (`prisma migrate dev` locally, `prisma migrate deploy` in prod). Never `prisma db push` unless explicitly specified.
-- **Prisma 7 has breaking changes** — read the full upgrade guide before non-trivial schema work: <https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7>
-- Setup reference: <https://www.prisma.io/docs/getting-started/prisma-orm/quickstart/prisma-postgres>
-- Two Neon branches: development (in `DATABASE_URL` for local work) and production.
-- Run `prisma migrate status` before committing to verify migrations are in sync.
-- Spec: `@context/features/database-spec.md`
+- **Decisions** (resolved; spec updated to match):
+  - Demo email is `demo@devmemory.io` — the spec previously used the outdated
+    **DevStash** domain; updated to the **DevMemory** product name.
+  - Item type names follow the existing title-case display name + URL-safe slug
+    convention (`Snippet` / `snippets`) from `@context/project-overview.md`, not
+    the spec's lowercase names.
+  - Hash the demo password with `bcryptjs` (pure JS, no native build) per the
+    spec body — not the native `bcrypt`.
+- **Idempotency:** the whole seed must be safe to re-run — use `upsert` (or
+  guarded `create`) for the user, types, collections, and items so `db:seed`
+  doesn't duplicate rows.
+- **Migration rule:** seeding does not touch schema. Never run `prisma db push`;
+  schema changes only ever go through `prisma migrate dev` / `migrate deploy`.
+- Item content types: snippets/prompts/commands → `TEXT`; links → `URL`.
+- Collection membership goes through the `ItemCollection` join table.
 
 ## References
 
-- Initial data models & full Prisma schema: `@context/project-overview.md` §4
+- Seed spec (data to insert): `@context/features/seed-spec.md`
+- Data models & full Prisma schema: `@context/project-overview.md` §4
 - Database standards: `@context/coding-standards.md`
-- Feature spec: `@context/features/database-spec.md`
+- Existing Prisma/Neon setup: `@context/change-log/prisma-neon-setup.md`
 
 ## History
 
@@ -67,3 +87,8 @@ Complete
   - Initial migration created via `prisma migrate dev` (never `db push`); `prisma migrate status` clean
   - Idempotent seed for the 7 system item types; `scripts/test-db.ts` + `db:test` for connectivity/sanity checks
   - See `@context/change-log/prisma-neon-setup.md` for details
+- Seed sample data completed
+  - Renamed the spec `context/features/speed-spec.md` → `seed-spec.md` and switched the demo email to the DevMemory domain
+  - Added `bcryptjs` (+ `@types/bcryptjs`); demo user `demo@devmemory.io` hashed at 12 rounds, `isPro: false`, `emailVerified` set
+  - Expanded `prisma/seed.ts`: demo user, 7 system types (kept title-case name + slug convention), and 5 collections / 18 items / 18 join rows, all idempotent (re-runnable without duplicates)
+  - Verified: seed runs twice with stable counts; password verifies against `12345678`; `npm run build` and `npm run lint` pass

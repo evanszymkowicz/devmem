@@ -44,6 +44,46 @@ async function main() {
   console.log(`    collections: ${collections}`);
   console.log(`    tags:        ${tags}`);
 
+  // 4. Fetch and display the seeded demo data (see prisma/seed.ts).
+  const DEMO_EMAIL = "demo@devmemory.io";
+  const demoUser = await prisma.user.findUnique({
+    where: { email: DEMO_EMAIL },
+  });
+
+  if (!demoUser) {
+    console.log(
+      `\n⚠ Demo user (${DEMO_EMAIL}) not found. Run \`npm run db:seed\` to seed sample data.`,
+    );
+  } else {
+    console.log("\n✓ Demo user:");
+    console.log(`    email:         ${demoUser.email}`);
+    console.log(`    name:          ${demoUser.name ?? "(none)"}`);
+    console.log(`    isPro:         ${demoUser.isPro}`);
+    console.log(`    emailVerified: ${demoUser.emailVerified ? "yes" : "no"}`);
+    console.log(`    password set:  ${demoUser.password ? "yes (hashed)" : "no"}`);
+
+    // The demo user's collections with their items, grouped by type.
+    const demoCollections = await prisma.collection.findMany({
+      where: { userId: demoUser.id },
+      orderBy: { name: "asc" },
+      include: {
+        items: {
+          include: { item: { include: { itemType: true } } },
+        },
+      },
+    });
+
+    console.log(`\n✓ Demo collections (${demoCollections.length}):`);
+    for (const collection of demoCollections) {
+      console.log(
+        `\n    ${collection.name} — ${collection.description ?? "(no description)"} [${collection.items.length} item(s)]`,
+      );
+      for (const { item } of collection.items) {
+        console.log(`        - [${item.itemType.name}] ${item.title}`);
+      }
+    }
+  }
+
   console.log("\nDatabase test passed.");
 }
 
