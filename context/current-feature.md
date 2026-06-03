@@ -1,42 +1,28 @@
 # Current Feature
 
-## Prisma + Neon PostgreSQL Setup
+## (none — ready for next task)
 
-Set up Prisma 7 ORM with a Neon serverless PostgreSQL database, and create the initial schema based on the data models in `@context/project-overview.md`.
+Document the next feature here, then follow the workflow in
+`@context/ai-interaction.md` (Document → Branch → Implement → Test → Iterate →
+Commit → Merge → Delete Branch → Review → log to History).
 
 ## Status
 
-Complete
+Not started
 
 ## Goals
 
-- Provision Neon PostgreSQL (serverless) with separate development and production branches
-- Wire `DATABASE_URL` to the Neon **development** branch for local work; production branch used for deploys
-- Install and configure Prisma 7 (note: breaking changes — read the upgrade guide before schema work)
-- Define the initial schema from the data models in `@context/project-overview.md`:
-  - `User` (with email/password hash + OAuth fields, Stripe fields, `isPro`)
-  - NextAuth models: `Account`, `Session`, `VerificationToken`
-  - `Item`, `ItemType`, `Collection`, `ItemCollection` (join), `Tag`
-  - `ContentType` enum (`TEXT`, `FILE`, `URL`)
-- Add appropriate indexes and cascade deletions per the schema
-- Use snake_case table names via `@@map`
-- Create the initial migration with `prisma migrate dev` (never `prisma db push`)
-- Add the seed script for the 7 system item types and run it
+To be defined.
 
 ## Notes
 
-- **Migration rule:** ALWAYS create migrations (`prisma migrate dev` locally, `prisma migrate deploy` in prod). Never `prisma db push` unless explicitly specified.
-- **Prisma 7 has breaking changes** — read the full upgrade guide before non-trivial schema work: <https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7>
-- Setup reference: <https://www.prisma.io/docs/getting-started/prisma-orm/quickstart/prisma-postgres>
-- Two Neon branches: development (in `DATABASE_URL` for local work) and production.
-- Run `prisma migrate status` before committing to verify migrations are in sync.
-- Spec: `@context/features/database-spec.md`
+To be defined.
 
 ## References
 
-- Initial data models & full Prisma schema: `@context/project-overview.md` §4
-- Database standards: `@context/coding-standards.md`
-- Feature spec: `@context/features/database-spec.md`
+- Data models & full Prisma schema: `@context/project-overview.md` §4
+- Coding standards: `@context/coding-standards.md`
+- AI interaction & workflow: `@context/ai-interaction.md`
 
 ## History
 
@@ -67,3 +53,10 @@ Complete
   - Initial migration created via `prisma migrate dev` (never `db push`); `prisma migrate status` clean
   - Idempotent seed for the 7 system item types; `scripts/test-db.ts` + `db:test` for connectivity/sanity checks
   - See `@context/change-log/prisma-neon-setup.md` for details
+- Seed sample data completed
+  - Renamed the spec `context/features/speed-spec.md` → `seed-spec.md` and switched the demo email to the DevMemory domain
+  - Added `bcryptjs` (+ `@types/bcryptjs`); demo user `demo@devmemory.io` hashed at 12 rounds, `isPro: false`, `emailVerified` set
+  - Expanded `prisma/seed.ts`: demo user, 7 system types (kept title-case name + slug convention), and 5 collections / 18 items / 18 join rows, all idempotent (re-runnable without duplicates)
+  - Updated `scripts/test-db.ts` (`db:test`) to fetch and display the demo user and their collections/items, with a graceful warning when the data isn't seeded
+  - Verified: seed runs twice with stable counts; password verifies against `12345678`; `npm run build` and `npm run lint` pass
+  - See `@context/change-log/seed-data.md` for details
