@@ -1,62 +1,28 @@
 # Current Feature
 
-## Seed Sample Data
+## (none — ready for next task)
 
-Expand `prisma/seed.ts` to populate the database with a demo user, the 7 system
-item types, and a set of sample collections and items for development and demos.
-Data comes from the seed spec at `@context/features/seed-spec.md`.
+Document the next feature here, then follow the workflow in
+`@context/ai-interaction.md` (Document → Branch → Implement → Test → Iterate →
+Commit → Merge → Delete Branch → Review → log to History).
 
 ## Status
 
-Complete
+Not started
 
 ## Goals
 
-- **Demo user** (idempotent upsert by email):
-  - Email: `demo@devmemory.io`
-  - Name: Demo User
-  - Password: `12345678`, hashed with `bcryptjs` at 12 rounds
-  - `isPro: false`
-  - `emailVerified`: current date
-- **System item types** — keep the existing idempotent upsert of the 7 system
-  types (`isSystem: true`, `userId: null`), matching the icons/colors in the spec.
-- **Collections & items** owned by the demo user (idempotent — safe to re-run):
-  - **React Patterns** — _Reusable React patterns and hooks_ — 3 TypeScript snippets
-    (custom hooks, component patterns, utility functions)
-  - **AI Workflows** — _AI prompts and workflow automations_ — 3 prompts
-    (code review, documentation generation, refactoring assistance)
-  - **DevOps** — _Infrastructure and deployment resources_ — 1 snippet (Docker/CI-CD),
-    1 command (deployment script), 2 links (real documentation URLs)
-  - **Terminal Commands** — _Useful shell commands for everyday development_ — 4 commands
-    (git, docker, process management, package manager)
-  - **Design Resources** — _UI/UX resources and references_ — 4 links, real URLs
-    (CSS/Tailwind reference, component library, design system, icon library)
-- Run the seed and verify the rows land correctly.
+To be defined.
 
 ## Notes
 
-- **Decisions** (resolved; spec updated to match):
-  - Demo email is `demo@devmemory.io` — the spec previously used the outdated
-    **DevStash** domain; updated to the **DevMemory** product name.
-  - Item type names follow the existing title-case display name + URL-safe slug
-    convention (`Snippet` / `snippets`) from `@context/project-overview.md`, not
-    the spec's lowercase names.
-  - Hash the demo password with `bcryptjs` (pure JS, no native build) per the
-    spec body — not the native `bcrypt`.
-- **Idempotency:** the whole seed must be safe to re-run — use `upsert` (or
-  guarded `create`) for the user, types, collections, and items so `db:seed`
-  doesn't duplicate rows.
-- **Migration rule:** seeding does not touch schema. Never run `prisma db push`;
-  schema changes only ever go through `prisma migrate dev` / `migrate deploy`.
-- Item content types: snippets/prompts/commands → `TEXT`; links → `URL`.
-- Collection membership goes through the `ItemCollection` join table.
+To be defined.
 
 ## References
 
-- Seed spec (data to insert): `@context/features/seed-spec.md`
 - Data models & full Prisma schema: `@context/project-overview.md` §4
-- Database standards: `@context/coding-standards.md`
-- Existing Prisma/Neon setup: `@context/change-log/prisma-neon-setup.md`
+- Coding standards: `@context/coding-standards.md`
+- AI interaction & workflow: `@context/ai-interaction.md`
 
 ## History
 
@@ -91,4 +57,6 @@ Complete
   - Renamed the spec `context/features/speed-spec.md` → `seed-spec.md` and switched the demo email to the DevMemory domain
   - Added `bcryptjs` (+ `@types/bcryptjs`); demo user `demo@devmemory.io` hashed at 12 rounds, `isPro: false`, `emailVerified` set
   - Expanded `prisma/seed.ts`: demo user, 7 system types (kept title-case name + slug convention), and 5 collections / 18 items / 18 join rows, all idempotent (re-runnable without duplicates)
+  - Updated `scripts/test-db.ts` (`db:test`) to fetch and display the demo user and their collections/items, with a graceful warning when the data isn't seeded
   - Verified: seed runs twice with stable counts; password verifies against `12345678`; `npm run build` and `npm run lint` pass
+  - See `@context/change-log/seed-data.md` for details
