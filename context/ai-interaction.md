@@ -13,28 +13,28 @@
 This is the common workflow that we will use for every single feature/fix:
 
 1. **Document** - Document the feature in @context/current-feature.md.
-2. **Branch** - Create new branch for feature, fix, etc
-3. **Implement** - Implement the feature/fix that I create in @context/current-feature.md
-4. **Test** - Verify it works in the browser. Implement unit testing later. Run `npm run build` and fix any errors
-5. **Iterate** - Iterate and change things if needed
-6. **Commit** - Only after build passes and everything works
-7. **Merge** - Merge to main
-8. **Delete Branch** - Delete branch after merge
-9. **Review** - Review AI-generated code periodically and on demand.
-10. Mark as completed in @context/current-feature.md and add to history
+2. **Branch** - The user will create the branch.
+3. **Implement** - Implement the feature/fix documented in @context/current-feature.md.
+4. **Test** - Verify it works in the browser. Implement unit testing later. Run `npm run build` and fix any errors.
+5. **Iterate** - Iterate and change things if needed.
+6. **Commit** - The user will commit to the branch.
+7. **Merge** - The user will review and merge on GitHub's website.
+8. **Wrap Up** - After implementation is complete and working:
+   - Update @context/current-feature.md history section with what was done, then reset the file to the base state for the next feature.
+   - Create a new file in @context/change-log/ documenting what was done.
 
-Do NOT commit without permission and until the build passes. If build fails, fix the issues first.
+Do NOT commit. If build fails, fix the issues first.
 
 ## Branching
 
-We will create a new branch for every feature/fix. Name branch **feature/[feature]** or **fix[fix]**, etc. Ask to delete the branch once merged.
+The user creates all branches. Name branches **feature/[feature]** or **fix/[fix]**, etc.
 
 ## Commits
 
-- Ask before committing (don't auto-commit)
-- Use conventional commit messages (feat:, fix:, chore:, etc.)
-- Keep commits focused (one feature/fix per commit)
-- Never put "Generated With Claude" in the commit messages
+- Do NOT commit — the user handles all commits and merges.
+- Use conventional commit messages (feat:, fix:, chore:, etc.) when suggesting commit messages.
+- Keep commits focused (one feature/fix per commit).
+- Never put "Generated With Claude" in commit messages.
 
 ## When Stuck
 
