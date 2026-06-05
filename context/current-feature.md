@@ -66,3 +66,10 @@ To be defined.
   - `CollectionCard` updated to accept `CollectionWithTypes`; border color derived from `itemTypes[0].color` (dominant type); type icons rendered from the full `itemTypes` array — no more `mockItemTypes` lookup
   - `RecentCollections` and `StatsCards` converted to async server components; both fetch via demo user `demo@devmemory.io` (pre-auth placeholder)
   - `npm run build` passes clean; TypeScript no errors
+- Dashboard Items (real data) completed
+  - Created `src/lib/db/items.ts` with `getPinnedItems` and `getRecentItems`; `ItemWithType` derived via `Prisma.ItemGetPayload`
+  - `ItemRow` updated to accept `ItemWithType`; icon/color derived from `item.itemType` — no more `mockItemTypes` lookup
+  - `PinnedItems` and `RecentItems` converted to async server components; both fetch via demo user `demo@devmemory.io` (pre-auth placeholder)
+  - Pinned section still returns `null` when no items are pinned
+  - `npm run build` passes clean; TypeScript no errors
+  - See `@context/change-log/dashboard-items.md` for details
