@@ -1,14 +1,20 @@
 import Link from "next/link";
 
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
-import { mockCollections } from "@/lib/mock-data";
+import { getDashboardCollections } from "@/lib/db/collections";
+import { prisma } from "@/lib/prisma";
 
-export function RecentCollections() {
-  // Show the 6 most-recent collections (favorites first, then the rest).
-  const ordered = [
-    ...mockCollections.filter((c) => c.isFavorite),
-    ...mockCollections.filter((c) => !c.isFavorite),
-  ].slice(0, 6);
+async function getDemoUserId(): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email: "demo@devmemory.io" },
+    select: { id: true },
+  });
+  return user?.id ?? null;
+}
+
+export async function RecentCollections() {
+  const userId = await getDemoUserId();
+  const collections = userId ? await getDashboardCollections(userId) : [];
 
   return (
     <section>
@@ -22,7 +28,7 @@ export function RecentCollections() {
         </Link>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {ordered.map((col) => (
+        {collections.map((col) => (
           <CollectionCard key={col.id} collection={col} />
         ))}
       </div>
