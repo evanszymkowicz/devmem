@@ -1,10 +1,20 @@
 import { Pin } from "lucide-react";
 
 import { ItemRow } from "@/components/dashboard/ItemRow";
-import { mockItems } from "@/lib/mock-data";
+import { getPinnedItems } from "@/lib/db/items";
+import { prisma } from "@/lib/prisma";
 
-export function PinnedItems() {
-  const pinned = mockItems.filter((i) => i.isPinned);
+async function getDemoUserId(): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email: "demo@devmemory.io" },
+    select: { id: true },
+  });
+  return user?.id ?? null;
+}
+
+export async function PinnedItems() {
+  const userId = await getDemoUserId();
+  const pinned = userId ? await getPinnedItems(userId) : [];
 
   if (pinned.length === 0) return null;
 

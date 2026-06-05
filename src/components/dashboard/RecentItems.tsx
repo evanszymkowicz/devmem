@@ -1,15 +1,20 @@
 import { Clock } from "lucide-react";
 
 import { ItemRow } from "@/components/dashboard/ItemRow";
-import { mockItems } from "@/lib/mock-data";
+import { getRecentItems } from "@/lib/db/items";
+import { prisma } from "@/lib/prisma";
 
-export function RecentItems() {
-  const recent = [...mockItems]
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    )
-    .slice(0, 10);
+async function getDemoUserId(): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email: "demo@devmemory.io" },
+    select: { id: true },
+  });
+  return user?.id ?? null;
+}
+
+export async function RecentItems() {
+  const userId = await getDemoUserId();
+  const recent = userId ? await getRecentItems(userId) : [];
 
   return (
     <section>

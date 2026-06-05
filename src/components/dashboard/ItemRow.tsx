@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { type Item, mockItemTypes } from "@/lib/mock-data";
+import { type ItemWithType } from "@/lib/db/items";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Code,
@@ -25,13 +25,12 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 
 interface ItemRowProps {
-  item: Item;
+  item: ItemWithType;
 }
 
 export function ItemRow({ item }: ItemRowProps) {
-  const type = mockItemTypes.find((t) => t.id === item.itemTypeId);
-  const Icon = type ? (ICON_MAP[type.icon] ?? Code) : Code;
-  const accent = type?.color ?? "#6b7280";
+  const Icon = ICON_MAP[item.itemType.icon] ?? Code;
+  const accent = item.itemType.color;
 
   return (
     <Card
@@ -71,10 +70,10 @@ export function ItemRow({ item }: ItemRowProps) {
             <div className="mt-2 flex flex-wrap gap-1">
               {item.tags.map((tag) => (
                 <span
-                  key={tag}
+                  key={tag.id}
                   className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
                 >
-                  {tag}
+                  {tag.name}
                 </span>
               ))}
             </div>
@@ -88,7 +87,6 @@ export function ItemRow({ item }: ItemRowProps) {
   );
 }
 
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
