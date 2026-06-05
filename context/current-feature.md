@@ -1,6 +1,6 @@
 # Current Feature
 
-## (none — ready for next task)
+## Stats & Sidebar (Real Data)
 
 Document the next feature here, then follow the workflow in
 `@context/ai-interaction.md` (Document → Branch → Implement → Test → Iterate →
@@ -8,18 +8,26 @@ Commit → Merge → Delete Branch → Review → log to History).
 
 ## Status
 
-Not started
+In Progress
 
 ## Goals
 
-To be defined.
+- Display stats in the main area from real database data, keeping the current design/layout
+- Display system item types in the sidebar with their icons, linking to `/items/[typename]`
+- Add "View all collections" link under the collections list that goes to `/collections`
+- Keep star icons for favorite collections; for recents, show a colored circle based on the most-used item type in that collection
+- Add database functions to `src/lib/db/items.ts` as needed (use `src/lib/db/collections.ts` as reference)
 
 ## Notes
 
-To be defined.
+- Stats cards are already wired to real data via `getDashboardStats` — verify what still needs updating
+- Sidebar item types should come from the system item types in the database (not mock data)
+- Colored circle for recent collections = dominant item type color
 
 ## References
 
+- Spec: `@context/features/stats-sidebar-spec.md`
+- DB collections functions: `@src/lib/db/collections.ts`
 - Data models & full Prisma schema: `@context/project-overview.md` §4
 - Coding standards: `@context/coding-standards.md`
 - AI interaction & workflow: `@context/ai-interaction.md`

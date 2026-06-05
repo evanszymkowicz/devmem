@@ -12,13 +12,13 @@ const DEMO_EMAIL = "demo@devmemory.io";
 const DEMO_PASSWORD = "12345678";
 
 const systemItemTypes = [
-  { name: "Snippet", slug: "snippets", icon: "Code", color: "#3b82f6", isSystem: true },
-  { name: "Prompt", slug: "prompts", icon: "Sparkles", color: "#8b5cf6", isSystem: true },
-  { name: "Command", slug: "commands", icon: "Terminal", color: "#f97316", isSystem: true },
-  { name: "Note", slug: "notes", icon: "StickyNote", color: "#fde047", isSystem: true },
-  { name: "File", slug: "files", icon: "File", color: "#6b7280", isSystem: true },
-  { name: "Image", slug: "images", icon: "Image", color: "#ec4899", isSystem: true },
-  { name: "Link", slug: "links", icon: "Link", color: "#10b981", isSystem: true },
+  { name: "Snippets", slug: "snippets", icon: "Code", color: "#3b82f6", isSystem: true },
+  { name: "Prompts", slug: "prompts", icon: "Sparkles", color: "#8b5cf6", isSystem: true },
+  { name: "Commands", slug: "commands", icon: "Terminal", color: "#f97316", isSystem: true },
+  { name: "Notes", slug: "notes", icon: "StickyNote", color: "#fde047", isSystem: true },
+  { name: "Files", slug: "files", icon: "File", color: "#6b7280", isSystem: true },
+  { name: "Images", slug: "images", icon: "Image", color: "#ec4899", isSystem: true },
+  { name: "Links", slug: "links", icon: "Link", color: "#10b981", isSystem: true },
 ];
 
 // Sample item shapes. `typeSlug` maps to a seeded system ItemType; the seed
@@ -36,6 +36,7 @@ type SeedItem = {
 type SeedCollection = {
   name: string;
   description: string;
+  isFavorite?: boolean;
   items: SeedItem[];
 };
 
@@ -43,6 +44,7 @@ const seedCollections: SeedCollection[] = [
   {
     name: "React Patterns",
     description: "Reusable React patterns and hooks",
+    isFavorite: true,
     items: [
       {
         title: "useDebounce hook",
@@ -304,6 +306,8 @@ async function seedSystemItemTypes() {
 
     if (!existing) {
       await prisma.itemType.create({ data: type });
+    } else {
+      await prisma.itemType.update({ where: { id: existing.id }, data: { name: type.name } });
     }
   }
 }
@@ -343,7 +347,12 @@ async function seedCollectionsAndItems(userId: string) {
 
     if (!collection) {
       collection = await prisma.collection.create({
-        data: { name: col.name, description: col.description, userId },
+        data: { name: col.name, description: col.description, isFavorite: col.isFavorite ?? false, userId },
+      });
+    } else {
+      collection = await prisma.collection.update({
+        where: { id: collection.id },
+        data: { isFavorite: col.isFavorite ?? false },
       });
     }
 
