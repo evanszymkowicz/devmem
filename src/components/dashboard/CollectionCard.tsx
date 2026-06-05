@@ -21,7 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { type Collection, mockItemTypes } from "@/lib/mock-data";
+import type { CollectionWithTypes } from "@/lib/db/collections";
 import { cn } from "@/lib/utils";
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -35,14 +35,11 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 
 interface CollectionCardProps {
-  collection: Collection;
+  collection: CollectionWithTypes;
 }
 
 export function CollectionCard({ collection }: CollectionCardProps) {
-  const dominantType = mockItemTypes.find(
-    (t) => t.id === collection.itemTypeIds[0],
-  );
-  const accent = dominantType?.color ?? "#6b7280";
+  const accent = collection.itemTypes[0]?.color ?? "#6b7280";
 
   return (
     <Link
@@ -86,13 +83,11 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             {collection.description}
           </p>
           <div className="flex items-center gap-2">
-            {collection.itemTypeIds.map((id) => {
-              const type = mockItemTypes.find((t) => t.id === id);
-              if (!type) return null;
+            {collection.itemTypes.map((type) => {
               const Icon = ICON_MAP[type.icon] ?? Code;
               return (
                 <Icon
-                  key={id}
+                  key={type.id}
                   className="size-3.5"
                   style={{ color: type.color }}
                   aria-label={type.name}

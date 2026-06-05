@@ -60,3 +60,9 @@ To be defined.
   - Updated `scripts/test-db.ts` (`db:test`) to fetch and display the demo user and their collections/items, with a graceful warning when the data isn't seeded
   - Verified: seed runs twice with stable counts; password verifies against `12345678`; `npm run build` and `npm run lint` pass
   - See `@context/change-log/seed-data.md` for details
+- Dashboard Collections (real data) completed
+  - Created `src/lib/db/collections.ts` with `getDashboardCollections` and `getDashboardStats`
+  - `getDashboardCollections` fetches up to 6 collections ordered by favorite then `createdAt`, includes all items with their types, counts occurrences per type, and sorts so the dominant type (most items) is first
+  - `CollectionCard` updated to accept `CollectionWithTypes`; border color derived from `itemTypes[0].color` (dominant type); type icons rendered from the full `itemTypes` array — no more `mockItemTypes` lookup
+  - `RecentCollections` and `StatsCards` converted to async server components; both fetch via demo user `demo@devmemory.io` (pre-auth placeholder)
+  - `npm run build` passes clean; TypeScript no errors
