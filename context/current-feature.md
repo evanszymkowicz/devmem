@@ -1,6 +1,6 @@
 # Current Feature
 
-## (none — ready for next task)
+## [Feature Name]
 
 Document the next feature here, then follow the workflow in
 `@context/ai-interaction.md` (Document → Branch → Implement → Test → Iterate →
@@ -12,15 +12,14 @@ Not started
 
 ## Goals
 
-To be defined.
+-
 
 ## Notes
 
-To be defined.
+-
 
 ## References
 
-- Data models & full Prisma schema: `@context/project-overview.md` §4
 - Coding standards: `@context/coding-standards.md`
 - AI interaction & workflow: `@context/ai-interaction.md`
 
@@ -73,3 +72,10 @@ To be defined.
   - Pinned section still returns `null` when no items are pinned
   - `npm run build` passes clean; TypeScript no errors
   - See `@context/change-log/dashboard-items.md` for details
+- Stats & Sidebar (real data) completed
+  - Sidebar item types, collections, and user area all wired to real DB data; mock-data.ts deleted
+  - Added `getSystemItemTypes` and `getSidebarCollections` DB functions; types sorted in canonical UX order
+  - System item type names pluralised in seed (Snippet → Snippets, etc.)
+  - Favorite toggle added to collection cards and sidebar rows via `toggleCollectionFavorite` server action
+  - `React Patterns` seeded as a favorite collection
+  - See `@context/change-log/stats-sidebar-real-data.md` for details

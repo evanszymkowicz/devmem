@@ -1,12 +1,36 @@
+import { prisma } from "@/lib/prisma";
+import { getSidebarCollections } from "@/lib/db/collections";
+import { getSystemItemTypes } from "@/lib/db/items";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PinnedItems } from "@/components/dashboard/PinnedItems";
 import { RecentCollections } from "@/components/dashboard/RecentCollections";
 import { RecentItems } from "@/components/dashboard/RecentItems";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 
-export default function DashboardPage() {
+async function getDemoUser() {
+  return prisma.user.findUnique({
+    where: { email: "demo@devmemory.io" },
+    select: { id: true, name: true, email: true },
+  });
+}
+
+export default async function DashboardPage() {
+  const user = await getDemoUser();
+
+  const [itemTypes, collections] = user
+    ? await Promise.all([
+        getSystemItemTypes(user.id),
+        getSidebarCollections(user.id),
+      ])
+    : [[], []];
+
+  const sidebarUser = {
+    name: user?.name ?? "Demo User",
+    email: user?.email ?? "demo@devmemory.io",
+  };
+
   return (
-    <DashboardShell>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={sidebarUser}>
       <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <header className="mb-6">
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>

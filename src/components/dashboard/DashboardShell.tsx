@@ -12,18 +12,22 @@ import {
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { cn } from "@/lib/utils";
+import type { SidebarCollection } from "@/lib/db/collections";
+import type { SidebarItemType } from "@/lib/db/items";
 
 interface DashboardShellProps {
   children: React.ReactNode;
+  itemTypes: SidebarItemType[];
+  collections: SidebarCollection[];
+  user: { name: string; email: string };
 }
 
-export function DashboardShell({ children }: DashboardShellProps) {
-  // Desktop: collapsible inline aside (open by default).
-  // Mobile (<md): drawer overlay via Sheet (closed by default).
+// Sidebar data is fetched in the server page and passed as props because this
+// component needs "use client" for open/close state, preventing direct DB access.
+export function DashboardShell({ children, itemTypes, collections, user }: DashboardShellProps) {
   const [desktopOpen, setDesktopOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Close the mobile drawer when the viewport grows to md.
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     const handler = (e: MediaQueryListEvent) => {
@@ -40,6 +44,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
       setMobileOpen(true);
     }
   };
+
+  const sidebarProps = { itemTypes, collections, user };
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
@@ -58,7 +64,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             !desktopOpen && "pointer-events-none opacity-0",
           )}
         >
-          <Sidebar onClose={() => setDesktopOpen(false)} />
+          <Sidebar onClose={() => setDesktopOpen(false)} {...sidebarProps} />
         </div>
       </aside>
 
@@ -75,7 +81,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               Browse item types and collections.
             </SheetDescription>
           </SheetHeader>
-          <Sidebar onClose={() => setMobileOpen(false)} />
+          <Sidebar onClose={() => setMobileOpen(false)} {...sidebarProps} />
         </SheetContent>
       </Sheet>
 

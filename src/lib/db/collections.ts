@@ -74,6 +74,55 @@ export async function getDashboardCollections(
   });
 }
 
+export interface SidebarCollection {
+  id: string;
+  name: string;
+  isFavorite: boolean;
+  itemCount: number;
+  dominantColor: string;
+}
+
+export async function getSidebarCollections(
+  userId: string,
+): Promise<SidebarCollection[]> {
+  const collections = await prisma.collection.findMany({
+    where: { userId },
+    orderBy: [{ isFavorite: "desc" }, { createdAt: "desc" }],
+    include: {
+      items: {
+        include: {
+          item: {
+            include: { itemType: { select: { id: true, color: true } } },
+          },
+        },
+      },
+    },
+  });
+
+  return collections.map((col) => {
+    const typeCounts = new Map<string, { count: number; color: string }>();
+    for (const ic of col.items) {
+      const t = ic.item.itemType;
+      const existing = typeCounts.get(t.id);
+      if (existing) {
+        existing.count++;
+      } else {
+        typeCounts.set(t.id, { count: 1, color: t.color });
+      }
+    }
+    const dominant = [...typeCounts.values()].sort((a, b) => b.count - a.count)[0];
+    return {
+      id: col.id,
+      name: col.name,
+      isFavorite: col.isFavorite,
+      itemCount: col.items.length,
+      // Empty collections have no items, so typeCounts is empty and dominant is
+      // undefined; gray is the neutral fallback color.
+      dominantColor: dominant?.color ?? "#6b7280",
+    };
+  });
+}
+
 export async function getDashboardStats(userId: string): Promise<DashboardStats> {
   const [totalItems, totalCollections, favoriteItems, favoriteCollections] =
     await Promise.all([

@@ -19,13 +19,12 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  mockCollections,
-  mockItemTypeCounts,
-  mockItemTypes,
-  mockUser,
-} from "@/lib/mock-data";
+import { toggleCollectionFavorite } from "@/actions/collections";
+import type { SidebarCollection } from "@/lib/db/collections";
+import type { SidebarItemType } from "@/lib/db/items";
 
+// Icon names are stored as strings in the DB; Code is the fallback for any
+// unrecognised name (e.g. a future custom type with a missing icon).
 const ICON_MAP: Record<string, LucideIcon> = {
   Code,
   Sparkles,
@@ -38,14 +37,17 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 interface SidebarProps {
   onClose: () => void;
+  itemTypes: SidebarItemType[];
+  collections: SidebarCollection[];
+  user: { name: string; email: string };
 }
 
-export function Sidebar({ onClose }: SidebarProps) {
+export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps) {
   const [typesOpen, setTypesOpen] = useState(true);
   const [collectionsOpen, setCollectionsOpen] = useState(true);
 
-  const favoriteCollections = mockCollections.filter((c) => c.isFavorite);
-  const recentCollections = mockCollections.filter((c) => !c.isFavorite);
+  const favoriteCollections = collections.filter((c) => c.isFavorite);
+  const otherCollections = collections.filter((c) => !c.isFavorite);
 
   return (
     <div className="flex h-full w-full flex-col bg-sidebar text-sidebar-foreground">
@@ -80,9 +82,8 @@ export function Sidebar({ onClose }: SidebarProps) {
         />
         {typesOpen && (
           <ul className="mt-1 space-y-0.5">
-            {mockItemTypes.map((type) => {
+            {itemTypes.map((type) => {
               const Icon = ICON_MAP[type.icon] ?? Code;
-              const count = mockItemTypeCounts[type.id] ?? 0;
               return (
                 <li key={type.id}>
                   <Link
@@ -95,7 +96,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                     />
                     <span className="flex-1 truncate">{type.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {count}
+                      {type.count}
                     </span>
                   </Link>
                 </li>
@@ -119,46 +120,64 @@ export function Sidebar({ onClose }: SidebarProps) {
                   <ul className="mt-1 space-y-0.5">
                     {favoriteCollections.map((col) => (
                       <li key={col.id}>
-                        <Link
-                          href={`/collections/${col.id}`}
-                          className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        >
-                          <Star className="size-4 shrink-0 fill-amber-400 text-amber-400" />
-                          <span className="flex-1 truncate">{col.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {col.itemCount}
-                          </span>
-                        </Link>
+                        <div className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                          <button
+                            type="button"
+                            aria-label="Remove from favorites"
+                            onClick={() => toggleCollectionFavorite(col.id)}
+                            className="shrink-0"
+                          >
+                            <Star className="size-4 fill-amber-400 text-amber-400" />
+                          </button>
+                          <Link href={`/collections/${col.id}`} className="flex flex-1 items-center gap-2.5 truncate">
+                            <span className="flex-1 truncate">{col.name}</span>
+                            <span className="text-xs text-muted-foreground">{col.itemCount}</span>
+                          </Link>
+                        </div>
                       </li>
                     ))}
                   </ul>
                 </>
               )}
 
-              {recentCollections.length > 0 && (
+              {otherCollections.length > 0 && (
                 <>
                   <SubHeader label="All Collections" />
                   <ul className="mt-1 space-y-0.5">
-                    {recentCollections.map((col) => (
+                    {otherCollections.map((col) => (
                       <li key={col.id}>
-                        <Link
-                          href={`/collections/${col.id}`}
-                          className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        >
+                        <div className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                           <span
                             className="size-2 shrink-0 rounded-full"
-                            style={{ backgroundColor: collectionAccent(col.itemTypeIds[0]) }}
+                            style={{ backgroundColor: col.dominantColor }}
                           />
-                          <span className="flex-1 truncate">{col.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {col.itemCount}
-                          </span>
-                        </Link>
+                          <Link href={`/collections/${col.id}`} className="flex flex-1 items-center gap-2.5 truncate">
+                            <span className="flex-1 truncate">{col.name}</span>
+                            <span className="text-xs text-muted-foreground">{col.itemCount}</span>
+                          </Link>
+                          <button
+                            type="button"
+                            aria-label="Add to favorites"
+                            onClick={() => toggleCollectionFavorite(col.id)}
+                            className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                          >
+                            <Star className="size-3.5 text-muted-foreground hover:fill-amber-400 hover:text-amber-400" />
+                          </button>
+                        </div>
                       </li>
                     ))}
                   </ul>
                 </>
               )}
+
+              <div className="mt-3 px-2">
+                <Link
+                  href="/collections"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  View all collections →
+                </Link>
+              </div>
             </>
           )}
         </div>
@@ -167,11 +186,11 @@ export function Sidebar({ onClose }: SidebarProps) {
       {/* User area */}
       <div className="shrink-0 border-t border-sidebar-border p-3">
         <div className="flex items-center gap-2.5 rounded-md px-2 py-1.5">
-          <Avatar name={mockUser.name} />
+          <Avatar name={user.name} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{mockUser.name}</p>
+            <p className="truncate text-sm font-medium">{user.name}</p>
             <p className="truncate text-xs text-muted-foreground">
-              {mockUser.email}
+              {user.email}
             </p>
           </div>
           <Button variant="ghost" size="icon-sm" aria-label="Settings">
@@ -229,10 +248,4 @@ function Avatar({ name }: { name: string }) {
       {initials}
     </div>
   );
-}
-
-function collectionAccent(typeId: string | undefined): string {
-  if (!typeId) return "#6b7280";
-  const type = mockItemTypes.find((t) => t.id === typeId);
-  return type?.color ?? "#6b7280";
 }
