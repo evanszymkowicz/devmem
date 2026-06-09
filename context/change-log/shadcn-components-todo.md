@@ -5,7 +5,6 @@ Missing components identified by comparison with a peer project.
 ## TODOs
 
 - [ ] Install `avatar` — `npx shadcn@latest add avatar`
-- [ ] Install `badge` — `npx shadcn@latest add badge`
 - [ ] Install `separator` — `npx shadcn@latest add separator`
 
 ## Notes
