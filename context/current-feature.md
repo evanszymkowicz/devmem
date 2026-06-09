@@ -79,3 +79,9 @@ Not started
   - Favorite toggle added to collection cards and sidebar rows via `toggleCollectionFavorite` server action
   - `React Patterns` seeded as a favorite collection
   - See `@context/change-log/stats-sidebar-real-data.md` for details
+- Add Pro Badge to Sidebar completed
+  - Installed ShadCN `Badge` component
+  - PRO badge rendered next to Files and Images in sidebar Types list; conditioned on `type.slug`
+  - `variant="outline"` styling — small, subtle, non-disruptive
+  - `npm run build` passes clean; TypeScript no errors
+  - See `@context/change-log/add-pro-badge-sidebar.md` for details

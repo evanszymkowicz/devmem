@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toggleCollectionFavorite } from "@/actions/collections";
 import type { SidebarCollection } from "@/lib/db/collections";
@@ -95,6 +96,11 @@ export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps)
                       style={{ color: type.color }}
                     />
                     <span className="flex-1 truncate">{type.name}</span>
+                    {(type.slug === "files" || type.slug === "images") && (
+                      <Badge variant="outline" className="h-4 px-1 text-[10px] font-medium text-muted-foreground">
+                        PRO
+                      </Badge>
+                    )}
                     <span className="text-xs text-muted-foreground">
                       {type.count}
                     </span>
