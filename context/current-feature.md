@@ -1,33 +1,20 @@
 # Current Feature
 
-## Code Quality Quick Wins
+## (none)
 
-Low-risk cleanup items surfaced by a full codebase audit. No new features, no
-auth changes — purely internal correctness and maintainability fixes.
+No feature in progress. Document the next feature here before starting.
 
 ## Status
 
-In progress
+Not started
 
 ## Goals
 
-- Guard `DATABASE_URL` at startup so a missing env var fails loudly
-- Fix `StarOff` → `Star` icon on the "Favorite Collections" stat card
-- Guard `Avatar` initials derivation against empty name segments
-- Extract shared `ICON_MAP` to `src/lib/icon-map.ts` (used in 3 components)
-- Extract `getDemoUserId` to a shared utility; resolve once in the dashboard page
-  and pass `userId` as a prop to eliminate 4 duplicate DB round-trips per render
-- Add `take: 20` limit to `getPinnedItems` to prevent unbounded query results
-- Move `DEMO_PASSWORD` in `prisma/seed.ts` to `.env` (keep out of source control)
+-
 
 ## Notes
 
-- Auth-related fixes (ownership check in `toggleCollectionFavorite`) are deferred
-  until NextAuth is wired in (roadmap step 3)
-- The TOCTOU race in `toggleCollectionFavorite` is also deferred — low impact
-  until concurrent users exist
-- `getSidebarCollections` over-fetch is deferred — depends on `defaultTypeId`
-  being populated, which is a schema/migration task
+-
 
 ## References
 
@@ -96,3 +83,15 @@ In progress
   - `variant="outline"` styling — small, subtle, non-disruptive
   - `npm run build` passes clean; TypeScript no errors
   - See `@context/change-log/add-pro-badge-sidebar.md` for details
+- Code Quality Quick Wins completed
+  - Low-risk cleanup from the `code-scanner` audit; no new features, no auth changes
+  - `DATABASE_URL` startup guard in `src/lib/prisma.ts` (throws if unset)
+  - `StarOff` → `Star` icon on the Favorite Collections stat card
+  - `Avatar` initials guarded with `.filter(Boolean)` against empty name segments
+  - Shared `ICON_MAP` extracted to `src/lib/icon-map.ts` (used by `CollectionCard`, `ItemRow`, `Sidebar`)
+  - Demo user resolved once in the dashboard page; `userId` passed as a prop to 4 components, eliminating duplicate per-render DB round-trips
+  - `getPinnedItems` bounded with `take: 20` (`MAX_PINNED_DISPLAY`)
+  - Demo password moved to `process.env.DEMO_USER_PASSWORD` in `prisma/seed.ts` (`.env`, gitignored)
+  - Deferred: `toggleCollectionFavorite` ownership check + TOCTOU (await NextAuth), `getSidebarCollections` over-fetch (await `defaultTypeId` migration)
+  - Also on this branch: repaired the build toolchain — moved off broken `next@16.3.0-preview.0` to `16.2.9` (see `@context/change-log/fix-next-swc-binary.md`)
+  - See `@context/change-log/code-quality-quick-wins.md` for details
