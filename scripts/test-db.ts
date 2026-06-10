@@ -11,7 +11,12 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set. Check your .env file.");
 }
 
-const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaNeon({
+  connectionString: process.env.DATABASE_URL,
+  max: parseInt(process.env.PRISMA_CONNECTION_LIMIT ?? "10", 10),
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5_000,
+});
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
