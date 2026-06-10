@@ -57,3 +57,22 @@ Review AI-generated code periodically, especially for:
 - Performance (unnecessary re-renders, N+1 queries)
 - Logic errors (edge cases)
 - Patterns (matches existing codebase?)
+
+### Self-review checklist
+
+Before handing off a change, scan it for the issues our code-scans repeatedly catch:
+
+- **Bounded queries** — every `findMany` has a `take`; no unbounded fetches
+- **Env guards** — required env vars validated at module load and fail loud
+- **Ownership** — every Server Action reads the session and scopes queries to the user; no client-trusted `userId`
+- **No secrets in source** — passwords/keys come from gitignored env, never literals or weak fallbacks
+- **DRY** — no duplicated constants/maps; shared data resolved once, not re-fetched per component
+- **Defensive rendering** — empty states, input guards, no blank screens
+
+### Deferred findings
+
+When a real finding is intentionally not fixed (waiting on auth, a migration, etc.),
+record it explicitly with the reason — in the change-log under a "Deferred" heading
+and/or `.claude/agent-memory/code-scanner/recurring-issues.md` — rather than silently
+skipping it. Prefer fixing latent issues (unbounded queries, missing guards) before
+they become bugs, not after.
