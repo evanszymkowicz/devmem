@@ -16,3 +16,11 @@ Read the following to get the full context of the project:
 - **Build**: `npm run build`
 - **Production server**: `npm run start`
 - **Lint**: `npm run lint`
+
+## Neon MCP
+
+- Project ID: `restless-shadow-08297876` (devmemory)
+- Default branch: `br-blue-brook-ap2h1idn` (development)
+- Always use the development branch for all Neon MCP operations unless the user explicitly says "production"
+- Never query or modify the production branch (`br-gentle-wind-apchbsdu`) without explicit user confirmation
+- Never run destructive SQL (DROP, DELETE, TRUNCATE, UPDATE without WHERE) without explicit user confirmation
