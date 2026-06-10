@@ -5,16 +5,9 @@ import { useState } from "react";
 import {
   ChevronDown,
   Code,
-  File as FileIcon,
-  Image as ImageIcon,
-  Link as LinkIcon,
   PanelLeftClose,
   Settings,
-  Sparkles,
   Star,
-  StickyNote,
-  Terminal,
-  type LucideIcon,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -23,18 +16,7 @@ import { Button } from "@/components/ui/button";
 import { toggleCollectionFavorite } from "@/actions/collections";
 import type { SidebarCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
-
-// Icon names are stored as strings in the DB; Code is the fallback for any
-// unrecognised name (e.g. a future custom type with a missing icon).
-const ICON_MAP: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File: FileIcon,
-  Image: ImageIcon,
-  Link: LinkIcon,
-};
+import { ICON_MAP } from "@/lib/icon-map";
 
 interface SidebarProps {
   onClose: () => void;
@@ -245,6 +227,7 @@ function SubHeader({ label }: { label: string }) {
 function Avatar({ name }: { name: string }) {
   const initials = name
     .split(" ")
+    .filter(Boolean)
     .map((n) => n[0])
     .slice(0, 2)
     .join("")

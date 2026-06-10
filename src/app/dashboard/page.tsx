@@ -16,11 +16,12 @@ async function getDemoUser() {
 
 export default async function DashboardPage() {
   const user = await getDemoUser();
+  const userId = user?.id ?? null;
 
-  const [itemTypes, collections] = user
+  const [itemTypes, collections] = userId
     ? await Promise.all([
-        getSystemItemTypes(user.id),
-        getSidebarCollections(user.id),
+        getSystemItemTypes(userId),
+        getSidebarCollections(userId),
       ])
     : [[], []];
 
@@ -40,10 +41,10 @@ export default async function DashboardPage() {
         </header>
 
         <div className="flex flex-col gap-8">
-          <StatsCards />
-          <RecentCollections />
-          <PinnedItems />
-          <RecentItems />
+          <StatsCards userId={userId} />
+          <RecentCollections userId={userId} />
+          <PinnedItems userId={userId} />
+          <RecentItems userId={userId} />
         </div>
       </div>
     </DashboardShell>

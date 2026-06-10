@@ -1,0 +1,2 @@
+- [Project Conventions & False-Positive Traps](project-conventions.md) — confirmed conventions (demo user, Prisma 7/Neon setup, no tailwind config, .env gitignored) and what never to re-flag
+- [Recurring Issues & Hotspots](recurring-issues.md) — real patterns found in audits: missing auth guards in actions, ICON_MAP duplication, getDemoUserId duplication, unbounded queries

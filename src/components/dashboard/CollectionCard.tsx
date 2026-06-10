@@ -3,15 +3,8 @@
 import Link from "next/link";
 import {
   Code,
-  File as FileIcon,
-  Image as ImageIcon,
-  Link as LinkIcon,
   MoreHorizontal,
-  Sparkles,
   Star,
-  StickyNote,
-  Terminal,
-  type LucideIcon,
 } from "lucide-react";
 
 import {
@@ -24,16 +17,7 @@ import {
 import type { CollectionWithTypes } from "@/lib/db/collections";
 import { toggleCollectionFavorite } from "@/actions/collections";
 import { cn } from "@/lib/utils";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File: FileIcon,
-  Image: ImageIcon,
-  Link: LinkIcon,
-};
+import { ICON_MAP } from "@/lib/icon-map";
 
 interface CollectionCardProps {
   collection: CollectionWithTypes;

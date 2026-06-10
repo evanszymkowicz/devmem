@@ -1,4 +1,4 @@
-import { Folder, Package, Star, StarOff } from "lucide-react";
+import { Folder, Package, Star } from "lucide-react";
 
 import {
   Card,
@@ -7,18 +7,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getDashboardStats } from "@/lib/db/collections";
-import { prisma } from "@/lib/prisma";
 
-async function getDemoUserId(): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { email: "demo@devmemory.io" },
-    select: { id: true },
-  });
-  return user?.id ?? null;
+interface StatsCardsProps {
+  userId: string | null;
 }
 
-export async function StatsCards() {
-  const userId = await getDemoUserId();
+export async function StatsCards({ userId }: StatsCardsProps) {
   const stats = userId
     ? await getDashboardStats(userId)
     : { totalItems: 0, totalCollections: 0, favoriteItems: 0, favoriteCollections: 0 };
@@ -27,7 +21,7 @@ export async function StatsCards() {
     { label: "Items", value: stats.totalItems, Icon: Package },
     { label: "Collections", value: stats.totalCollections, Icon: Folder },
     { label: "Favorite Items", value: stats.favoriteItems, Icon: Star },
-    { label: "Favorite Collections", value: stats.favoriteCollections, Icon: StarOff },
+    { label: "Favorite Collections", value: stats.favoriteCollections, Icon: Star },
   ];
 
   return (

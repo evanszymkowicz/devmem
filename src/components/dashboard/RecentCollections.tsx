@@ -2,18 +2,12 @@ import Link from "next/link";
 
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { getDashboardCollections } from "@/lib/db/collections";
-import { prisma } from "@/lib/prisma";
 
-async function getDemoUserId(): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { email: "demo@devmemory.io" },
-    select: { id: true },
-  });
-  return user?.id ?? null;
+interface RecentCollectionsProps {
+  userId: string | null;
 }
 
-export async function RecentCollections() {
-  const userId = await getDemoUserId();
+export async function RecentCollections({ userId }: RecentCollectionsProps) {
   const collections = userId ? await getDashboardCollections(userId) : [];
 
   return (

@@ -9,7 +9,7 @@ const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 const DEMO_EMAIL = "demo@devmemory.io";
-const DEMO_PASSWORD = "12345678";
+const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD ?? "12345678";
 
 const systemItemTypes = [
   { name: "Snippets", slug: "snippets", icon: "Code", color: "#3b82f6", isSystem: true },

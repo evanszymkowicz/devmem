@@ -1,10 +1,8 @@
 # Current Feature
 
-## [Feature Name]
+## (none)
 
-Document the next feature here, then follow the workflow in
-`@context/ai-interaction.md` (Document → Branch → Implement → Test → Iterate →
-Commit → Merge → Delete Branch → Review → log to History).
+No feature in progress. Document the next feature here before starting.
 
 ## Status
 
@@ -85,3 +83,15 @@ Not started
   - `variant="outline"` styling — small, subtle, non-disruptive
   - `npm run build` passes clean; TypeScript no errors
   - See `@context/change-log/add-pro-badge-sidebar.md` for details
+- Code Quality Quick Wins completed
+  - Low-risk cleanup from the `code-scanner` audit; no new features, no auth changes
+  - `DATABASE_URL` startup guard in `src/lib/prisma.ts` (throws if unset)
+  - `StarOff` → `Star` icon on the Favorite Collections stat card
+  - `Avatar` initials guarded with `.filter(Boolean)` against empty name segments
+  - Shared `ICON_MAP` extracted to `src/lib/icon-map.ts` (used by `CollectionCard`, `ItemRow`, `Sidebar`)
+  - Demo user resolved once in the dashboard page; `userId` passed as a prop to 4 components, eliminating duplicate per-render DB round-trips
+  - `getPinnedItems` bounded with `take: 20` (`MAX_PINNED_DISPLAY`)
+  - Demo password moved to `process.env.DEMO_USER_PASSWORD` in `prisma/seed.ts` (`.env`, gitignored)
+  - Deferred: `toggleCollectionFavorite` ownership check + TOCTOU (await NextAuth), `getSidebarCollections` over-fetch (await `defaultTypeId` migration)
+  - Also on this branch: repaired the build toolchain — moved off broken `next@16.3.0-preview.0` to `16.2.9` (see `@context/change-log/fix-next-swc-binary.md`)
+  - See `@context/change-log/code-quality-quick-wins.md` for details
