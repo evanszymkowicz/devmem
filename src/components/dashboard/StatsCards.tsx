@@ -1,4 +1,4 @@
-import { Folder, Package, Star } from "lucide-react";
+import { Folder, FolderHeart, Package, Star } from "lucide-react";
 
 import {
   Card,
@@ -21,7 +21,7 @@ export async function StatsCards({ userId }: StatsCardsProps) {
     { label: "Items", value: stats.totalItems, Icon: Package },
     { label: "Collections", value: stats.totalCollections, Icon: Folder },
     { label: "Favorite Items", value: stats.favoriteItems, Icon: Star },
-    { label: "Favorite Collections", value: stats.favoriteCollections, Icon: Star },
+    { label: "Favorite Collections", value: stats.favoriteCollections, Icon: FolderHeart },
   ];
 
   return (

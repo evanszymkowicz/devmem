@@ -27,15 +27,20 @@ export function CollectionCard({ collection }: CollectionCardProps) {
   const accent = collection.itemTypes[0]?.color ?? "#6b7280";
 
   return (
-    <Link
-      href={`/collections/${collection.id}`}
-      className="group block focus:outline-none"
-    >
+    <div className="group relative focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 rounded-lg">
+      {/* Full-area navigation link — sits below the action buttons */}
+      <Link
+        href={`/collections/${collection.id}`}
+        className="absolute inset-0 z-0 rounded-lg"
+        aria-label={`Open ${collection.name}`}
+        tabIndex={0}
+      />
+
       <Card
         size="sm"
         className={cn(
-          "relative h-full gap-3 border-l-4 transition-colors",
-          "hover:bg-accent/40",
+          "relative h-full gap-3 border-l-4 transition-colors pointer-events-none",
+          "group-hover:bg-accent/40",
         )}
         style={{ borderLeftColor: accent }}
       >
@@ -44,15 +49,11 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             <CardTitle className="truncate">
               <span className="truncate">{collection.name}</span>
             </CardTitle>
-            <div className="flex shrink-0 items-center gap-0.5">
+            <div className="relative z-10 flex shrink-0 items-center gap-0.5 pointer-events-auto">
               <button
                 type="button"
                 aria-label={collection.isFavorite ? "Remove from favorites" : "Add to favorites"}
-                onClick={(e) => {
-                  // Card is wrapped in a <Link>; prevent navigation on star click.
-                  e.preventDefault();
-                  toggleCollectionFavorite(collection.id);
-                }}
+                onClick={() => toggleCollectionFavorite(collection.id)}
                 className={cn(
                   "-mt-1 rounded-md p-1 transition-opacity hover:bg-accent",
                   collection.isFavorite
@@ -72,7 +73,6 @@ export function CollectionCard({ collection }: CollectionCardProps) {
               <button
                 type="button"
                 aria-label="Collection actions"
-                onClick={(e) => e.preventDefault()}
                 className="-mr-1 -mt-1 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus:opacity-100"
               >
                 <MoreHorizontal className="size-4" />
@@ -102,6 +102,6 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   );
 }

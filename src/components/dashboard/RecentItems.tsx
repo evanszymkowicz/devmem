@@ -10,6 +10,8 @@ interface RecentItemsProps {
 export async function RecentItems({ userId }: RecentItemsProps) {
   const recent = userId ? await getRecentItems(userId) : [];
 
+  if (recent.length === 0) return null;
+
   return (
     <section>
       <div className="mb-4 flex items-center gap-2">
