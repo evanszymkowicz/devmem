@@ -19,10 +19,13 @@ export interface SidebarItemType {
   count: number;
 }
 
+const MAX_PINNED_DISPLAY = 20;
+
 export async function getPinnedItems(userId: string): Promise<ItemWithType[]> {
   return prisma.item.findMany({
     where: { userId, isPinned: true },
     orderBy: { updatedAt: "desc" },
+    take: MAX_PINNED_DISPLAY,
     include: itemWithTypeInclude,
   });
 }

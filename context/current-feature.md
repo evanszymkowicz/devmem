@@ -1,22 +1,33 @@
 # Current Feature
 
-## [Feature Name]
+## Code Quality Quick Wins
 
-Document the next feature here, then follow the workflow in
-`@context/ai-interaction.md` (Document → Branch → Implement → Test → Iterate →
-Commit → Merge → Delete Branch → Review → log to History).
+Low-risk cleanup items surfaced by a full codebase audit. No new features, no
+auth changes — purely internal correctness and maintainability fixes.
 
 ## Status
 
-Not started
+In progress
 
 ## Goals
 
--
+- Guard `DATABASE_URL` at startup so a missing env var fails loudly
+- Fix `StarOff` → `Star` icon on the "Favorite Collections" stat card
+- Guard `Avatar` initials derivation against empty name segments
+- Extract shared `ICON_MAP` to `src/lib/icon-map.ts` (used in 3 components)
+- Extract `getDemoUserId` to a shared utility; resolve once in the dashboard page
+  and pass `userId` as a prop to eliminate 4 duplicate DB round-trips per render
+- Add `take: 20` limit to `getPinnedItems` to prevent unbounded query results
+- Move `DEMO_PASSWORD` in `prisma/seed.ts` to `.env` (keep out of source control)
 
 ## Notes
 
--
+- Auth-related fixes (ownership check in `toggleCollectionFavorite`) are deferred
+  until NextAuth is wired in (roadmap step 3)
+- The TOCTOU race in `toggleCollectionFavorite` is also deferred — low impact
+  until concurrent users exist
+- `getSidebarCollections` over-fetch is deferred — depends on `defaultTypeId`
+  being populated, which is a schema/migration task
 
 ## References
 
