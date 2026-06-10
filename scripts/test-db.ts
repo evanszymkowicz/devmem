@@ -7,13 +7,14 @@ import "dotenv/config";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "../src/generated/prisma/client";
 
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set. Check your .env file.");
+}
+
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set. Check your .env file.");
-  }
 
   console.log("Testing database connection...\n");
 

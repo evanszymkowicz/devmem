@@ -82,12 +82,15 @@ export interface SidebarCollection {
   dominantColor: string;
 }
 
+const MAX_SIDEBAR_COLLECTIONS = 50;
+
 export async function getSidebarCollections(
   userId: string,
 ): Promise<SidebarCollection[]> {
   const collections = await prisma.collection.findMany({
     where: { userId },
     orderBy: [{ isFavorite: "desc" }, { createdAt: "desc" }],
+    take: MAX_SIDEBAR_COLLECTIONS,
     include: {
       items: {
         include: {
