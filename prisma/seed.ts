@@ -5,11 +5,24 @@ import bcrypt from "bcryptjs";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient, ContentType } from "../src/generated/prisma/client";
 
-const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set. Check your .env file.");
+}
+
+const adapter = new PrismaNeon({
+  connectionString: process.env.DATABASE_URL,
+  max: parseInt(process.env.PRISMA_CONNECTION_LIMIT ?? "10", 10),
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5_000,
+});
 const prisma = new PrismaClient({ adapter });
 
 const DEMO_EMAIL = "demo@devmemory.io";
-const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD ?? "12345678";
+const DEMO_PASSWORD =
+  process.env.DEMO_USER_PASSWORD ??
+  (process.env.NODE_ENV === "production"
+    ? (() => { throw new Error("DEMO_USER_PASSWORD must be set in production"); })()
+    : "12345678");
 
 const systemItemTypes = [
   { name: "Snippets", slug: "snippets", icon: "Code", color: "#3b82f6", isSystem: true },
@@ -315,7 +328,7 @@ async function seedSystemItemTypes() {
 async function seedDemoUser() {
   console.log("Seeding demo user...");
 
-  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
+  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 14);
 
   return prisma.user.upsert({
     where: { email: DEMO_EMAIL },

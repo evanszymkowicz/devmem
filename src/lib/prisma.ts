@@ -6,7 +6,12 @@ import { PrismaClient } from "@/generated/prisma/client";
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error("DATABASE_URL is not set");
 
-const adapter = new PrismaNeon({ connectionString });
+const adapter = new PrismaNeon({
+  connectionString,
+  max: parseInt(process.env.PRISMA_CONNECTION_LIMIT ?? "10", 10),
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5_000,
+});
 
 // Reuse a single PrismaClient across hot reloads in development to avoid
 // exhausting database connections.
