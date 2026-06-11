@@ -95,3 +95,14 @@ Not started
   - Deferred: `toggleCollectionFavorite` ownership check + TOCTOU (await NextAuth), `getSidebarCollections` over-fetch (await `defaultTypeId` migration)
   - Also on this branch: repaired the build toolchain — moved off broken `next@16.3.0-preview.0` to `16.2.9` (see `@context/change-log/fix-next-swc-binary.md`)
   - See `@context/change-log/code-quality-quick-wins.md` for details
+- Auth Phase 1 (NextAuth v5 + GitHub) completed (first of 3 auth phases; no PR until all three done)
+  - Installed `next-auth@5.0.0-beta.31` (the `@beta` tag, not v4) and `@auth/prisma-adapter@2.11.2`
+  - Split config for edge compat: `src/auth.config.ts` (GitHub provider only, no adapter) + `src/auth.ts` (full config)
+  - `src/auth.ts` wires `PrismaAdapter` to the existing shared `@/lib/prisma` client, forces `session: { strategy: "jwt" }`, and adds `jwt`/`session` callbacks exposing `user.id`
+  - `src/app/api/auth/[...nextauth]/route.ts` re-exports `GET`/`POST` from `handlers`
+  - `src/proxy.ts` — named `export const proxy = auth(...)` lazily initialized from `auth.config.ts`; protects `/dashboard/*`, redirects unauthenticated users to NextAuth's default `/api/auth/signin` with a `callbackUrl`; no custom `pages.signIn`
+  - `src/types/next-auth.d.ts` extends `Session.user.id` and the JWT
+  - Verified newest Auth.js v5 conventions via Context7 before writing
+  - `npm run build` and `npm run lint` pass clean; route table shows `/api/auth/[...nextauth]` + active Proxy (Middleware)
+  - Deferred: browser OAuth round-trip (needs live GitHub consent flow, can't drive headlessly)
+  - See `@context/change-log/auth-phase-1.md` for details
