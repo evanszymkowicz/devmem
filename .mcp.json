@@ -4,13 +4,6 @@
       "type": "http",
       "url": "https://mcp.neon.tech/mcp"
     },
-    "context7": {
-      "type": "http",
-      "url": "https://mcp.context7.com/mcp",
-      "headers": {
-        "CONTEXT7_API_KEY": "ctx7sk-67bbf6a4-46ea-4bf3-aab9-3c639258fe16"
-      }
-    },
     "playwright": {
       "type": "stdio",
       "command": "npx",
@@ -18,6 +11,13 @@
         "@playwright/mcp@latest"
       ],
       "env": {}
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      }
     }
   }
 }
