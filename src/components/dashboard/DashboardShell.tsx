@@ -19,7 +19,7 @@ interface DashboardShellProps {
   children: React.ReactNode;
   itemTypes: SidebarItemType[];
   collections: SidebarCollection[];
-  user: { name: string; email: string };
+  user: { name: string; email: string; image?: string | null };
 }
 
 // Sidebar data is fetched in the server page and passed as props because this

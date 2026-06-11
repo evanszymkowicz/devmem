@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { signOut } from "next-auth/react";
 import {
   ChevronDown,
   Code,
+  LogOut,
   PanelLeftClose,
-  Settings,
   Star,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { toggleCollectionFavorite } from "@/actions/collections";
 import type { SidebarCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
@@ -22,7 +24,7 @@ interface SidebarProps {
   onClose: () => void;
   itemTypes: SidebarItemType[];
   collections: SidebarCollection[];
-  user: { name: string; email: string };
+  user: { name: string; email: string; image?: string | null };
 }
 
 export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps) {
@@ -173,18 +175,84 @@ export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps)
 
       {/* User area */}
       <div className="shrink-0 border-t border-sidebar-border p-3">
-        <div className="flex items-center gap-2.5 rounded-md px-2 py-1.5">
-          <Avatar name={user.name} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{user.name}</p>
+        <UserMenu user={user} />
+      </div>
+    </div>
+  );
+}
+
+function UserMenu({
+  user,
+}: {
+  user: { name: string; email: string; image?: string | null };
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close the menu on outside click or Escape.
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      {open && (
+        // Dropdown opens upward, anchored to the bottom user row.
+        <div className="absolute bottom-full left-0 right-0 mb-2 overflow-hidden rounded-md border border-sidebar-border bg-popover p-1 shadow-md">
+          <button
+            type="button"
+            onClick={() => signOut({ redirectTo: "/sign-in" })}
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <LogOut className="size-4" />
+            Sign out
+          </button>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2.5 rounded-md px-2 py-1.5">
+        {/* Avatar/icon navigates to the profile page. */}
+        <Link
+          href="/profile"
+          aria-label="View profile"
+          className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <UserAvatar name={user.name} image={user.image} />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{user.name}</p>
+          {user.email && (
             <p className="truncate text-xs text-muted-foreground">
               {user.email}
             </p>
-          </div>
-          <Button variant="ghost" size="icon-sm" aria-label="Settings">
-            <Settings className="size-4" />
-          </Button>
+          )}
         </div>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Account menu"
+          aria-haspopup="menu"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <ChevronDown
+            className={cn("size-4 transition-transform", open && "rotate-180")}
+          />
+        </Button>
       </div>
     </div>
   );
@@ -221,20 +289,5 @@ function SubHeader({ label }: { label: string }) {
     <p className="mt-3 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
       {label}
     </p>
-  );
-}
-
-function Avatar({ name }: { name: string }) {
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-  return (
-    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-xs font-medium text-sidebar-accent-foreground">
-      {initials}
-    </div>
   );
 }

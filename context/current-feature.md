@@ -1,11 +1,12 @@
 # Current Feature
 
-## Auth Phase 2 — Credentials (Email/Password) Provider + Registration
+## Auth Phase 3 — Auth UI: Sign In, Register & Sign Out
 
-Add a Credentials provider for email/password authentication alongside the existing
-GitHub OAuth, plus a registration API route. Second of the three auth phases
-(Phase 1 = NextAuth v5 + GitHub, already in History). Source spec:
-`@context/features/auth-phase-2-spec.md`.
+Replace the NextAuth default pages with custom UI: a `/sign-in` page and a
+`/register` page, plus a sidebar user area with avatar, name, and a sign-out
+dropdown. Third and final auth phase (Phase 1 = NextAuth v5 + GitHub, Phase 2 =
+Credentials provider + registration API, both in History). Source spec:
+`@context/features/auth-phase-3-spec.md`.
 
 ## Status
 
@@ -13,30 +14,49 @@ In Progress
 
 ## Goals
 
-- Add a Credentials provider following the existing split-config pattern:
-  - `auth.config.ts`: Credentials provider with an `authorize: () => null` placeholder (edge-safe, no bcrypt/Prisma)
-  - `auth.ts`: override the Credentials provider with real bcryptjs validation against the DB
-- `User.password` already exists in the schema — only add a migration if it's actually missing
-- Create `POST /api/auth/register`:
-  - Accept `name`, `email`, `password`, `confirmPassword`
-  - Validate passwords match (Zod), check the user doesn't already exist
-  - Hash password with bcryptjs, create the user, return `{ success, data, error }`
-- GitHub OAuth and `/dashboard` protection from Phase 1 keep working
+- **Sign In page (`/sign-in`)**:
+  - Email and password input fields
+  - "Sign in with GitHub" button
+  - Link to the register page
+  - Form validation and error display
+- **Register page (`/register`)**:
+  - Name, email, password, confirm password fields
+  - Form validation (passwords match, email format)
+  - Submit to `POST /api/auth/register` (from Phase 2)
+  - Redirect to sign-in on success
+- **Bottom of sidebar**:
+  - Display user avatar — GitHub `image` if present, otherwise initials fallback
+  - Display user name
+  - Dropdown (up) on avatar click with a "Sign out" link
+  - Clicking the avatar/icon navigates to `/profile`
 
 ## Notes
 
-- Use `bcryptjs` (already installed). Per coding standards, bcrypt cost factor ≥ 14
-  (the seed uses 12 for the demo user — confirm the registration target with the user).
-- Credentials sign-in requires `session.strategy = "jwt"` (already set in `auth.ts`).
-- Validate inputs with Zod; scope/return the standard `{ success, data, error }` action shape.
-- Testing (per spec): register via curl, then `/api/auth/signin` → sign in with
-  email/password → expect redirect to `/dashboard`; verify GitHub OAuth still works.
-- No PR until all three auth phases are done (per Phase 1 note).
+- **Avatar logic**: if the user has `image` (from GitHub), use it; otherwise generate
+  initials from the name (e.g. "Brad Traversy" → "BT").
+- Create a **reusable avatar component** that handles both the image and initials cases.
+- Point the proxy/NextAuth config at the custom `/sign-in` page (replace the default
+  `/api/auth/signin` redirect from Phase 1).
+- Follow existing patterns: `"use client"` only on interactive leaves, Zod for input
+  validation, shadcn/ui components, dark-mode-first styling.
+
+## Testing
+
+Per spec:
+
+1. Go to `/sign-in` — verify the custom page renders
+2. Sign in with GitHub — verify the flow works
+3. Sign in with email/password — verify the flow works
+4. Verify the avatar shows in the sidebar (GitHub image or initials)
+5. Click the avatar — verify the dropdown appears
+6. Click "Sign out" — verify logout and redirect
+7. Go to `/register`, create a new account — verify redirect to sign-in
+
+No PR until all three auth phases are done (per Phase 1 note); this is the last one.
 
 ## References
 
-- Source spec: `@context/features/auth-phase-2-spec.md`
-- Credentials provider docs: https://authjs.dev/getting-started/authentication/credentials
+- Source spec: `@context/features/auth-phase-3-spec.md`
 - Coding standards: `@context/coding-standards.md`
 - AI interaction & workflow: `@context/ai-interaction.md`
 

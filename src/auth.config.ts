@@ -11,6 +11,12 @@ import type { NextAuthConfig } from "next-auth";
 // runtime) while the real bcrypt + Prisma validation is supplied in `auth.ts`,
 // which can't run on the edge.
 export default {
+  // Route unauthenticated users to our custom sign-in UI instead of the default
+  // NextAuth-rendered page. Defined here so both the edge proxy instance and the
+  // full Node instance (auth.ts spreads this config) agree on the path.
+  pages: {
+    signIn: "/sign-in",
+  },
   providers: [
     GitHub,
     Credentials({

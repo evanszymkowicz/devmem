@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import { getSidebarCollections } from "@/lib/db/collections";
 import { getSystemItemTypes } from "@/lib/db/items";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -7,16 +7,11 @@ import { RecentCollections } from "@/components/dashboard/RecentCollections";
 import { RecentItems } from "@/components/dashboard/RecentItems";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 
-async function getDemoUser() {
-  return prisma.user.findUnique({
-    where: { email: "demo@devmemory.io" },
-    select: { id: true, name: true, email: true },
-  });
-}
-
 export default async function DashboardPage() {
-  const user = await getDemoUser();
-  const userId = user?.id ?? null;
+  // The proxy guards /dashboard, so a session is expected here; fall back to null
+  // defensively rather than assuming it.
+  const session = await auth();
+  const userId = session?.user?.id ?? null;
 
   const [itemTypes, collections] = userId
     ? await Promise.all([
@@ -26,8 +21,9 @@ export default async function DashboardPage() {
     : [[], []];
 
   const sidebarUser = {
-    name: user?.name ?? "Demo User",
-    email: user?.email ?? "demo@devmemory.io",
+    name: session?.user?.name ?? "User",
+    email: session?.user?.email ?? "",
+    image: session?.user?.image ?? null,
   };
 
   return (
