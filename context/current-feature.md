@@ -1,23 +1,42 @@
 # Current Feature
 
-## (none)
+## Auth Phase 2 — Credentials (Email/Password) Provider + Registration
 
-No feature in progress. Document the next feature here before starting.
+Add a Credentials provider for email/password authentication alongside the existing
+GitHub OAuth, plus a registration API route. Second of the three auth phases
+(Phase 1 = NextAuth v5 + GitHub, already in History). Source spec:
+`@context/features/auth-phase-2-spec.md`.
 
 ## Status
 
-Not started
+In Progress
 
 ## Goals
 
--
+- Add a Credentials provider following the existing split-config pattern:
+  - `auth.config.ts`: Credentials provider with an `authorize: () => null` placeholder (edge-safe, no bcrypt/Prisma)
+  - `auth.ts`: override the Credentials provider with real bcryptjs validation against the DB
+- `User.password` already exists in the schema — only add a migration if it's actually missing
+- Create `POST /api/auth/register`:
+  - Accept `name`, `email`, `password`, `confirmPassword`
+  - Validate passwords match (Zod), check the user doesn't already exist
+  - Hash password with bcryptjs, create the user, return `{ success, data, error }`
+- GitHub OAuth and `/dashboard` protection from Phase 1 keep working
 
 ## Notes
 
--
+- Use `bcryptjs` (already installed). Per coding standards, bcrypt cost factor ≥ 14
+  (the seed uses 12 for the demo user — confirm the registration target with the user).
+- Credentials sign-in requires `session.strategy = "jwt"` (already set in `auth.ts`).
+- Validate inputs with Zod; scope/return the standard `{ success, data, error }` action shape.
+- Testing (per spec): register via curl, then `/api/auth/signin` → sign in with
+  email/password → expect redirect to `/dashboard`; verify GitHub OAuth still works.
+- No PR until all three auth phases are done (per Phase 1 note).
 
 ## References
 
+- Source spec: `@context/features/auth-phase-2-spec.md`
+- Credentials provider docs: https://authjs.dev/getting-started/authentication/credentials
 - Coding standards: `@context/coding-standards.md`
 - AI interaction & workflow: `@context/ai-interaction.md`
 
