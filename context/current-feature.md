@@ -1,64 +1,16 @@
 # Current Feature
 
-## Auth Phase 3 — Auth UI: Sign In, Register & Sign Out
-
-Replace the NextAuth default pages with custom UI: a `/sign-in` page and a
-`/register` page, plus a sidebar user area with avatar, name, and a sign-out
-dropdown. Third and final auth phase (Phase 1 = NextAuth v5 + GitHub, Phase 2 =
-Credentials provider + registration API, both in History). Source spec:
-`@context/features/auth-phase-3-spec.md`.
-
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- **Sign In page (`/sign-in`)**:
-  - Email and password input fields
-  - "Sign in with GitHub" button
-  - Link to the register page
-  - Form validation and error display
-- **Register page (`/register`)**:
-  - Name, email, password, confirm password fields
-  - Form validation (passwords match, email format)
-  - Submit to `POST /api/auth/register` (from Phase 2)
-  - Redirect to sign-in on success
-- **Bottom of sidebar**:
-  - Display user avatar — GitHub `image` if present, otherwise initials fallback
-  - Display user name
-  - Dropdown (up) on avatar click with a "Sign out" link
-  - Clicking the avatar/icon navigates to `/profile`
+<!-- Run /feature load to populate this with the next feature's goals. -->
 
 ## Notes
 
-- **Avatar logic**: if the user has `image` (from GitHub), use it; otherwise generate
-  initials from the name (e.g. "Brad Traversy" → "BT").
-- Create a **reusable avatar component** that handles both the image and initials cases.
-- Point the proxy/NextAuth config at the custom `/sign-in` page (replace the default
-  `/api/auth/signin` redirect from Phase 1).
-- Follow existing patterns: `"use client"` only on interactive leaves, Zod for input
-  validation, shadcn/ui components, dark-mode-first styling.
-
-## Testing
-
-Per spec:
-
-1. Go to `/sign-in` — verify the custom page renders
-2. Sign in with GitHub — verify the flow works
-3. Sign in with email/password — verify the flow works
-4. Verify the avatar shows in the sidebar (GitHub image or initials)
-5. Click the avatar — verify the dropdown appears
-6. Click "Sign out" — verify logout and redirect
-7. Go to `/register`, create a new account — verify redirect to sign-in
-
-No PR until all three auth phases are done (per Phase 1 note); this is the last one.
-
-## References
-
-- Source spec: `@context/features/auth-phase-3-spec.md`
-- Coding standards: `@context/coding-standards.md`
-- AI interaction & workflow: `@context/ai-interaction.md`
+<!-- Spec details, constraints, and context for the next feature go here. -->
 
 ## History
 
@@ -145,3 +97,19 @@ No PR until all three auth phases are done (per Phase 1 note); this is the last 
   - `npm run build` and `npm run lint` pass clean; route table shows `/api/auth/[...nextauth]` + active Proxy (Middleware)
   - Deferred: browser OAuth round-trip (needs live GitHub consent flow, can't drive headlessly)
   - See `@context/change-log/auth-phase-1.md` for details
+- Auth Phase 2 (Credentials provider + registration API) completed (second of 3 auth phases; no PR until all three done)
+  - Added a Credentials provider via the split-config pattern: `auth.config.ts` keeps an edge-safe `authorize: () => null` placeholder; `auth.ts` supplies real `bcryptjs` + Prisma validation (lowercased-email lookup, rejects OAuth-only accounts with no password, returns `id/email/name/image`)
+  - `POST /api/auth/register`: validates `name/email/password/confirmPassword` with Zod, hashes with bcryptjs, creates the user, returns `{ success, data, error }`; maps Prisma P2002 to a 409 "email already exists"
+  - Shared Zod schemas in `src/lib/validations/auth.ts` (`signInSchema`, `registerSchema` with passwords-match refine, 72-byte bcrypt cap); password helpers in `src/lib/auth/password.ts`
+  - `User.password` already existed in the schema — no migration needed
+  - `npm run build` and `npm run lint` pass clean
+- Auth Phase 3 (Auth UI: sign in, register, sign out) completed (third of 3 auth phases) — PR now covers all three
+  - Custom `/sign-in` + `/register` pages under an `(auth)` route group with a shared centered-card layout; replaced NextAuth's default pages
+  - `SignInForm` (client): email/password via `signIn("credentials", { redirect: false })` with inline error, GitHub via `signIn("github", { redirectTo })`, inline GitHub SVG (lucide dropped brand icons); `RegisterForm` (client): POSTs to `/api/auth/register`, mirrors server Zod rules for instant feedback, success toast then redirect to `/sign-in`
+  - `auth.config.ts` set `pages.signIn = "/sign-in"`; `proxy.ts` repointed the unauthenticated `/dashboard` redirect from `/api/auth/signin` → `/sign-in` (callbackUrl preserved)
+  - Reusable `UserAvatar` (image or initials fallback); sidebar `UserMenu` with avatar → `/profile`, upward dropdown with "Sign out", outside-click/Escape close; placeholder `/profile` page
+  - Dashboard/sidebar switched from the hardcoded demo user to the real session (`await auth()`); `userId` and avatar/name/email now come from `session.user` — `/dashboard` is now a dynamic route. Behavior change: new/OAuth users see an empty dashboard (seed data is owned by the demo user)
+  - Toasts: installed `sonner`, mounted `<Toaster theme="dark" richColors closeButton />` in the root layout; registration shows "Account created! You can now log in."
+  - Verified: `npm run build` + `npm run lint` clean; `/sign-in` `/register` `/profile` → 200, unauthed `/dashboard` → 302 to `/sign-in?callbackUrl=…`; live register → account created → redirect to `/sign-in`. Two throwaway test accounts deleted from the Neon dev branch afterward
+  - Deferred: live GitHub OAuth round-trip + email/password sign-in (need a real browser/consent flow); `/profile` is a placeholder. Per project workflow, the user handles commit/merge/push — no PR opened here
+  - See `@context/change-log/auth-phase-3.md` for details
