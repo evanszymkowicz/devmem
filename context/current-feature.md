@@ -130,3 +130,15 @@ Not Started
   - Decision: accounts are NOT auto-verified while off — the flag only skips the send + sign-in gate, not stamping `emailVerified`. Tradeoff: re-enabling the flag locks out accounts created during the off-window until they verify
   - Verified: `npm run build` + `npm run lint` clean. Disabled-path tested end-to-end — API register → `emailVerified` null + zero verification tokens in the Neon dev branch (no email) → browser sign-in as the unverified user reached `/dashboard`. Throwaway test account deleted from the dev branch. No unit tests (project has no test infra; workflow defers it)
   - See `@context/change-log/email-verification-toggle.md` for details
+- Forgot Password (Reset via Email Link) completed
+  - "Forgot password?" link added to `SignInForm` right-aligned next to the Password label; navigates to `/forgot-password`
+  - `/forgot-password` page + `ForgotPasswordForm` (client): posts to enumeration-safe `POST /api/auth/forgot-password`; only sends for real password-based accounts; OAuth-only accounts silently no-op; always returns same generic 200
+  - `POST /api/auth/reset-password`: consumes token (single-use, rejects invalid/expired with 400), hashes new password with bcrypt cost 14, stamps `emailVerified` for unverified users (proves inbox control)
+  - `/reset-password?token=` page + `ResetPasswordForm` (client): missing token shows invalid-link state with link back to `/forgot-password`; client-side passwords-match validation; success toast + redirect to `/sign-in`
+  - Reuses `VerificationToken` model — no migration. Reset tokens namespaced as `reset:<email>` in `identifier` to prevent clobbering email-verification tokens; cross-flow replay rejected in `consumeResetToken`
+  - Token stored as SHA-256 hash only (raw token lives in email link only); 24h TTL; single-use; prior reset tokens purged on re-request
+  - `ForgotPasswordForm` checks `res.ok && json.success` before setting sent state (avoids false confirmation on server error)
+  - `resetPasswordSchema` token constrained to 64-char lowercase hex (matches actual token format)
+  - Deferred: JWT session invalidation after reset (requires `sessionVersion` counter — tracked in `recurring-issues.md` as MUST FIX BEFORE LAUNCH); no rate limiting on forgot-password endpoint (v1)
+  - Verified: `npm run build` + `npm run lint` clean; browser-tested full flow end-to-end
+  - See `@context/change-log/forgot-password.md` for details

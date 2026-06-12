@@ -31,8 +31,29 @@ is correctly wired, but the hardcoded fallback `"12345678"` means a missing env
 var silently seeds a known-weak password. In production seeds the env var must be
 set; the fallback should either throw or be documented as dev-only.
 
+## Session invalidation gap after password reset ⚠️ MUST FIX BEFORE LAUNCH
+
+`src/app/api/auth/reset-password/route.ts` — password reset does not invalidate
+existing sessions. App uses `strategy: "jwt"` so DB session rows don't apply;
+revoking JWT sessions requires a per-user `sessionVersion` counter in the DB,
+incremented on password change and checked on every JWT decode in the `jwt`
+callback. Until then, an attacker who resets a user's password and then signs in
+with the new password is racing against the victim's still-valid JWT.
+
+**Fix:** Add a `sessionVersion Int @default(0)` column to the `User` model.
+Increment it in `reset-password/route.ts` after the password update. In
+`src/auth.ts` `jwt` callback, embed `sessionVersion` in the token; in the
+`session` callback, re-fetch the user and reject (return null) if the stored
+version doesn't match. This is the same pattern needed for any future
+"sign out all devices" feature.
+
+**Why:** Reported in forgot-password audit (2026-06-12). JWT strategy makes
+server-side revocation non-trivial; deferring until pre-launch security pass
+(roadmap step 14). **Must not ship to real users without this.**
+
 ## Previously resolved issues (do not re-flag)
 
+- ForgotPasswordForm swallows non-OK fetch responses — RESOLVED (2026-06-12); `res.ok && json.success` check added, matches `ResetPasswordForm` pattern
 - DATABASE_URL guard — RESOLVED in `src/lib/prisma.ts:6-7`
 - getDemoUserId duplication / extra DB round-trips — RESOLVED; dashboard/page.tsx
   resolves once and passes userId as prop to all child components
