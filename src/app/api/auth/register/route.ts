@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
+import { issueAndSendVerification } from "@/lib/auth/send-verification";
 import { registerSchema } from "@/lib/validations/auth";
 
 // POST /api/auth/register — create an email/password user.
@@ -41,6 +42,15 @@ export async function POST(request: Request) {
       data: { name, email: normalizedEmail, password: passwordHash },
       select: { id: true, name: true, email: true },
     });
+
+    // Send the verification email. A delivery failure shouldn't roll back the
+    // account — the user can request a fresh link via the resend flow — so we log
+    // and still return success.
+    try {
+      await issueAndSendVerification(normalizedEmail);
+    } catch (emailError) {
+      console.error("Failed to send verification email on register:", emailError);
+    }
 
     return NextResponse.json({ success: true, data: user }, { status: 201 });
   } catch (error) {

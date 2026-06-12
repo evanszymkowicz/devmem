@@ -113,3 +113,12 @@ Not Started
   - Verified: `npm run build` + `npm run lint` clean; `/sign-in` `/register` `/profile` → 200, unauthed `/dashboard` → 302 to `/sign-in?callbackUrl=…`; live register → account created → redirect to `/sign-in`. Two throwaway test accounts deleted from the Neon dev branch afterward
   - Deferred: live GitHub OAuth round-trip + email/password sign-in (need a real browser/consent flow); `/profile` is a placeholder. Per project workflow, the user handles commit/merge/push — no PR opened here
   - See `@context/change-log/auth-phase-3.md` for details
+- Email Verification on Register completed
+  - Email/password signups now get a Resend verification email with a 24h, single-use link; clicking it sets `User.emailVerified` and consumes the token. No migration — reused the existing `VerificationToken` model + `emailVerified` field
+  - Installed `resend`; `src/lib/email/` holds the Resend client (fail-loud `RESEND_API_KEY` guard, sender constant, base-URL helper) and the verification email sender (plain HTML template)
+  - `src/lib/auth/verification-token.ts`: raw 32-byte token, stored as **SHA-256 hash** only, 24h expiry, single-use; create clears prior tokens per email so a resend supersedes old links. Shared `issueAndSendVerification` helper in `src/lib/auth/send-verification.ts`
+  - `POST /api/auth/register` issues + sends after create (email failure logged, not rolled back — still 201). `GET /api/auth/verify-email` consumes the token, sets `emailVerified`, redirects to a result page with a `?status` flag. `POST /api/auth/resend-verification` is enumeration-safe (always generic 200)
+  - Dedicated `/verify-email` result page (success/expired/invalid/error) with inline resend form. Unverified sign-in blocked via `EmailUnverifiedError extends CredentialsSignin` (distinct `code`); `SignInForm` shows "verify your email" + a resend link. GitHub OAuth unaffected
+  - Verified: `npm run build` + `npm run lint` clean; curl register → 201 with hashed token + `emailVerified` null in the Neon dev branch; user confirmed the live email flow end-to-end (link verifies, sign-in blocked before and works after). Curl test account removed from the dev branch
+  - Deferred: hardcoded sender (`onboarding@resend.dev`) + base-URL fallback (`localhost:3000`) — move to env (verified domain / `AUTH_URL`) before real users (user declined adding env vars during the build)
+  - See `@context/change-log/email-verification-on-register.md` for details
