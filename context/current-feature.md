@@ -122,3 +122,11 @@ Not Started
   - Verified: `npm run build` + `npm run lint` clean; curl register → 201 with hashed token + `emailVerified` null in the Neon dev branch; user confirmed the live email flow end-to-end (link verifies, sign-in blocked before and works after). Curl test account removed from the dev branch
   - Deferred: hardcoded sender (`onboarding@resend.dev`) + base-URL fallback (`localhost:3000`) — move to env (verified domain / `AUTH_URL`) before real users (user declined adding env vars during the build)
   - See `@context/change-log/email-verification-on-register.md` for details
+- Email Verification Toggle completed
+  - Single feature flag to turn the whole email-verification system on/off, so it can be disabled while Resend has no verified domain (the dev sender only delivers to the account owner, otherwise blocking everyone else from registering). No migration, no schema change — a pure code/config gate
+  - New `src/lib/config/features.ts` exports `EMAIL_VERIFICATION_ENABLED = process.env.EMAIL_VERIFICATION_ENABLED !== "false"` — defaults **ON** (missing var fails safe in prod), plain `process.env` read so it stays edge-safe (pulled in via `src/auth.ts`)
+  - Three gates: register route skips the verification send when off (account still created, `emailVerified: null`); `auth.ts` sign-in gate now `EMAIL_VERIFICATION_ENABLED && !emailVerified` so unverified users can sign in when off; resend route skips lookup+send but keeps its identical enumeration-safe 200. GitHub OAuth unaffected
+  - Appended `EMAIL_VERIFICATION_ENABLED=false` to the existing `.env` (own line, nothing overwritten, no new files); `.env.production` left untouched since the default is ON
+  - Decision: accounts are NOT auto-verified while off — the flag only skips the send + sign-in gate, not stamping `emailVerified`. Tradeoff: re-enabling the flag locks out accounts created during the off-window until they verify
+  - Verified: `npm run build` + `npm run lint` clean. Disabled-path tested end-to-end — API register → `emailVerified` null + zero verification tokens in the Neon dev branch (no email) → browser sign-in as the unverified user reached `/dashboard`. Throwaway test account deleted from the dev branch. No unit tests (project has no test infra; workflow defers it)
+  - See `@context/change-log/email-verification-toggle.md` for details

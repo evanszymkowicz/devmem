@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { issueAndSendVerification } from "@/lib/auth/send-verification";
 import { registerSchema } from "@/lib/validations/auth";
+import { EMAIL_VERIFICATION_ENABLED } from "@/lib/config/features";
 
 // POST /api/auth/register — create an email/password user.
 // Returns the standard { success, data, error } shape with matching status codes.
@@ -43,13 +44,17 @@ export async function POST(request: Request) {
       select: { id: true, name: true, email: true },
     });
 
-    // Send the verification email. A delivery failure shouldn't roll back the
-    // account — the user can request a fresh link via the resend flow — so we log
-    // and still return success.
-    try {
-      await issueAndSendVerification(normalizedEmail);
-    } catch (emailError) {
-      console.error("Failed to send verification email on register:", emailError);
+    // Send the verification email when verification is enabled. A delivery failure
+    // shouldn't roll back the account — the user can request a fresh link via the
+    // resend flow — so we log and still return success. When verification is
+    // disabled, skip the send entirely (the user is created with emailVerified:
+    // null and the sign-in gate is likewise skipped).
+    if (EMAIL_VERIFICATION_ENABLED) {
+      try {
+        await issueAndSendVerification(normalizedEmail);
+      } catch (emailError) {
+        console.error("Failed to send verification email on register:", emailError);
+      }
     }
 
     return NextResponse.json({ success: true, data: user }, { status: 201 });

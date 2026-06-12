@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
 import { issueAndSendVerification } from "@/lib/auth/send-verification";
 import { resendVerificationSchema } from "@/lib/validations/auth";
+import { EMAIL_VERIFICATION_ENABLED } from "@/lib/config/features";
 
 // POST /api/auth/resend-verification — issue a fresh verification email for an
 // unverified account. Always responds generically (success shape, 200) so it
@@ -33,21 +34,26 @@ export async function POST(request: Request) {
 
   const email = parsed.email.toLowerCase();
 
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { password: true, emailVerified: true },
-    });
+  // When verification is disabled there's nothing to resend. Skip the lookup and
+  // send, but still fall through to the identical generic response below so the
+  // endpoint's behavior (and enumeration-safety) is unchanged from the client's view.
+  if (EMAIL_VERIFICATION_ENABLED) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: { password: true, emailVerified: true },
+      });
 
-    // Only send for a real, password-based, not-yet-verified account. We do this
-    // silently — the response below is identical regardless of the outcome so the
-    // endpoint never reveals whether an account exists or its verification state.
-    if (user?.password && !user.emailVerified) {
-      await issueAndSendVerification(email);
+      // Only send for a real, password-based, not-yet-verified account. We do this
+      // silently — the response below is identical regardless of the outcome so the
+      // endpoint never reveals whether an account exists or its verification state.
+      if (user?.password && !user.emailVerified) {
+        await issueAndSendVerification(email);
+      }
+    } catch (error) {
+      // Log internally but still respond generically (don't leak failures either).
+      console.error("Failed to resend verification email:", error);
     }
-  } catch (error) {
-    // Log internally but still respond generically (don't leak failures either).
-    console.error("Failed to resend verification email:", error);
   }
 
   return NextResponse.json({
