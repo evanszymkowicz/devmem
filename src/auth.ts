@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
+import { EmailUnverifiedError } from "@/lib/auth/errors";
 import { signInSchema } from "@/lib/validations/auth";
 import authConfig from "@/auth.config";
 
@@ -40,6 +41,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
           const isValid = await verifyPassword(password, user.password);
           if (!isValid) return null;
+
+          // Password is correct, but block sign-in until the email is verified.
+          // Throwing a distinct error lets the client show a "verify / resend"
+          // message instead of the generic invalid-credentials one. GitHub OAuth
+          // users are unaffected — they never hit this Credentials path.
+          if (!user.emailVerified) throw new EmailUnverifiedError();
 
           return {
             id: user.id,

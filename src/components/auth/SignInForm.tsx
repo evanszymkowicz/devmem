@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SIGN_IN_ERROR_CODE } from "@/lib/auth/error-codes";
 
 // Brand GitHub mark — lucide-react no longer ships brand icons, so inline the SVG.
 function GithubIcon({ className }: { className?: string }) {
@@ -33,15 +34,19 @@ export function SignInForm({ callbackUrl }: SignInFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Set when sign-in failed specifically because the email isn't verified, so we
+  // can offer an inline link to the resend flow.
+  const [unverified, setUnverified] = useState(false);
   const [pending, setPending] = useState(false);
 
   async function handleCredentials(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setUnverified(false);
     setPending(true);
 
-    // redirect: false so we can surface invalid-credential errors inline rather
-    // than bouncing to NextAuth's default error page.
+    // redirect: false so we can surface errors inline rather than bouncing to
+    // NextAuth's default error page.
     const result = await signIn("credentials", {
       email,
       password,
@@ -49,7 +54,13 @@ export function SignInForm({ callbackUrl }: SignInFormProps) {
     });
 
     if (result?.error) {
-      setError("Invalid email or password.");
+      // `code` distinguishes the unverified-email case from bad credentials.
+      if (result.code === SIGN_IN_ERROR_CODE.EMAIL_UNVERIFIED) {
+        setUnverified(true);
+        setError("Please verify your email before signing in.");
+      } else {
+        setError("Invalid email or password.");
+      }
       setPending(false);
       return;
     }
@@ -94,9 +105,17 @@ export function SignInForm({ callbackUrl }: SignInFormProps) {
         </div>
 
         {error && (
-          <p className="text-sm text-destructive" role="alert">
-            {error}
-          </p>
+          <div className="flex flex-col gap-1" role="alert">
+            <p className="text-sm text-destructive">{error}</p>
+            {unverified && (
+              <Link
+                href="/verify-email?status=expired"
+                className="text-sm font-medium text-foreground hover:underline"
+              >
+                Resend verification email
+              </Link>
+            )}
+          </div>
         )}
 
         <Button type="submit" disabled={pending} className="w-full">
