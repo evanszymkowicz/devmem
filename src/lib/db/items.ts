@@ -44,7 +44,7 @@ export async function getRecentItems(
 
 // DB returns rows in undefined order; this enforces the canonical UX order
 // (alphabetical would put Commands first, which doesn't match the design spec).
-const SYSTEM_TYPE_ORDER = ["snippets", "prompts", "commands", "notes", "files", "images", "links"];
+export const SYSTEM_TYPE_ORDER = ["snippets", "prompts", "commands", "notes", "files", "images", "links"];
 
 export async function getSystemItemTypes(
   userId: string,
