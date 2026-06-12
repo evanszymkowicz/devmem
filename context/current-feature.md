@@ -1,57 +1,16 @@
-# Current Feature: Email Verification on Register
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- After a user registers via email/password, send them a verification email through **Resend** containing a unique, time-limited link.
-- Clicking the link verifies the account: sets `User.emailVerified` and consumes the token.
-- Block credentials sign-in for users whose email is not yet verified, with a clear, actionable message.
-- Provide a "resend verification email" path for users who didn't receive / let the link expire.
-- GitHub OAuth users are unaffected (their email is trusted as verified by the provider).
+<!-- Run /feature load to populate this with the next feature's goals. -->
 
 ## Notes
 
-### Scope
-
-- Applies only to the **email/password** (Credentials) flow. The `/api/auth/register` route and the Credentials `authorize` in `src/auth.ts` are the two integration points.
-- GitHub OAuth sign-ins set `emailVerified` via the adapter and should not be gated.
-
-### Email delivery (Resend)
-
-- Use the `resend` SDK; `RESEND_API_KEY` is already in `.env`. Install `resend` (not currently a dependency).
-- Validate `RESEND_API_KEY` (and a `FROM`/sender + app URL env) at module load and fail loud if missing, per coding standards.
-- Add env vars: a verified sender address (e.g. `RESEND_FROM_EMAIL`) and an app base URL (e.g. `NEXT_PUBLIC_APP_URL` / `AUTH_URL`) to build absolute verification links.
-- Keep email-sending in a `src/lib/` helper (e.g. `src/lib/email/`), not inline in the route. Plain HTML string is fine for v1 (no react-email dependency unless desired).
-
-### Token model
-
-- Reuse the existing NextAuth `VerificationToken` model (`identifier` = email, `token`, `expires`) — it's already in the schema, so **no migration** is expected. Store a hashed/opaque token, set a sensible expiry (e.g. 24h).
-- Verification endpoint: `GET /api/auth/verify-email?token=…` (API route — needs redirects/status codes, not a Server Action). Look up token, check expiry, set `emailVerified = now()`, delete the consumed token (single-use), then redirect to `/sign-in` with a success flag.
-- Handle expired/invalid/already-used tokens gracefully (friendly page or redirect with an error flag, plus the resend option).
-
-### Sign-in gating
-
-- In `src/auth.ts` `authorize`: after the password check passes, reject when `user.emailVerified` is null and return a message guiding the user to verify / resend. (Credentials `authorize` can only return `null` on failure — surface the "unverified" reason via the sign-in error mapping in `SignInForm`.)
-
-### Resend flow
-
-- `POST /api/auth/resend-verification` (or reuse register logic): given an email, if an unverified user exists, invalidate prior tokens and issue + email a fresh one. Respond generically to avoid account enumeration.
-
-### Constraints / standards
-
-- `{ success, data, error }` shape for the register/resend routes; Zod-validate inputs.
-- Never run `prisma db push`; if any schema change is needed, use `prisma migrate dev` (not expected here).
-- Verify the latest Resend + Auth.js v5 docs (Context7) before implementing.
-- Don't leak whether an email exists on the resend path.
-
-### Decisions (resolved at start)
-
-1. **Token:** 24h expiry, single-use, stored **hashed (SHA-256)** — raw token only in the email link.
-2. **Sender:** `onboarding@resend.dev` (dev mode; only delivers to the account owner's email). Swap to a verified domain via `RESEND_FROM_EMAIL` later for real users.
-3. **Result UX:** dedicated `/verify-email` result page (success / expired / invalid states) with an inline resend option.
+<!-- Spec details, constraints, and context for the next feature go here. -->
 
 ## History
 
@@ -154,3 +113,12 @@ In Progress
   - Verified: `npm run build` + `npm run lint` clean; `/sign-in` `/register` `/profile` → 200, unauthed `/dashboard` → 302 to `/sign-in?callbackUrl=…`; live register → account created → redirect to `/sign-in`. Two throwaway test accounts deleted from the Neon dev branch afterward
   - Deferred: live GitHub OAuth round-trip + email/password sign-in (need a real browser/consent flow); `/profile` is a placeholder. Per project workflow, the user handles commit/merge/push — no PR opened here
   - See `@context/change-log/auth-phase-3.md` for details
+- Email Verification on Register completed
+  - Email/password signups now get a Resend verification email with a 24h, single-use link; clicking it sets `User.emailVerified` and consumes the token. No migration — reused the existing `VerificationToken` model + `emailVerified` field
+  - Installed `resend`; `src/lib/email/` holds the Resend client (fail-loud `RESEND_API_KEY` guard, sender constant, base-URL helper) and the verification email sender (plain HTML template)
+  - `src/lib/auth/verification-token.ts`: raw 32-byte token, stored as **SHA-256 hash** only, 24h expiry, single-use; create clears prior tokens per email so a resend supersedes old links. Shared `issueAndSendVerification` helper in `src/lib/auth/send-verification.ts`
+  - `POST /api/auth/register` issues + sends after create (email failure logged, not rolled back — still 201). `GET /api/auth/verify-email` consumes the token, sets `emailVerified`, redirects to a result page with a `?status` flag. `POST /api/auth/resend-verification` is enumeration-safe (always generic 200)
+  - Dedicated `/verify-email` result page (success/expired/invalid/error) with inline resend form. Unverified sign-in blocked via `EmailUnverifiedError extends CredentialsSignin` (distinct `code`); `SignInForm` shows "verify your email" + a resend link. GitHub OAuth unaffected
+  - Verified: `npm run build` + `npm run lint` clean; curl register → 201 with hashed token + `emailVerified` null in the Neon dev branch; user confirmed the live email flow end-to-end (link verifies, sign-in blocked before and works after). Curl test account removed from the dev branch
+  - Deferred: hardcoded sender (`onboarding@resend.dev`) + base-URL fallback (`localhost:3000`) — move to env (verified domain / `AUTH_URL`) before real users (user declined adding env vars during the build)
+  - See `@context/change-log/email-verification-on-register.md` for details
