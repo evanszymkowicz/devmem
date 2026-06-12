@@ -6,11 +6,11 @@ Not Started
 
 ## Goals
 
-<!-- Run /feature load to populate this with the next feature's goals. -->
+<!-- Add goals here -->
 
 ## Notes
 
-<!-- Spec details, constraints, and context for the next feature go here. -->
+<!-- Add notes here -->
 
 ## History
 
@@ -142,3 +142,13 @@ Not Started
   - Deferred: JWT session invalidation after reset (requires `sessionVersion` counter — tracked in `recurring-issues.md` as MUST FIX BEFORE LAUNCH); no rate limiting on forgot-password endpoint (v1)
   - Verified: `npm run build` + `npm run lint` clean; browser-tested full flow end-to-end
   - See `@context/change-log/forgot-password.md` for details
+- Profile Page completed
+  - SSR `/profile` page: account info card (avatar, name, email, member-since date), usage stats card (total items + collections + per-type breakdown with icon/color), change-password card (email/password accounts only), danger-zone card with delete-account confirmation dialog
+  - `/profile` added to the proxy's protected route matcher — unauthenticated users redirect to `/sign-in`
+  - `getProfileData(userId)` in `src/lib/db/profile.ts`: single parallel query (`findUniqueOrThrow` + `itemType.findMany` with `_count` scoped to the user + `collection.count`); returns `hasPassword` boolean so the hash never reaches the client
+  - `changePassword` + `deleteAccount` Server Actions in `src/actions/profile.ts`; both read the session and scope to `session.user.id`; `deleteAccount` relies on cascade for related data cleanup
+  - `ChangePasswordForm` (client): current/new/confirm fields, client-side validation + server error via toast; only rendered when `profile.hasPassword` is true (OAuth-only users never see it)
+  - `DeleteAccountDialog` (client): inline custom confirmation modal → `deleteAccount()` → `signOut({ redirectTo: "/sign-in" })`
+  - `changePasswordSchema` added to `src/lib/validations/auth.ts`; `SYSTEM_TYPE_ORDER` exported from `src/lib/db/items.ts` for reuse in profile type sorting
+  - Deferred: JWT session invalidation after password change (same gap as forgot-password — `sessionVersion` counter required before launch)
+  - See `@context/change-log/profile-page.md` for details
