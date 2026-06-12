@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
 import { EmailUnverifiedError } from "@/lib/auth/errors";
 import { signInSchema } from "@/lib/validations/auth";
+import { EMAIL_VERIFICATION_ENABLED } from "@/lib/config/features";
 import authConfig from "@/auth.config";
 
 // Full config: the Prisma adapter is not edge-compatible, so it lives here and
@@ -45,8 +46,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           // Password is correct, but block sign-in until the email is verified.
           // Throwing a distinct error lets the client show a "verify / resend"
           // message instead of the generic invalid-credentials one. GitHub OAuth
-          // users are unaffected — they never hit this Credentials path.
-          if (!user.emailVerified) throw new EmailUnverifiedError();
+          // users are unaffected — they never hit this Credentials path. Skipped
+          // entirely when verification is disabled, so unverified accounts can
+          // sign in while there's no verified Resend domain.
+          if (EMAIL_VERIFICATION_ENABLED && !user.emailVerified) {
+            throw new EmailUnverifiedError();
+          }
 
           return {
             id: user.id,

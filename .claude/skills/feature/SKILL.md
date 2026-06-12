@@ -22,6 +22,10 @@ Manages the full lifecycle of a feature from spec to merge.
 - `## Notes` - Additional context, constraints, or details from spec
 - `## History` - Completed features (append only)
 
+## Git Conventions
+
+The user handles all git operations (commit, merge, push). When suggesting commit messages, use conventional commit format and **never** include a "Co-Authored-By: Claude"/"Generated with Claude Code" tag or any similar attribution.
+
 ## Task
 
 Execute the requested action: $ARGUMENTS
