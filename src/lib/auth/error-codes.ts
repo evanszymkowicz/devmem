@@ -7,4 +7,5 @@
 export const SIGN_IN_ERROR_CODE = {
   INVALID_CREDENTIALS: "invalid-credentials",
   EMAIL_UNVERIFIED: "email-unverified",
+  RATE_LIMITED: "rate-limited",
 } as const;

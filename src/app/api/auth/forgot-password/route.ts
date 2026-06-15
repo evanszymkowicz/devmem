@@ -3,11 +3,15 @@ import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
 import { issueAndSendPasswordReset } from "@/lib/auth/send-password-reset";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
+import { forgotPasswordLimiter, checkRateLimit, getIp, rateLimitResponse } from "@/lib/rate-limit";
 
 // POST /api/auth/forgot-password — issue a password-reset email for an account.
 // Always responds generically (success shape, 200) so it can't be used to probe
 // which emails are registered or which auth method they use.
 export async function POST(request: Request) {
+  const rl = await checkRateLimit(forgotPasswordLimiter, `forgot-password:${getIp(request)}`);
+  if (rl.limited) return rateLimitResponse(rl.retryAfter);
+
   let body: unknown;
   try {
     body = await request.json();

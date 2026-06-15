@@ -5,9 +5,10 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
-import { EmailUnverifiedError } from "@/lib/auth/errors";
+import { EmailUnverifiedError, RateLimitError } from "@/lib/auth/errors";
 import { signInSchema } from "@/lib/validations/auth";
 import { EMAIL_VERIFICATION_ENABLED } from "@/lib/config/features";
+import { loginLimiter, checkRateLimit, getIp } from "@/lib/rate-limit";
 import authConfig from "@/auth.config";
 
 // Full config: the Prisma adapter is not edge-compatible, so it lives here and
@@ -29,9 +30,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, request) => {
         try {
           const { email, password } = await signInSchema.parseAsync(credentials);
+
+          const ip = getIp(request);
+          const rl = await checkRateLimit(loginLimiter, `login:${ip}:${email.toLowerCase()}`);
+          if (rl.limited) throw new RateLimitError();
 
           // Emails are stored lowercased at registration; match that here.
           const user = await prisma.user.findUnique({

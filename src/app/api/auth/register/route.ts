@@ -6,10 +6,14 @@ import { hashPassword } from "@/lib/auth/password";
 import { issueAndSendVerification } from "@/lib/auth/send-verification";
 import { registerSchema } from "@/lib/validations/auth";
 import { EMAIL_VERIFICATION_ENABLED } from "@/lib/config/features";
+import { registerLimiter, checkRateLimit, getIp, rateLimitResponse } from "@/lib/rate-limit";
 
 // POST /api/auth/register — create an email/password user.
 // Returns the standard { success, data, error } shape with matching status codes.
 export async function POST(request: Request) {
+  const rl = await checkRateLimit(registerLimiter, `register:${getIp(request)}`);
+  if (rl.limited) return rateLimitResponse(rl.retryAfter);
+
   let body: unknown;
   try {
     body = await request.json();

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { signInWithGitHub } from "@/actions/auth";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -54,10 +55,12 @@ export function SignInForm({ callbackUrl }: SignInFormProps) {
     });
 
     if (result?.error) {
-      // `code` distinguishes the unverified-email case from bad credentials.
+      // `code` distinguishes specific failure modes from generic bad credentials.
       if (result.code === SIGN_IN_ERROR_CODE.EMAIL_UNVERIFIED) {
         setUnverified(true);
         setError("Please verify your email before signing in.");
+      } else if (result.code === SIGN_IN_ERROR_CODE.RATE_LIMITED) {
+        setError("Too many sign-in attempts. Please try again in a few minutes.");
       } else {
         setError("Invalid email or password.");
       }
@@ -141,15 +144,12 @@ export function SignInForm({ callbackUrl }: SignInFormProps) {
         </div>
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        onClick={() => signIn("github", { redirectTo: callbackUrl })}
-      >
-        <GithubIcon className="size-4" />
-        Sign in with GitHub
-      </Button>
+      <form action={signInWithGitHub}>
+        <Button type="submit" variant="outline" className="w-full">
+          <GithubIcon className="size-4" />
+          Sign in with GitHub
+        </Button>
+      </form>
 
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}

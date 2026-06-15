@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { issueAndSendVerification } from "@/lib/auth/send-verification";
 import { resendVerificationSchema } from "@/lib/validations/auth";
 import { EMAIL_VERIFICATION_ENABLED } from "@/lib/config/features";
+import { resendVerificationLimiter, checkRateLimit, getIp, rateLimitResponse } from "@/lib/rate-limit";
 
 // POST /api/auth/resend-verification — issue a fresh verification email for an
 // unverified account. Always responds generically (success shape, 200) so it
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
   }
 
   const email = parsed.email.toLowerCase();
+
+  const rl = await checkRateLimit(resendVerificationLimiter, `resend-verification:${getIp(request)}:${email}`);
+  if (rl.limited) return rateLimitResponse(rl.retryAfter);
 
   // When verification is disabled there's nothing to resend. Skip the lookup and
   // send, but still fall through to the identical generic response below so the

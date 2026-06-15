@@ -142,6 +142,13 @@ Not Started
   - Deferred: JWT session invalidation after reset (requires `sessionVersion` counter — tracked in `recurring-issues.md` as MUST FIX BEFORE LAUNCH); no rate limiting on forgot-password endpoint (v1)
   - Verified: `npm run build` + `npm run lint` clean; browser-tested full flow end-to-end
   - See `@context/change-log/forgot-password.md` for details
+- Rate Limiting for Auth completed
+  - Installed `@upstash/ratelimit` + `@upstash/redis`; created `src/lib/rate-limit.ts` with a shared Redis client, five named sliding-window limiters, `checkRateLimit` (fail-open), `getIp`, and `rateLimitResponse` helpers
+  - Login rate-limited inside `authorize` in `auth.ts` (5/15min, IP + email); throws `RateLimitError extends CredentialsSignin` so the client gets a distinct `result.code`
+  - Four route handlers rate-limited at the top of each handler: `register` (3/1h, IP), `forgot-password` (3/1h, IP), `reset-password` (5/15min, IP), `resend-verification` (3/15min, IP + email)
+  - `SignInForm` handles `RATE_LIMITED` code with a distinct inline message; `ForgotPasswordForm` now surfaces `json.error` on 429 (was hardcoded generic); `ResendVerificationForm` checks `res.status === 429` and shows a toast while keeping all other paths enumeration-safe
+  - `npm run build` and TypeScript pass clean
+  - See `@context/change-log/rate-limiting.md` for details
 - Profile Page completed
   - SSR `/profile` page: account info card (avatar, name, email, member-since date), usage stats card (total items + collections + per-type breakdown with icon/color), change-password card (email/password accounts only), danger-zone card with delete-account confirmation dialog
   - `/profile` added to the proxy's protected route matcher — unauthenticated users redirect to `/sign-in`
@@ -152,3 +159,9 @@ Not Started
   - `changePasswordSchema` added to `src/lib/validations/auth.ts`; `SYSTEM_TYPE_ORDER` exported from `src/lib/db/items.ts` for reuse in profile type sorting
   - Deferred: JWT session invalidation after password change (same gap as forgot-password — `sessionVersion` counter required before launch)
   - See `@context/change-log/profile-page.md` for details
+- Fix GitHub OAuth Redirect completed
+  - Replaced client-side `signIn("github", ...)` onClick with a `<form action={signInWithGitHub}>` submit button in `SignInForm`
+  - Created `src/actions/auth.ts` with `signInWithGitHub` Server Action calling `signIn("github", { redirectTo: "/dashboard" })` from `@/auth`
+  - Credentials login path unchanged — still uses `next-auth/react` with `redirect: false` for inline error handling
+  - `npm run build` passes clean; TypeScript no errors
+  - See `@context/change-log/github-oauth-redirect-fix.md` for details
