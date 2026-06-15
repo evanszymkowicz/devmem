@@ -159,3 +159,9 @@ Not Started
   - `changePasswordSchema` added to `src/lib/validations/auth.ts`; `SYSTEM_TYPE_ORDER` exported from `src/lib/db/items.ts` for reuse in profile type sorting
   - Deferred: JWT session invalidation after password change (same gap as forgot-password — `sessionVersion` counter required before launch)
   - See `@context/change-log/profile-page.md` for details
+- Fix GitHub OAuth Redirect completed
+  - Replaced client-side `signIn("github", ...)` onClick with a `<form action={signInWithGitHub}>` submit button in `SignInForm`
+  - Created `src/actions/auth.ts` with `signInWithGitHub` Server Action calling `signIn("github", { redirectTo: "/dashboard" })` from `@/auth`
+  - Credentials login path unchanged — still uses `next-auth/react` with `redirect: false` for inline error handling
+  - `npm run build` passes clean; TypeScript no errors
+  - See `@context/change-log/github-oauth-redirect-fix.md` for details
