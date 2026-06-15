@@ -1,49 +1,16 @@
-# Current Feature: Rate Limiting for Auth
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Rate limit all auth API routes to prevent brute force, credential stuffing, and email-sender abuse
-- Use Upstash Redis + `@upstash/ratelimit` (sliding window, serverless-compatible)
-- Create a reusable `src/lib/rate-limit.ts` utility
-- Return 429 with `Retry-After` header and a user-friendly JSON error on limit exceeded
-- Surface 429 errors as toast notifications on the frontend
-- Fail open if Upstash is unavailable (never block a legitimate request due to Redis being down)
+<!-- Add goals here -->
 
 ## Notes
 
-**Endpoints and limits:**
-
-| Endpoint | Limit | Window | Key By |
-|----------|-------|--------|--------|
-| `/api/auth/callback/credentials` (login) | 5 attempts | 15 min | IP + email |
-| `/api/auth/register` | 3 attempts | 1 hour | IP |
-| `/api/auth/forgot-password` | 3 attempts | 1 hour | IP |
-| `/api/auth/reset-password` | 5 attempts | 15 min | IP |
-| `/api/auth/resend-verification` | 3 attempts | 15 min | IP + email |
-
-**Implementation details:**
-- Sliding window algorithm via `@upstash/ratelimit`
-- IP extracted from `x-forwarded-for` header (Vercel) or request
-- IP + email combined where noted for tighter per-user limits
-- Rate limit utility returns `{ success, remaining, reset }`
-- Login endpoint (`/api/auth/callback/credentials`) is a NextAuth internal route — rate limit inside the `authorize` callback in `auth.ts` using the `request` object for IP + credentials email
-
-**Environment variables to add to `.env`:**
-```
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_REST_TOKEN=
-```
-
-**Error format:**
-- `{ error: "Too many attempts. Please try again in X minutes." }` with HTTP 429 + `Retry-After` header
-
-**Constraints:**
-- Upstash free tier: 10k requests/day — sufficient for auth limiting
-- Rate limiting must fail open (pass the request through) if Upstash is unavailable
+<!-- Add notes here -->
 
 ## History
 
@@ -175,6 +142,13 @@ UPSTASH_REDIS_REST_TOKEN=
   - Deferred: JWT session invalidation after reset (requires `sessionVersion` counter — tracked in `recurring-issues.md` as MUST FIX BEFORE LAUNCH); no rate limiting on forgot-password endpoint (v1)
   - Verified: `npm run build` + `npm run lint` clean; browser-tested full flow end-to-end
   - See `@context/change-log/forgot-password.md` for details
+- Rate Limiting for Auth completed
+  - Installed `@upstash/ratelimit` + `@upstash/redis`; created `src/lib/rate-limit.ts` with a shared Redis client, five named sliding-window limiters, `checkRateLimit` (fail-open), `getIp`, and `rateLimitResponse` helpers
+  - Login rate-limited inside `authorize` in `auth.ts` (5/15min, IP + email); throws `RateLimitError extends CredentialsSignin` so the client gets a distinct `result.code`
+  - Four route handlers rate-limited at the top of each handler: `register` (3/1h, IP), `forgot-password` (3/1h, IP), `reset-password` (5/15min, IP), `resend-verification` (3/15min, IP + email)
+  - `SignInForm` handles `RATE_LIMITED` code with a distinct inline message; `ForgotPasswordForm` now surfaces `json.error` on 429 (was hardcoded generic); `ResendVerificationForm` checks `res.status === 429` and shows a toast while keeping all other paths enumeration-safe
+  - `npm run build` and TypeScript pass clean
+  - See `@context/change-log/rate-limiting.md` for details
 - Profile Page completed
   - SSR `/profile` page: account info card (avatar, name, email, member-since date), usage stats card (total items + collections + per-type breakdown with icon/color), change-password card (email/password accounts only), danger-zone card with delete-account confirmation dialog
   - `/profile` added to the proxy's protected route matcher — unauthenticated users redirect to `/sign-in`
