@@ -7,3 +7,9 @@ import { SIGN_IN_ERROR_CODE } from "@/lib/auth/error-codes";
 export class EmailUnverifiedError extends CredentialsSignin {
   code = SIGN_IN_ERROR_CODE.EMAIL_UNVERIFIED;
 }
+
+// Thrown from authorize when the IP+email combination has exceeded the login
+// rate limit, so the client can show a distinct "too many attempts" message.
+export class RateLimitError extends CredentialsSignin {
+  code = SIGN_IN_ERROR_CODE.RATE_LIMITED;
+}

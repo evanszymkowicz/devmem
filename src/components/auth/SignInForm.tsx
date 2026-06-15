@@ -54,10 +54,12 @@ export function SignInForm({ callbackUrl }: SignInFormProps) {
     });
 
     if (result?.error) {
-      // `code` distinguishes the unverified-email case from bad credentials.
+      // `code` distinguishes specific failure modes from generic bad credentials.
       if (result.code === SIGN_IN_ERROR_CODE.EMAIL_UNVERIFIED) {
         setUnverified(true);
         setError("Please verify your email before signing in.");
+      } else if (result.code === SIGN_IN_ERROR_CODE.RATE_LIMITED) {
+        setError("Too many sign-in attempts. Please try again in a few minutes.");
       } else {
         setError("Invalid email or password.");
       }

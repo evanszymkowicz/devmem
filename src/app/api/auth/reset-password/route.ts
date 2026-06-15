@@ -4,11 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { consumeResetToken } from "@/lib/auth/reset-token";
 import { resetPasswordSchema } from "@/lib/validations/auth";
+import { resetPasswordLimiter, checkRateLimit, getIp, rateLimitResponse } from "@/lib/rate-limit";
 
 // POST /api/auth/reset-password — consume a reset token and set a new password.
 // Returns the standard { success, data, error } shape. Token consumption is
 // single-use; invalid/expired tokens get a generic 400 so they can't be probed.
 export async function POST(request: Request) {
+  const rl = await checkRateLimit(resetPasswordLimiter, `reset-password:${getIp(request)}`);
+  if (rl.limited) return rateLimitResponse(rl.retryAfter);
+
   let body: unknown;
   try {
     body = await request.json();
