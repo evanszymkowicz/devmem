@@ -27,7 +27,7 @@ export function ForgotPasswordForm() {
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
-        toast.error("Something went wrong. Please try again.");
+        toast.error(json.error ?? "Something went wrong. Please try again.");
         return;
       }
       // Generic confirmation regardless of whether an account exists.

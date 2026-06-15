@@ -19,11 +19,20 @@ export function ResendVerificationForm() {
     e.preventDefault();
     setPending(true);
     try {
-      await fetch("/api/auth/resend-verification", {
+      const res = await fetch("/api/auth/resend-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+
+      // 429 is the one non-success status we surface explicitly — everything
+      // else falls through to the generic confirmation to avoid enumeration.
+      if (res.status === 429) {
+        const json = await res.json();
+        toast.error(json.error ?? "Too many attempts. Please try again later.");
+        return;
+      }
+
       // Generic confirmation regardless of whether an account exists.
       setSent(true);
       toast.success("If that account exists and isn't verified, a new link is on its way.");
