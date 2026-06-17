@@ -1,27 +1,12 @@
-# Current Feature: Item Create
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- "New Item" button in top bar opens a shadcn Dialog modal
-- Type selector lets user pick: snippet, prompt, command, note, link
-- Form fields shown based on selected type:
-  - All types: title (required), description, tags
-  - snippet / command: content, language
-  - prompt / note: content
-  - link: URL (required)
-- `createItem` server action with Zod validation handles submission
-- `createItem` query function added to `lib/db/items.ts`
-- On success: toast notification, modal closes, item list refreshes
-
 ## Notes
-
-- Use shadcn `Dialog` component for the modal
-- Type selector drives conditional field rendering
-- Link type requires URL; snippet/command types include a language field
 
 ## History
 
@@ -222,3 +207,12 @@ In Progress
   - `AlertDialog` installed via shadcn; rendered as a fragment sibling to `Sheet` to avoid z-index nesting issues
   - 39/39 tests passing; `npm run build` clean
   - See `@context/change-log/item-delete.md` for details
+- Item Create completed
+  - "New Item" button in `TopBar` opens a shadcn `Dialog` modal managed by `DashboardShell`; works on dashboard and items-list pages
+  - Type selector (snippet, prompt, command, note, link) drives conditional field rendering: content + language for snippet/command, content for prompt/note, URL (required) for link
+  - `createItemSchema` in `src/lib/validations/items.ts` with `superRefine` for type-conditional URL requirement
+  - `createItem` DB function in `src/lib/db/items.ts`: resolves type by slug, upserts tags, creates item in `$transaction`, maps slug to `ContentType` enum
+  - `createItem` server action in `src/actions/items.ts`: session auth + Zod validation + DB call
+  - `NewItemDialog` reuses `itemTypes` already loaded in `DashboardShell` — no extra DB round-trip; filters to creatable types at render time
+  - 57/57 tests passing; `npm run build` clean
+  - See `@context/change-log/item-create.md` for details
