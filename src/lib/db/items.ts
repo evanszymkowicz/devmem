@@ -69,6 +69,45 @@ export async function getItemDetail(
   });
 }
 
+export interface UpdateItemData {
+  title: string;
+  description?: string | null;
+  content?: string | null;
+  url?: string | null;
+  language?: string | null;
+  tags: string[];
+}
+
+export async function updateItem(
+  userId: string,
+  itemId: string,
+  data: UpdateItemData,
+): Promise<ItemDetail | null> {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.item.findFirst({ where: { id: itemId, userId } });
+    if (!existing) return null;
+
+    const tagRecords = await Promise.all(
+      data.tags.map((name) =>
+        tx.tag.upsert({ where: { name }, create: { name }, update: {} }),
+      ),
+    );
+
+    return tx.item.update({
+      where: { id: itemId },
+      data: {
+        title: data.title,
+        description: data.description ?? null,
+        content: data.content ?? null,
+        url: data.url ?? null,
+        language: data.language ?? null,
+        tags: { set: tagRecords.map((t) => ({ id: t.id })) },
+      },
+      include: itemDetailInclude,
+    });
+  });
+}
+
 export async function getItemsByType(
   userId: string,
   typeSlug: string,
