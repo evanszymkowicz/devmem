@@ -1,5 +1,6 @@
-import { Prisma, type ItemType } from "@/generated/prisma/client";
+import { ContentType, Prisma, type ItemType } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import type { CreateItemInput } from "@/lib/validations/items";
 
 const itemWithTypeInclude = {
   itemType: true,
@@ -102,6 +103,50 @@ export async function updateItem(
         url: data.url ?? null,
         language: data.language ?? null,
         tags: { set: tagRecords.map((t) => ({ id: t.id })) },
+      },
+      include: itemDetailInclude,
+    });
+  });
+}
+
+const SLUG_TO_CONTENT_TYPE: Record<string, ContentType> = {
+  snippets: ContentType.TEXT,
+  prompts: ContentType.TEXT,
+  commands: ContentType.TEXT,
+  notes: ContentType.TEXT,
+  links: ContentType.URL,
+};
+
+export async function createItem(
+  userId: string,
+  data: CreateItemInput,
+): Promise<ItemDetail | null> {
+  const type = await prisma.itemType.findFirst({
+    where: {
+      slug: data.typeSlug,
+      OR: [{ userId: null }, { userId }],
+    },
+  });
+  if (!type) return null;
+
+  return prisma.$transaction(async (tx) => {
+    const tagRecords = await Promise.all(
+      data.tags.map((name) =>
+        tx.tag.upsert({ where: { name }, create: { name }, update: {} }),
+      ),
+    );
+
+    return tx.item.create({
+      data: {
+        userId,
+        itemTypeId: type.id,
+        contentType: SLUG_TO_CONTENT_TYPE[data.typeSlug] ?? ContentType.TEXT,
+        title: data.title,
+        description: data.description ?? null,
+        content: data.content ?? null,
+        language: data.language ?? null,
+        url: data.url ?? null,
+        tags: { connect: tagRecords.map((t) => ({ id: t.id })) },
       },
       include: itemDetailInclude,
     });
