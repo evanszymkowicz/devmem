@@ -1,24 +1,12 @@
-# Item Drawer
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Clicking an `ItemCard` opens a shadcn `Sheet` from the right with that item's full data
-- Works on both dashboard and items list pages
-- Action bar: Favorite (star, yellow when active), Pin, Copy, Edit (pencil), Delete (trash, right-aligned)
-- Client wrapper component manages drawer state (pages are server components)
-- Drawer shows a skeleton while fetching; no page navigation
-
 ## Notes
-
-- Use shadcn `Sheet` component, opens from the right
-- Card data already fetched by server component; full detail fetched on click via `/api/items/[id]`
-- Query function in `lib/db/items.ts`; API route calls it with auth check
-- Code editor and item-specific content deferred — this feature covers the detail display only
-- Reference screenshot: `context/screenshots/dashboard-ui-drawer.png`
 
 ## History
 
@@ -194,3 +182,12 @@ In Progress
   - Workflow updated: step 4 now includes `npm test` before `npm run build`
   - 21/21 tests passing, no TypeScript errors
   - See `@context/change-log/vitest-setup.md` for details
+- Item Drawer completed
+  - Right-side `Sheet` opens on click of any `ItemCard` (items list page) or `ItemRow` (dashboard); fetches full detail from `GET /api/items/[id]` with auth check + user-scoped query
+  - `ItemDetail` type added to `lib/db/items.ts` (includes `itemType`, `tags`, `collections → name`); `getItemDetail` query
+  - `ItemDrawerContext` + `useItemDrawer` hook; `ItemDrawerWrapper` client component owns state and wraps children with context + `<ItemDrawer />`
+  - Drawer renders: icon + title + type badge + language badge, action bar (Favorite/Pin/Copy/Edit/Delete), description, content block, URL, tags, collections, created/updated dates; skeleton while loading
+  - Copy action functional (copies `content` or `url`); Favorite/Pin/Edit/Delete wired visually but mutations deferred
+  - `ItemCard` and `ItemRow` converted to `"use client"` components; pages wrap item sections with `ItemDrawerWrapper`
+  - 21/21 tests passing; `npm run build` clean
+  - See `@context/change-log/item-drawer.md` for details
