@@ -1,24 +1,16 @@
-# Current Feature: Items List View
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create dynamic route `/items/[type]` that renders items filtered by the given type slug (e.g. `/items/snippets`, `/items/notes`)
-- Fetch items from the database scoped to the authenticated user and the requested type
-- Display items in a responsive two-column grid on medium+ screens
-- Use an `ItemCard` component with a left border colored by item type
-- Follow existing codebase patterns (SSR, Server Actions, `src/lib/db/`, `src/components/[feature]/`)
+<!-- Add goals here -->
 
 ## Notes
 
-- Route param is the type `slug` (e.g. `snippets`), not the display name
-- Lookup the `ItemType` by `slug` + user ownership (system types have `userId: null`); 404 if not found
-- `ItemCard` is a new component — doesn't exist yet; styled similarly to `CollectionCard` with a colored left border
-- Two-column grid on `md` and above, single column on mobile
-- Spec file: `context/features/item-list-view-spec.md`
+<!-- Add notes here -->
 
 ## History
 
@@ -173,3 +165,11 @@ In Progress
   - Credentials login path unchanged — still uses `next-auth/react` with `redirect: false` for inline error handling
   - `npm run build` passes clean; TypeScript no errors
   - See `@context/change-log/github-oauth-redirect-fix.md` for details
+- Items List View completed
+  - Dynamic `/items/[type]` route (SSR); `params` awaited per Next.js 16 convention
+  - `getItemsByType(userId, typeSlug)` added to `src/lib/db/items.ts`; resolves system or user-owned types by slug, bounded `take: 200`
+  - New `ItemCard` component in `src/components/items/`; left border colored by type, icon badge, description, tags, date
+  - Two-column grid on `md`+, single column on mobile; empty state when no items exist
+  - `/items/:path*` added to proxy protected routes and middleware matcher
+  - `npm run build` and `npm run lint` pass clean
+  - See `@context/change-log/item-list-view.md` for details
