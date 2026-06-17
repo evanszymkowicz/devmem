@@ -10,6 +10,22 @@ export type ItemWithType = Prisma.ItemGetPayload<{
   include: typeof itemWithTypeInclude;
 }>;
 
+const itemDetailInclude = {
+  itemType: true,
+  tags: true,
+  collections: {
+    include: {
+      collection: {
+        select: { id: true, name: true },
+      },
+    },
+  },
+} satisfies Prisma.ItemInclude;
+
+export type ItemDetail = Prisma.ItemGetPayload<{
+  include: typeof itemDetailInclude;
+}>;
+
 export interface SidebarItemType {
   id: string;
   name: string;
@@ -40,6 +56,16 @@ export async function getRecentItems(
     orderBy: { updatedAt: "desc" },
     take: limit,
     include: itemWithTypeInclude,
+  });
+}
+
+export async function getItemDetail(
+  userId: string,
+  itemId: string,
+): Promise<ItemDetail | null> {
+  return prisma.item.findFirst({
+    where: { id: itemId, userId },
+    include: itemDetailInclude,
   });
 }
 
