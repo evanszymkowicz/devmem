@@ -1,16 +1,24 @@
-# Current Feature
+# Current Feature: Items List View
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Add goals here -->
+- Create dynamic route `/items/[type]` that renders items filtered by the given type slug (e.g. `/items/snippets`, `/items/notes`)
+- Fetch items from the database scoped to the authenticated user and the requested type
+- Display items in a responsive two-column grid on medium+ screens
+- Use an `ItemCard` component with a left border colored by item type
+- Follow existing codebase patterns (SSR, Server Actions, `src/lib/db/`, `src/components/[feature]/`)
 
 ## Notes
 
-<!-- Add notes here -->
+- Route param is the type `slug` (e.g. `snippets`), not the display name
+- Lookup the `ItemType` by `slug` + user ownership (system types have `userId: null`); 404 if not found
+- `ItemCard` is a new component — doesn't exist yet; styled similarly to `CollectionCard` with a colored left border
+- Two-column grid on `md` and above, single column on mobile
+- Spec file: `context/features/item-list-view-spec.md`
 
 ## History
 

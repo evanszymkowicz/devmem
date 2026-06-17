@@ -1,4 +1,4 @@
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, type ItemType } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const itemWithTypeInclude = {
@@ -20,6 +20,7 @@ export interface SidebarItemType {
 }
 
 const MAX_PINNED_DISPLAY = 20;
+const MAX_ITEMS_BY_TYPE = 200;
 
 export async function getPinnedItems(userId: string): Promise<ItemWithType[]> {
   return prisma.item.findMany({
@@ -40,6 +41,29 @@ export async function getRecentItems(
     take: limit,
     include: itemWithTypeInclude,
   });
+}
+
+export async function getItemsByType(
+  userId: string,
+  typeSlug: string,
+): Promise<{ type: ItemType; items: ItemWithType[] } | null> {
+  const type = await prisma.itemType.findFirst({
+    where: {
+      slug: typeSlug,
+      OR: [{ userId: null }, { userId }],
+    },
+  });
+
+  if (!type) return null;
+
+  const items = await prisma.item.findMany({
+    where: { userId, itemTypeId: type.id },
+    orderBy: { updatedAt: "desc" },
+    take: MAX_ITEMS_BY_TYPE,
+    include: itemWithTypeInclude,
+  });
+
+  return { type, items };
 }
 
 // DB returns rows in undefined order; this enforces the canonical UX order
