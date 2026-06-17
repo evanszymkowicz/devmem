@@ -6,6 +6,7 @@ import { PinnedItems } from "@/components/dashboard/PinnedItems";
 import { RecentCollections } from "@/components/dashboard/RecentCollections";
 import { RecentItems } from "@/components/dashboard/RecentItems";
 import { StatsCards } from "@/components/dashboard/StatsCards";
+import { ItemDrawerWrapper } from "@/components/items/ItemDrawerWrapper";
 
 export default async function DashboardPage() {
   // The proxy guards /dashboard, so a session is expected here; fall back to null
@@ -39,8 +40,10 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-8">
           <StatsCards userId={userId} />
           <RecentCollections userId={userId} />
-          <PinnedItems userId={userId} />
-          <RecentItems userId={userId} />
+          <ItemDrawerWrapper>
+            <PinnedItems userId={userId} />
+            <RecentItems userId={userId} />
+          </ItemDrawerWrapper>
         </div>
       </div>
     </DashboardShell>

@@ -182,3 +182,37 @@ Not Started
   - Workflow updated: step 4 now includes `npm test` before `npm run build`
   - 21/21 tests passing, no TypeScript errors
   - See `@context/change-log/vitest-setup.md` for details
+- Item Drawer completed
+  - Right-side `Sheet` opens on click of any `ItemCard` (items list page) or `ItemRow` (dashboard); fetches full detail from `GET /api/items/[id]` with auth check + user-scoped query
+  - `ItemDetail` type added to `lib/db/items.ts` (includes `itemType`, `tags`, `collections → name`); `getItemDetail` query
+  - `ItemDrawerContext` + `useItemDrawer` hook; `ItemDrawerWrapper` client component owns state and wraps children with context + `<ItemDrawer />`
+  - Drawer renders: icon + title + type badge + language badge, action bar (Favorite/Pin/Copy/Edit/Delete), description, content block, URL, tags, collections, created/updated dates; skeleton while loading
+  - Copy action functional (copies `content` or `url`); Favorite/Pin/Edit/Delete wired visually but mutations deferred
+  - `ItemCard` and `ItemRow` converted to `"use client"` components; pages wrap item sections with `ItemDrawerWrapper`
+  - 21/21 tests passing; `npm run build` clean
+  - See `@context/change-log/item-drawer.md` for details
+- Item Drawer Edit Mode completed
+  - Edit button toggles inline edit mode in the same drawer; action bar swaps to Save + Cancel
+  - All common fields editable (title, description, tags); type-specific fields shown per slug (content, language, URL)
+  - `updateItem` server action in `src/actions/items.ts`; Zod schema in `src/lib/validations/items.ts` (empty-string URL → null preprocessing)
+  - `updateItem` DB query in `src/lib/db/items.ts`; runs in a `$transaction`, upserts tags, atomically replaces tag set with `tags: { set: [...] }`, returns `ItemDetail`
+  - On save: returned `ItemDetail` updates drawer state directly (no re-fetch), then `router.refresh()` syncs card list; toast on success/error
+  - shadcn `Textarea` added; 39/39 tests passing; `npm run build` clean
+  - See `@context/change-log/item-drawer-edit-mode.md` for details
+- Item Delete completed
+  - Delete button in the drawer now opens a shadcn `AlertDialog` confirmation before deleting
+  - `deleteItem` server action in `src/actions/items.ts`; scoped to `session.user.id`, uses `deleteMany` for atomic ownership check
+  - `deleteItem` DB function in `src/lib/db/items.ts`; returns `boolean` (false = not found/not owned)
+  - On success: success toast, drawer closes, `router.refresh()` syncs the list; on error: error toast, drawer stays open
+  - `AlertDialog` installed via shadcn; rendered as a fragment sibling to `Sheet` to avoid z-index nesting issues
+  - 39/39 tests passing; `npm run build` clean
+  - See `@context/change-log/item-delete.md` for details
+- Item Create completed
+  - "New Item" button in `TopBar` opens a shadcn `Dialog` modal managed by `DashboardShell`; works on dashboard and items-list pages
+  - Type selector (snippet, prompt, command, note, link) drives conditional field rendering: content + language for snippet/command, content for prompt/note, URL (required) for link
+  - `createItemSchema` in `src/lib/validations/items.ts` with `superRefine` for type-conditional URL requirement
+  - `createItem` DB function in `src/lib/db/items.ts`: resolves type by slug, upserts tags, creates item in `$transaction`, maps slug to `ContentType` enum
+  - `createItem` server action in `src/actions/items.ts`: session auth + Zod validation + DB call
+  - `NewItemDialog` reuses `itemTypes` already loaded in `DashboardShell` — no extra DB round-trip; filters to creatable types at render time
+  - 57/57 tests passing; `npm run build` clean
+  - See `@context/change-log/item-create.md` for details

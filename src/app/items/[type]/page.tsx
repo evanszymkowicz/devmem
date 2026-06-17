@@ -6,6 +6,7 @@ import { getSidebarCollections } from "@/lib/db/collections";
 import { getItemsByType, getSystemItemTypes } from "@/lib/db/items";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ItemCard } from "@/components/items/ItemCard";
+import { ItemDrawerWrapper } from "@/components/items/ItemDrawerWrapper";
 import { ICON_MAP } from "@/lib/icon-map";
 
 interface PageProps {
@@ -67,11 +68,13 @@ export default async function ItemsTypePage({ params }: PageProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              <ItemCard key={item.id} item={item} />
-            ))}
-          </div>
+          <ItemDrawerWrapper>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {items.map((item) => (
+                <ItemCard key={item.id} item={item} />
+              ))}
+            </div>
+          </ItemDrawerWrapper>
         )}
       </div>
     </DashboardShell>

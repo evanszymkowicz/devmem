@@ -1,22 +1,27 @@
+"use client";
+
 import { Code, Pin, Star } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { type ItemWithType } from "@/lib/db/items";
 import { ICON_MAP } from "@/lib/icon-map";
+import { useItemDrawer } from "@/components/items/ItemDrawerContext";
 
 interface ItemRowProps {
   item: ItemWithType;
 }
 
 export function ItemRow({ item }: ItemRowProps) {
+  const { openDrawer } = useItemDrawer();
   const Icon = ICON_MAP[item.itemType.icon] ?? Code;
   const accent = item.itemType.color;
 
   return (
     <Card
       size="sm"
-      className="border-l-4 transition-colors hover:bg-accent/40"
+      className="cursor-pointer border-l-4 transition-colors hover:bg-accent/40"
       style={{ borderLeftColor: accent }}
+      onClick={() => openDrawer(item.id)}
     >
       <CardContent className="flex items-start gap-3">
         <span

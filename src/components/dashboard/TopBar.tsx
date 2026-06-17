@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
 interface TopBarProps {
   desktopSidebarOpen: boolean;
   onToggleSidebar: () => void;
+  onNewItem: () => void;
 }
 
-export function TopBar({ desktopSidebarOpen, onToggleSidebar }: TopBarProps) {
+export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem }: TopBarProps) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-3 border-b px-4 md:px-6">
       <Button
@@ -42,7 +43,7 @@ export function TopBar({ desktopSidebarOpen, onToggleSidebar }: TopBarProps) {
           <FolderPlus className="size-4" />
           <span className="hidden sm:inline">New Collection</span>
         </Button>
-        <Button size="sm">
+        <Button size="sm" onClick={onNewItem}>
           <Plus className="size-4" />
           <span className="hidden sm:inline">New Item</span>
         </Button>

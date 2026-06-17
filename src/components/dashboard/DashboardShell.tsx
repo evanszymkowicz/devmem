@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
+import { NewItemDialog } from "@/components/items/NewItemDialog";
 import { cn } from "@/lib/utils";
 import type { SidebarCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
@@ -27,6 +28,7 @@ interface DashboardShellProps {
 export function DashboardShell({ children, itemTypes, collections, user }: DashboardShellProps) {
   const [desktopOpen, setDesktopOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [newItemOpen, setNewItemOpen] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -90,10 +92,17 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
         <TopBar
           desktopSidebarOpen={desktopOpen}
           onToggleSidebar={openSidebar}
+          onNewItem={() => setNewItemOpen(true)}
         />
 
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
+
+      <NewItemDialog
+        open={newItemOpen}
+        onOpenChange={setNewItemOpen}
+        itemTypes={itemTypes}
+      />
     </div>
   );
 }
