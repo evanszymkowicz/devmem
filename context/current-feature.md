@@ -165,3 +165,11 @@ Not Started
   - Credentials login path unchanged — still uses `next-auth/react` with `redirect: false` for inline error handling
   - `npm run build` passes clean; TypeScript no errors
   - See `@context/change-log/github-oauth-redirect-fix.md` for details
+- Items List View completed
+  - Dynamic `/items/[type]` route (SSR); `params` awaited per Next.js 16 convention
+  - `getItemsByType(userId, typeSlug)` added to `src/lib/db/items.ts`; resolves system or user-owned types by slug, bounded `take: 200`
+  - New `ItemCard` component in `src/components/items/`; left border colored by type, icon badge, description, tags, date
+  - Two-column grid on `md`+, single column on mobile; empty state when no items exist
+  - `/items/:path*` added to proxy protected routes and middleware matcher
+  - `npm run build` and `npm run lint` pass clean
+  - See `@context/change-log/item-list-view.md` for details
