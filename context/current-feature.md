@@ -1,36 +1,12 @@
-# Current Feature — Item Drawer Edit Mode
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Edit button in the drawer action bar switches to inline edit mode (same drawer, no page nav)
-- In edit mode, action bar is replaced with Save and Cancel buttons
-- Cancel discards changes and returns to view mode
-- Save persists via `updateItem` server action, returns to view mode, refreshes drawer data, and calls `router.refresh()` for the card list
-- Toast notification on save success or error
-- All common fields editable: Title (required), Description, Tags (comma-separated → array)
-- Type-specific fields: Content (snippet/prompt/command/note), Language (snippet/command), URL (link)
-- Non-editable in edit mode: item type, collections, dates
-- Zod validation in the server action; errors returned as `{ success: false, error }` for client display
-- Save button disabled when title is empty (client-side guard)
-
 ## Notes
-
-- Server action: `updateItem(itemId, data)` in `src/actions/items.ts`, follows `{ success, data, error }` pattern
-- DB query: `updateItem` in `src/lib/db/items.ts`; tag handling: disconnect all existing, connect-or-create new ones; returns `ItemDetail`
-- Zod schema validates: `title` (non-empty, trimmed), `description` (string | null, optional), `content` (string | null, optional), `url` (valid URL | null, optional), `language` (string | null, optional), `tags` (trimmed non-empty string array)
-- No form library — controlled inputs with local state
-- Content textarea is plain (no code editor yet)
-- Type-specific field visibility:
-
-  | Field    | Types                          |
-  | -------- | ------------------------------ |
-  | Content  | snippet, prompt, command, note |
-  | Language | snippet, command               |
-  | URL      | link                           |
 
 ## History
 
@@ -215,3 +191,11 @@ In Progress
   - `ItemCard` and `ItemRow` converted to `"use client"` components; pages wrap item sections with `ItemDrawerWrapper`
   - 21/21 tests passing; `npm run build` clean
   - See `@context/change-log/item-drawer.md` for details
+- Item Drawer Edit Mode completed
+  - Edit button toggles inline edit mode in the same drawer; action bar swaps to Save + Cancel
+  - All common fields editable (title, description, tags); type-specific fields shown per slug (content, language, URL)
+  - `updateItem` server action in `src/actions/items.ts`; Zod schema in `src/lib/validations/items.ts` (empty-string URL → null preprocessing)
+  - `updateItem` DB query in `src/lib/db/items.ts`; runs in a `$transaction`, upserts tags, atomically replaces tag set with `tags: { set: [...] }`, returns `ItemDetail`
+  - On save: returned `ItemDetail` updates drawer state directly (no re-fetch), then `router.refresh()` syncs card list; toast on success/error
+  - shadcn `Textarea` added; 39/39 tests passing; `npm run build` clean
+  - See `@context/change-log/item-drawer-edit-mode.md` for details
