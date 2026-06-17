@@ -1,24 +1,12 @@
-# Current Feature: Item Delete
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Delete button in the item drawer triggers a shadcn `AlertDialog` confirmation ("Are you sure you want to delete this item? This action cannot be undone.")
-- On confirm: calls a `deleteItem` server action scoped to the authenticated user
-- On success: drawer closes, item disappears from the list (via `router.refresh()`), and a success toast is shown
-- On error: toast with error message; drawer stays open
-
 ## Notes
-
-- The Delete button already exists in the drawer action bar (wired visually) — this feature adds the real mutation
-- Use shadcn `AlertDialog` for the confirmation modal
-- `deleteItem` server action goes in `src/actions/items.ts` (alongside `updateItem`)
-- Action must read the session and scope the Prisma delete to `userId: session.user.id` (never trust client-supplied id)
-- After successful delete, call `router.refresh()` to sync the card list and close the drawer via `setOpen(false)`
-- Use `sonner` toast (already installed) for success/error feedback
 
 ## History
 
@@ -211,3 +199,11 @@ In Progress
   - On save: returned `ItemDetail` updates drawer state directly (no re-fetch), then `router.refresh()` syncs card list; toast on success/error
   - shadcn `Textarea` added; 39/39 tests passing; `npm run build` clean
   - See `@context/change-log/item-drawer-edit-mode.md` for details
+- Item Delete completed
+  - Delete button in the drawer now opens a shadcn `AlertDialog` confirmation before deleting
+  - `deleteItem` server action in `src/actions/items.ts`; scoped to `session.user.id`, uses `deleteMany` for atomic ownership check
+  - `deleteItem` DB function in `src/lib/db/items.ts`; returns `boolean` (false = not found/not owned)
+  - On success: success toast, drawer closes, `router.refresh()` syncs the list; on error: error toast, drawer stays open
+  - `AlertDialog` installed via shadcn; rendered as a fragment sibling to `Sheet` to avoid z-index nesting issues
+  - 39/39 tests passing; `npm run build` clean
+  - See `@context/change-log/item-delete.md` for details
