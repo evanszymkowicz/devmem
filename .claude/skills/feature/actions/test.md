@@ -8,5 +8,10 @@
    - Focus on server actions and utilities (not components)
    - Test happy path and error cases
    - Do not write tests just to write them. They should serve a purpose
+   - Place test files next to the module: `src/actions/foo.test.ts` tests `src/actions/foo.ts`
+   - Mock all external dependencies (prisma, auth, third-party clients) with `vi.mock()` — never hit real DB or network
+   - `vi.mock()` is hoisted before imports, so the `prisma.ts` startup guard won't throw even without a `.env`
+   - Use `vi.clearAllMocks()` in `beforeEach` when multiple tests share mocked modules
+   - Cast mocked return values with `as never` when TypeScript overloads make direct typing awkward (e.g. `auth()`)
 5. Run `npm test` to verify all tests pass
 6. Report test coverage for the new feature code

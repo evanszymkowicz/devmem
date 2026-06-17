@@ -6,11 +6,7 @@ Not Started
 
 ## Goals
 
-<!-- Add goals here -->
-
 ## Notes
-
-<!-- Add notes here -->
 
 ## History
 
@@ -165,6 +161,11 @@ Not Started
   - Credentials login path unchanged — still uses `next-auth/react` with `redirect: false` for inline error handling
   - `npm run build` passes clean; TypeScript no errors
   - See `@context/change-log/github-oauth-redirect-fix.md` for details
+- Item List Three-Column Layout completed
+  - `src/app/items/[type]/page.tsx` grid updated from `md:grid-cols-2` to `md:grid-cols-2 lg:grid-cols-3`
+  - Responsive: 1 column mobile, 2 columns `md`, 3 columns `lg`+
+  - No other changes; build and tests pass clean
+  - See `@context/change-log/item-list-three-column.md` for details
 - Items List View completed
   - Dynamic `/items/[type]` route (SSR); `params` awaited per Next.js 16 convention
   - `getItemsByType(userId, typeSlug)` added to `src/lib/db/items.ts`; resolves system or user-owned types by slug, bounded `take: 200`
@@ -173,3 +174,11 @@ Not Started
   - `/items/:path*` added to proxy protected routes and middleware matcher
   - `npm run build` and `npm run lint` pass clean
   - See `@context/change-log/item-list-view.md` for details
+- Vitest Unit Testing Setup completed
+  - Installed `vitest` + `vite-tsconfig-paths`; configured `vitest.config.ts` (node environment, `src/**/*.test.ts` pattern, native `resolve.tsconfigPaths`)
+  - Added `test` (`vitest run`) and `test:watch` (`vitest`) scripts to `package.json`
+  - Example tests: `src/lib/validations/auth.test.ts` (pure Zod schema tests, 13 cases) and `src/actions/profile.test.ts` (server action tests with mocked prisma/auth/password, 8 cases)
+  - Mocking strategy: `vi.mock('@/lib/prisma')` is hoisted before import, preventing the startup `DATABASE_URL` guard from throwing — no test `.env` file needed
+  - Workflow updated: step 4 now includes `npm test` before `npm run build`
+  - 21/21 tests passing, no TypeScript errors
+  - See `@context/change-log/vitest-setup.md` for details

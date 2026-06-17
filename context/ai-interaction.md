@@ -15,7 +15,7 @@ This is the common workflow that we will use for every single feature/fix:
 1. **Document** - Document the feature in @context/current-feature.md.
 2. **Branch** - The user will create the branch.
 3. **Implement** - Implement the feature/fix documented in @context/current-feature.md.
-4. **Test** - Verify it works in the browser. Implement unit testing later. Run `npm run build` and fix any errors.
+4. **Test** - Verify it works in the browser. Run `npm test` and fix any failures. Run `npm run build` and fix any errors.
 5. **Iterate** - Iterate and change things if needed.
 6. **Commit** - The user will commit to the branch.
 7. **Merge** - The user will review and merge on GitHub's website.
