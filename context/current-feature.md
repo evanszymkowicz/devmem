@@ -1,12 +1,24 @@
-# Current Feature
+# Current Feature: Item Delete
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Delete button in the item drawer triggers a shadcn `AlertDialog` confirmation ("Are you sure you want to delete this item? This action cannot be undone.")
+- On confirm: calls a `deleteItem` server action scoped to the authenticated user
+- On success: drawer closes, item disappears from the list (via `router.refresh()`), and a success toast is shown
+- On error: toast with error message; drawer stays open
+
 ## Notes
+
+- The Delete button already exists in the drawer action bar (wired visually) — this feature adds the real mutation
+- Use shadcn `AlertDialog` for the confirmation modal
+- `deleteItem` server action goes in `src/actions/items.ts` (alongside `updateItem`)
+- Action must read the session and scope the Prisma delete to `userId: session.user.id` (never trust client-supplied id)
+- After successful delete, call `router.refresh()` to sync the card list and close the drawer via `setOpen(false)`
+- Use `sonner` toast (already installed) for success/error feedback
 
 ## History
 

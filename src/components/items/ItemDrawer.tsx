@@ -15,9 +15,19 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ICON_MAP } from "@/lib/icon-map";
 import type { ItemDetail } from "@/lib/db/items";
-import { updateItem } from "@/actions/items";
+import { updateItem, deleteItem } from "@/actions/items";
 import { useItemDrawer } from "./ItemDrawerContext";
 
 const CONTENT_TYPE_SLUGS = new Set(["snippets", "prompts", "commands", "notes"]);
@@ -53,6 +63,8 @@ export function ItemDrawer() {
   const [isEditing, setIsEditing] = useState(false);
   const [editState, setEditState] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!activeItemId) {
@@ -102,6 +114,25 @@ export function ItemDrawer() {
     setEditState((prev) => (prev ? { ...prev, [key]: value } : prev));
   }
 
+  async function handleDelete() {
+    if (!item) return;
+    setDeleting(true);
+
+    const result = await deleteItem(item.id);
+
+    setDeleting(false);
+    setConfirmDelete(false);
+
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+
+    toast.success("Item deleted");
+    closeDrawer();
+    router.refresh();
+  }
+
   async function handleSave() {
     if (!item || !editState) return;
     setSaving(true);
@@ -135,6 +166,7 @@ export function ItemDrawer() {
   }
 
   return (
+    <>
     <Sheet open={!!activeItemId} onOpenChange={(open) => !open && closeDrawer()}>
       <SheetContent
         side="right"
@@ -305,6 +337,7 @@ export function ItemDrawer() {
               size="icon-sm"
               className="ml-auto"
               disabled={!item}
+              onClick={() => setConfirmDelete(true)}
               aria-label="Delete"
             >
               <Trash2 className="size-3.5" />
@@ -498,6 +531,28 @@ export function ItemDrawer() {
         </div>
       </SheetContent>
     </Sheet>
+
+    <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete item?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. The item will be permanently deleted.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={deleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleting ? "Deleting…" : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 
