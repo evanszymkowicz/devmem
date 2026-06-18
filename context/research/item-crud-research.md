@@ -20,7 +20,7 @@ Design a unified CRUD system for all 7 item types:
 
 ## Sources
 
-- @context/project-overview.md
-- @docs/content-types.md
-- @prisma/schema.prisma
-- @src/lib/constants.tsx
+- `@context/project-overview.md`
+- `@docs/content-types.md`
+- `@prisma/schema.prisma`
+- `@src/lib/constants.tsx`
