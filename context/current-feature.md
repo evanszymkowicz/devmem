@@ -225,3 +225,12 @@ Not Started
   - `DashboardShell`: added `DashboardShellContext` with `openNewItem(slug?)`, `useDashboardShell` hook, and `newItemDefaultType` state; wraps layout in context provider
   - `items/[type]/page.tsx`: `NewItemButton` added to page header with singularized label (e.g. "New Snippet")
   - 57/57 tests passing; `npm run build` clean
+- Markdown Editor completed
+  - Installed `react-markdown` + `remark-gfm` for GFM rendering
+  - New `src/components/ui/markdown-editor.tsx`: Write/Preview tabbed editor matching `CodeEditor` style (macOS dots, `bg-[#2d2d2d]` header, copy button); readonly mode shows Preview only; edit mode defaults to Write; `useEffect` syncs tab state to `readOnly` prop; fluid height (80px min / 400px max)
+  - Markdown preview uses `prose prose-invert prose-sm max-w-none` Tailwind Typography classes; `prose-code:before:content-none prose-code:after:content-none` suppresses backtick pseudo-elements on inline code
+  - `ItemDrawer`: view mode `<pre><code>` → `<MarkdownEditor readOnly />`; edit mode `Textarea` → `<MarkdownEditor />` for notes/prompts; `CodeEditor` for snippets/commands unchanged
+  - `NewItemDialog`: notes/prompts content `Textarea` → `<MarkdownEditor />`
+  - Browser-verified: formatted rendering (headings, lists, bold/italic, inline code) confirmed via Playwright in both view and edit modes
+  - 57/57 tests passing; `npm run build` clean
+  - See `@context/change-log/markdown-editor.md` for details

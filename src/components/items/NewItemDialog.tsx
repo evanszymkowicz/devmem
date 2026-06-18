@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/components/ui/code-editor";
+import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import {
   Dialog,
   DialogContent,
@@ -203,12 +204,9 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
                   language={form.language || undefined}
                 />
               ) : (
-                <Textarea
+                <MarkdownEditor
                   value={form.content}
-                  onChange={(e) => setField("content", e.target.value)}
-                  placeholder="Content"
-                  rows={6}
-                  className="resize-y font-mono text-xs"
+                  onChange={(v) => setField("content", v)}
                 />
               )}
             </div>

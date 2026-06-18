@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/components/ui/code-editor";
+import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import {
   Sheet,
   SheetContent,
@@ -387,12 +388,9 @@ export function ItemDrawer() {
                       language={editState.language || undefined}
                     />
                   ) : (
-                    <Textarea
+                    <MarkdownEditor
                       value={editState.content}
-                      onChange={(e) => setField("content", e.target.value)}
-                      placeholder="Content"
-                      rows={8}
-                      className="resize-y font-mono text-xs"
+                      onChange={(v) => setField("content", v)}
                     />
                   )}
                 </div>
@@ -465,9 +463,7 @@ export function ItemDrawer() {
                       readOnly
                     />
                   ) : (
-                    <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
-                      <code>{item.content}</code>
-                    </pre>
+                    <MarkdownEditor value={item.content} readOnly />
                   )}
                 </section>
               )}
