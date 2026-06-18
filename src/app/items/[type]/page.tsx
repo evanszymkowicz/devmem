@@ -7,6 +7,7 @@ import { getItemsByType, getSystemItemTypes } from "@/lib/db/items";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ItemCard } from "@/components/items/ItemCard";
 import { ItemDrawerWrapper } from "@/components/items/ItemDrawerWrapper";
+import { NewItemButton } from "@/components/items/NewItemButton";
 import { ICON_MAP } from "@/lib/icon-map";
 
 interface PageProps {
@@ -47,12 +48,16 @@ export default async function ItemsTypePage({ params }: PageProps) {
           >
             <Icon className="size-5" />
           </span>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-semibold tracking-tight">{type.name}</h1>
             <p className="text-sm text-muted-foreground">
               {items.length} {items.length === 1 ? "item" : "items"}
             </p>
           </div>
+          <NewItemButton
+            typeSlug={type.slug}
+            label={`New ${type.name.replace(/s$/, "")}`}
+          />
         </header>
 
         {items.length === 0 ? (

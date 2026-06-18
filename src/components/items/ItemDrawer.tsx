@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CodeEditor } from "@/components/ui/code-editor";
 import {
   Sheet,
   SheetContent,
@@ -379,13 +380,21 @@ export function ItemDrawer() {
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Content
                   </label>
-                  <Textarea
-                    value={editState.content}
-                    onChange={(e) => setField("content", e.target.value)}
-                    placeholder="Content"
-                    rows={8}
-                    className="resize-y font-mono text-xs"
-                  />
+                  {showLanguage ? (
+                    <CodeEditor
+                      value={editState.content}
+                      onChange={(v) => setField("content", v)}
+                      language={editState.language || undefined}
+                    />
+                  ) : (
+                    <Textarea
+                      value={editState.content}
+                      onChange={(e) => setField("content", e.target.value)}
+                      placeholder="Content"
+                      rows={8}
+                      className="resize-y font-mono text-xs"
+                    />
+                  )}
                 </div>
               )}
 
@@ -449,9 +458,17 @@ export function ItemDrawer() {
                   <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Content
                   </p>
-                  <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
-                    <code>{item.content}</code>
-                  </pre>
+                  {showLanguage ? (
+                    <CodeEditor
+                      value={item.content}
+                      language={item.language ?? undefined}
+                      readOnly
+                    />
+                  ) : (
+                    <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
+                      <code>{item.content}</code>
+                    </pre>
+                  )}
                 </section>
               )}
 

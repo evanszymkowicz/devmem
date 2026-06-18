@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 import {
   Sheet,
@@ -16,6 +16,18 @@ import { cn } from "@/lib/utils";
 import type { SidebarCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
 
+interface DashboardShellContextValue {
+  openNewItem: (slug?: string) => void;
+}
+
+export const DashboardShellContext = createContext<DashboardShellContextValue>({
+  openNewItem: () => {},
+});
+
+export function useDashboardShell() {
+  return useContext(DashboardShellContext);
+}
+
 interface DashboardShellProps {
   children: React.ReactNode;
   itemTypes: SidebarItemType[];
@@ -29,6 +41,12 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
   const [desktopOpen, setDesktopOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newItemOpen, setNewItemOpen] = useState(false);
+  const [newItemDefaultType, setNewItemDefaultType] = useState<string | undefined>();
+
+  function openNewItem(slug?: string) {
+    setNewItemDefaultType(slug);
+    setNewItemOpen(true);
+  }
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -50,6 +68,7 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
   const sidebarProps = { itemTypes, collections, user };
 
   return (
+    <DashboardShellContext.Provider value={{ openNewItem }}>
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       {/* Desktop sidebar (collapsible) */}
       <aside
@@ -92,7 +111,7 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
         <TopBar
           desktopSidebarOpen={desktopOpen}
           onToggleSidebar={openSidebar}
-          onNewItem={() => setNewItemOpen(true)}
+          onNewItem={() => openNewItem()}
         />
 
         <main className="flex-1 overflow-y-auto">{children}</main>
@@ -102,7 +121,9 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
         open={newItemOpen}
         onOpenChange={setNewItemOpen}
         itemTypes={itemTypes}
+        defaultTypeSlug={newItemDefaultType}
       />
     </div>
+    </DashboardShellContext.Provider>
   );
 }

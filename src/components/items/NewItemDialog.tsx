@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Code } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CodeEditor } from "@/components/ui/code-editor";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ interface NewItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   itemTypes: SidebarItemType[];
+  defaultTypeSlug?: string;
 }
 
 interface FormState {
@@ -46,7 +48,7 @@ const EMPTY_FORM: FormState = {
   tags: "",
 };
 
-export function NewItemDialog({ open, onOpenChange, itemTypes }: NewItemDialogProps) {
+export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }: NewItemDialogProps) {
   const router = useRouter();
   const creatableTypes = itemTypes.filter((t) =>
     (CREATABLE_TYPE_SLUGS as readonly string[]).includes(t.slug),
@@ -56,6 +58,15 @@ export function NewItemDialog({ open, onOpenChange, itemTypes }: NewItemDialogPr
     (creatableTypes[0]?.slug as CreatableTypeSlug) ?? "snippets",
   );
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+
+  useEffect(() => {
+    if (open) {
+      const slug = defaultTypeSlug ?? creatableTypes[0]?.slug ?? "snippets";
+      setTypeSlug(slug as CreatableTypeSlug);
+      setForm(EMPTY_FORM);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, defaultTypeSlug]);
   const [submitting, setSubmitting] = useState(false);
 
   const selectedType = creatableTypes.find((t) => t.slug === typeSlug);
@@ -185,13 +196,21 @@ export function NewItemDialog({ open, onOpenChange, itemTypes }: NewItemDialogPr
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Content
               </label>
-              <Textarea
-                value={form.content}
-                onChange={(e) => setField("content", e.target.value)}
-                placeholder="Content"
-                rows={6}
-                className="resize-y font-mono text-xs"
-              />
+              {showLanguage ? (
+                <CodeEditor
+                  value={form.content}
+                  onChange={(v) => setField("content", v)}
+                  language={form.language || undefined}
+                />
+              ) : (
+                <Textarea
+                  value={form.content}
+                  onChange={(e) => setField("content", e.target.value)}
+                  placeholder="Content"
+                  rows={6}
+                  className="resize-y font-mono text-xs"
+                />
+              )}
             </div>
           )}
 
