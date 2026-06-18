@@ -1,24 +1,12 @@
-# Current Feature: Code Editor (Monaco)
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Monaco Editor component with dark theme for snippets and commands
-- macOS-style window dots (red/yellow/green) in editor header
-- Language label displayed in editor header
-- Quick copy button in editor header
-- Readonly mode for display, editable mode for edit
-- Fluid height with 400px max and themed scrollbar
-- Textarea kept for notes, prompts, and other non-code types
-
 ## Notes
-
-- Replace Textarea with CodeEditor only for snippet and command item types
-- Both the item drawer (display + edit mode) and the new item dialog are affected
-- Spec file: `context/features/code-editor-spec.md`
 
 ## History
 
@@ -228,3 +216,12 @@ In Progress
   - `NewItemDialog` reuses `itemTypes` already loaded in `DashboardShell` — no extra DB round-trip; filters to creatable types at render time
   - 57/57 tests passing; `npm run build` clean
   - See `@context/change-log/item-create.md` for details
+- Code Editor (Monaco) completed
+  - Installed `@monaco-editor/react@^4.7.0` + `monaco-editor@^0.55.1`
+  - New `src/components/ui/code-editor.tsx`: Monaco wrapper with macOS-style dots (red/yellow/green), language label, copy button (with ✓ feedback), `vs-dark` theme, fluid height auto-sized to content via `onDidContentSizeChange` (80px min, 400px max), thin 5px scrollbar
+  - `ItemDrawer`: snippet/command types now use `CodeEditor` in both display (readonly) and edit mode; notes/prompts keep `<pre><code>` and `Textarea`
+  - `NewItemDialog`: snippet/command content field replaced with `CodeEditor`; added `defaultTypeSlug` prop + `useEffect` to reset type selector and form on each open
+  - New `src/components/items/NewItemButton.tsx`: client component consuming `DashboardShellContext` to open the dialog pre-selected to a specific type
+  - `DashboardShell`: added `DashboardShellContext` with `openNewItem(slug?)`, `useDashboardShell` hook, and `newItemDefaultType` state; wraps layout in context provider
+  - `items/[type]/page.tsx`: `NewItemButton` added to page header with singularized label (e.g. "New Snippet")
+  - 57/57 tests passing; `npm run build` clean
