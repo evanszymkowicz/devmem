@@ -6,11 +6,7 @@ Not Started
 
 ## Goals
 
-<!-- What does success look like? -->
-
 ## Notes
-
-<!-- Additional context, constraints, or details -->
 
 ## History
 
@@ -251,3 +247,9 @@ Not Started
   - 90/90 tests passing; `npm run build` clean
   - Deferred: R2 bucket CORS policy (bucket config in Cloudflare dashboard — `AllowedMethods: ["PUT"]`, `AllowedHeaders: ["Content-Type"]`)
   - See `@context/change-log/file-upload-r2.md` for details
+- File List View completed
+  - `/items/files` now renders a single-column list (Google Drive / Dropbox style) instead of card grid
+  - New `FileListRow` component: file icon (mapped by extension), file name, file size, upload date, hover-reveal download button (`/api/download/[id]`, stops propagation)
+  - `items/[type]/page.tsx` branches on `typeSlug === "files"`; all other types keep the card grid
+  - 90/90 tests passing; `npm run build` clean; Playwright-verified hover, drawer open, and download button behaviour
+  - See `@context/change-log/file-list-view.md` for details
