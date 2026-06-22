@@ -6,6 +6,7 @@ import { getSidebarCollections } from "@/lib/db/collections";
 import { getItemsByType, getSystemItemTypes } from "@/lib/db/items";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ItemCard } from "@/components/items/ItemCard";
+import { FileListRow } from "@/components/items/FileListRow";
 import { ItemDrawerWrapper } from "@/components/items/ItemDrawerWrapper";
 import { NewItemButton } from "@/components/items/NewItemButton";
 import { ICON_MAP } from "@/lib/icon-map";
@@ -74,11 +75,19 @@ export default async function ItemsTypePage({ params }: PageProps) {
           </div>
         ) : (
           <ItemDrawerWrapper>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {items.map((item) => (
-                <ItemCard key={item.id} item={item} />
-              ))}
-            </div>
+            {typeSlug === "files" ? (
+              <div className="flex flex-col gap-2">
+                {items.map((item) => (
+                  <FileListRow key={item.id} item={item} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {items.map((item) => (
+                  <ItemCard key={item.id} item={item} />
+                ))}
+              </div>
+            )}
           </ItemDrawerWrapper>
         )}
       </div>
