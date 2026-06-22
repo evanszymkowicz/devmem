@@ -10,6 +10,9 @@ import { resendVerificationLimiter, checkRateLimit, getIp, rateLimitResponse } f
 // unverified account. Always responds generically (success shape, 200) so it
 // can't be used to probe which emails are registered.
 export async function POST(request: Request) {
+  const rl = await checkRateLimit(resendVerificationLimiter, `resend-verification:${getIp(request)}`);
+  if (rl.limited) return rateLimitResponse(rl.retryAfter);
+
   let body: unknown;
   try {
     body = await request.json();
@@ -34,9 +37,6 @@ export async function POST(request: Request) {
   }
 
   const email = parsed.email.toLowerCase();
-
-  const rl = await checkRateLimit(resendVerificationLimiter, `resend-verification:${getIp(request)}:${email}`);
-  if (rl.limited) return rateLimitResponse(rl.retryAfter);
 
   // When verification is disabled there's nothing to resend. Skip the lookup and
   // send, but still fall through to the identical generic response below so the

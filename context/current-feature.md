@@ -10,6 +10,15 @@ Not Started
 
 ## History
 
+- Security & Quality Audit completed
+  - Full-codebase code-scanner audit; all 9 findings fixed plus upload rate limiting added
+  - **High**: open redirect in `SignInForm` (callbackUrl sanitized), IDOR in `toggleCollectionFavorite` (auth + userId scope added), IDOR on R2 `fileUrl` (scoped prefix check in `createItem`)
+  - **Medium**: resend-verification rate limit moved before `req.json()` (malformed-request bypass fixed), `deleteAccount` now fetches + deletes R2 files before cascading the user row (wrapped in try/catch), `MACOS_DOTS` extracted to `src/lib/editor-constants.ts`, `formatDate` extracted to `src/lib/format-date.ts` with three named variants
+  - **Low**: `fileSize` falsy check changed to `== null`, `ItemDrawer` (630 lines) split into `ItemDrawerViewBody`, `ItemDrawerEditBody`, and `item-drawer-types`
+  - **New**: `uploadLimiter` (10/hr per IP+user) applied to `POST /api/upload`
+  - 90/90 tests passing; `npm run build` clean
+  - See `@context/change-log/security-and-quality-audit.md` for details
+
 > The "Phase" labels below are historical dashboard-UI build stages and predate the
 > ordered checklist now in `project-overview.md` and they do not map to that checklist.
 

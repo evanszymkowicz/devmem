@@ -80,7 +80,6 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
   }, [open, defaultTypeSlug]);
 
   const selectedType = creatableTypes.find((t) => t.slug === typeSlug);
-  const Icon = selectedType ? (ICON_MAP[selectedType.icon] ?? Code) : Code;
   const accent = selectedType?.color ?? "#6b7280";
 
   const showContent = CONTENT_SLUGS.has(typeSlug);

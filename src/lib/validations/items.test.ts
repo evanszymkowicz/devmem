@@ -93,7 +93,8 @@ describe("createItemSchema", () => {
   });
 
   it("rejects a missing typeSlug", () => {
-    const { typeSlug: _, ...rest } = baseSnippet;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { typeSlug: _typeSlug, ...rest } = baseSnippet;
     const result = createItemSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });

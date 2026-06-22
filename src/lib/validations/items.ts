@@ -53,7 +53,7 @@ export const createItemSchema = z
           message: "File name is required",
         });
       }
-      if (!data.fileSize) {
+      if (data.fileSize == null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["fileSize"],

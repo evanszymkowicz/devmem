@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getPresignedUploadUrl } from "@/lib/r2";
+import { uploadLimiter, checkRateLimit, getIp, rateLimitResponse } from "@/lib/rate-limit";
 import {
   IMAGE_MIME_TYPES,
   FILE_MIME_TYPES,
@@ -19,6 +20,9 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rl = await checkRateLimit(uploadLimiter, `upload:${getIp(req)}:${session.user.id}`);
+  if (rl.limited) return rateLimitResponse(rl.retryAfter);
 
   let body: Record<string, unknown>;
   try {

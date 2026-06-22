@@ -26,6 +26,7 @@ export const registerLimiter = makeLimiter(3, "1 h");
 export const forgotPasswordLimiter = makeLimiter(3, "1 h");
 export const resetPasswordLimiter = makeLimiter(5, "15 m");
 export const resendVerificationLimiter = makeLimiter(3, "15 m");
+export const uploadLimiter = makeLimiter(10, "1 h");
 
 export function getIp(request: Request): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";

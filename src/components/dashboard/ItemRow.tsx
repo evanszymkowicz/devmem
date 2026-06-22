@@ -5,6 +5,7 @@ import { Code, Pin, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { type ItemWithType } from "@/lib/db/items";
 import { ICON_MAP } from "@/lib/icon-map";
+import { formatDateShort } from "@/lib/format-date";
 import { useItemDrawer } from "@/components/items/ItemDrawerContext";
 
 interface ItemRowProps {
@@ -65,13 +66,9 @@ export function ItemRow({ item }: ItemRowProps) {
           )}
         </div>
         <time className="shrink-0 text-xs text-muted-foreground">
-          {formatDate(item.updatedAt)}
+          {formatDateShort(item.updatedAt)}
         </time>
       </CardContent>
     </Card>
   );
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }

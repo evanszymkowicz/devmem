@@ -4,6 +4,7 @@ import { Download, File, FileCode, FileText } from "lucide-react";
 
 import { type ItemWithType } from "@/lib/db/items";
 import { formatFileSize } from "@/lib/files";
+import { formatDateWithYear } from "@/lib/format-date";
 import { useItemDrawer } from "./ItemDrawerContext";
 
 const EXT_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -23,14 +24,6 @@ function getExtIcon(fileName: string | null) {
   if (!fileName) return File;
   const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
   return EXT_ICON_MAP[ext] ?? File;
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 interface FileListRowProps {
@@ -56,7 +49,7 @@ export function FileListRow({ item }: FileListRowProps) {
         <p className="truncate text-sm font-medium">{item.fileName ?? item.title}</p>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           {item.fileSize != null && <span>{formatFileSize(item.fileSize)}</span>}
-          <span>{formatDate(item.createdAt)}</span>
+          <span>{formatDateWithYear(item.createdAt)}</span>
         </div>
       </div>
 

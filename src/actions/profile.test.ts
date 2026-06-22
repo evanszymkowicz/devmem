@@ -8,7 +8,14 @@ vi.mock("@/lib/prisma", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    item: {
+      findMany: vi.fn(),
+    },
   },
+}));
+
+vi.mock("@/lib/r2", () => ({
+  deleteFromR2: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/auth", () => ({
@@ -117,6 +124,7 @@ describe("deleteAccount", () => {
 
   it("deletes the account for the session user", async () => {
     mockAuth.mockResolvedValue(AUTHED_SESSION as never);
+    vi.mocked(prisma.item.findMany).mockResolvedValue([] as never);
     mockDelete.mockResolvedValue({} as never);
 
     const result = await deleteAccount();
