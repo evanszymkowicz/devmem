@@ -29,6 +29,10 @@ export async function createItem(
     return { success: false, error: message };
   }
 
+  if (parsed.data.fileUrl && !parsed.data.fileUrl.startsWith(`users/${session.user.id}/`)) {
+    return { success: false, error: "Invalid file reference" };
+  }
+
   try {
     const created = await dbCreateItem(session.user.id, parsed.data);
     if (!created) {

@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Copy, Check } from "lucide-react";
-
-const MACOS_DOTS = ["#ff5f57", "#febc2e", "#28c840"];
-const MIN_HEIGHT = 80;
-const MAX_HEIGHT = 400;
+import { MACOS_DOTS, EDITOR_MIN_HEIGHT, EDITOR_MAX_HEIGHT } from "@/lib/editor-constants";
 
 interface MarkdownEditorProps {
   value: string;
@@ -88,7 +85,7 @@ export function MarkdownEditor({
       {showPreview ? (
         <div
           className="prose prose-invert prose-sm max-w-none prose-code:before:content-none prose-code:after:content-none overflow-y-auto bg-[#1e1e1e] px-4 py-3"
-          style={{ minHeight: MIN_HEIGHT, maxHeight: MAX_HEIGHT }}
+          style={{ minHeight: EDITOR_MIN_HEIGHT, maxHeight: EDITOR_MAX_HEIGHT }}
         >
           {value ? (
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
@@ -102,7 +99,7 @@ export function MarkdownEditor({
           onChange={(e) => onChange?.(e.target.value)}
           placeholder="Write markdown…"
           className="w-full resize-y bg-[#1e1e1e] px-3 py-2.5 font-mono text-xs leading-relaxed text-[#d4d4d4] outline-none placeholder:text-[#5a5a5a]"
-          style={{ minHeight: MIN_HEIGHT, maxHeight: MAX_HEIGHT }}
+          style={{ minHeight: EDITOR_MIN_HEIGHT, maxHeight: EDITOR_MAX_HEIGHT }}
         />
       )}
     </div>

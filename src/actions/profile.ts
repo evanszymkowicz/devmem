@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { deleteFromR2 } from "@/lib/r2";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { changePasswordSchema } from "@/lib/validations/auth";
 
@@ -57,7 +58,26 @@ export async function deleteAccount(): Promise<{
     return { success: false, error: "Not authenticated" };
   }
 
-  await prisma.user.delete({ where: { id: session.user.id } });
+  try {
+    const fileItems = await prisma.item.findMany({
+      where: { userId: session.user.id, fileUrl: { not: null } },
+      select: { fileUrl: true },
+    });
 
-  return { success: true };
+    await prisma.user.delete({ where: { id: session.user.id } });
+
+    await Promise.allSettled(
+      fileItems
+        .filter((item): item is { fileUrl: string } => item.fileUrl !== null)
+        .map((item) =>
+          deleteFromR2(item.fileUrl).catch((e) =>
+            console.error("R2 cleanup failed on account delete:", e),
+          ),
+        ),
+    );
+
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to delete account" };
+  }
 }

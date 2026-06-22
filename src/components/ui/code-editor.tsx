@@ -3,10 +3,7 @@
 import { useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { Copy, Check } from "lucide-react";
-
-const MACOS_DOTS = ["#ff5f57", "#febc2e", "#28c840"];
-const MIN_HEIGHT = 80;
-const MAX_HEIGHT = 400;
+import { MACOS_DOTS, EDITOR_MIN_HEIGHT, EDITOR_MAX_HEIGHT } from "@/lib/editor-constants";
 
 interface MinimalEditor {
   getContentHeight(): number;
@@ -29,7 +26,7 @@ export function CodeEditor({
   className,
 }: CodeEditorProps) {
   const editorRef = useRef<MinimalEditor | null>(null);
-  const [height, setHeight] = useState(MIN_HEIGHT);
+  const [height, setHeight] = useState(EDITOR_MIN_HEIGHT);
   const [copied, setCopied] = useState(false);
 
   function handleMount(ed: MinimalEditor) {
@@ -39,7 +36,7 @@ export function CodeEditor({
   }
 
   function syncHeight(ed: MinimalEditor) {
-    const next = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, ed.getContentHeight()));
+    const next = Math.min(EDITOR_MAX_HEIGHT, Math.max(EDITOR_MIN_HEIGHT, ed.getContentHeight()));
     setHeight(next);
   }
 
@@ -84,7 +81,7 @@ export function CodeEditor({
           loading={
             <div
               className="flex items-center justify-center bg-[#1e1e1e] text-[11px] text-[#858585]"
-              style={{ height: MIN_HEIGHT }}
+              style={{ height: EDITOR_MIN_HEIGHT }}
             >
               Loading…
             </div>

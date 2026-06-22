@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type ItemWithType } from "@/lib/db/items";
 import { ICON_MAP } from "@/lib/icon-map";
+import { formatDateShort } from "@/lib/format-date";
 import { useItemDrawer } from "./ItemDrawerContext";
 
 interface ItemCardProps {
@@ -63,7 +64,7 @@ export function ItemCard({ item }: ItemCardProps) {
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <time className="text-xs text-muted-foreground">
-              {formatDate(item.updatedAt)}
+              {formatDateShort(item.updatedAt)}
             </time>
             {copyValue && (
               <button
@@ -105,8 +106,4 @@ export function ItemCard({ item }: ItemCardProps) {
       )}
     </Card>
   );
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }

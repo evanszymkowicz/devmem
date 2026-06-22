@@ -68,7 +68,8 @@ export function SignInForm({ callbackUrl }: SignInFormProps) {
       return;
     }
 
-    router.push(callbackUrl);
+    const safeCb = callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : "/dashboard";
+    router.push(safeCb);
     router.refresh();
   }
 
