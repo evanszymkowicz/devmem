@@ -6,12 +6,16 @@ Not Started
 
 ## Goals
 
+<!-- What does success look like? -->
+
 ## Notes
+
+<!-- Additional context, constraints, or details -->
 
 ## History
 
 > The "Phase" labels below are historical dashboard-UI build stages and predate the
-> ordered checklist now in `project-overview.md` §8; they do not map to that checklist.
+> ordered checklist now in `project-overview.md` and they do not map to that checklist.
 
 - Phase 1 (Foundation Layout) completed and merged to main (PR #1)
   - ShadCN init (radix-nova preset, Lucide icons, Geist fonts)
@@ -234,3 +238,16 @@ Not Started
   - Browser-verified: formatted rendering (headings, lists, bold/italic, inline code) confirmed via Playwright in both view and edit modes
   - 57/57 tests passing; `npm run build` clean
   - See `@context/change-log/markdown-editor.md` for details
+- File Upload with Cloudflare R2 completed
+  - Presigned URL upload flow: `POST /api/upload` validates auth + MIME + size, generates scoped R2 key (`users/{userId}/{uuid}{ext}`), returns signed PUT URL; browser XHR PUTs directly to R2 — Next.js never handles file bytes
+  - `signableHeaders: new Set(["content-type"])` added to `getPresignedUploadUrl` so R2 cryptographically enforces MIME type end-to-end
+  - `FileUpload` component: drag-and-drop, XHR progress bar, image preview, file-info card, error state; remounts cleanly on type change or dialog reopen via `uploadKey` counter
+  - `NewItemDialog` extended for file/image types: `FileUpload` widget, `fileKey`/`fileName`/`fileSize` in form state, submit gated on upload completion
+  - `ItemDrawer` extended: Download button (links to proxy route) replaces Copy for file types; image preview + file-info card in body
+  - `GET /api/download/[id]`: auth + ownership check, streams `GetObjectCommand` response with `Content-Disposition: attachment` — intentional proxy exception to avoid CORS and enforce auth
+  - `deleteItem` action: fetches `fileUrl` before DB delete, then soft-deletes from R2 with `.catch()` so R2 failure never blocks the user
+  - `src/lib/files.ts`: single source of truth for MIME sets, size limits, accept strings, extension labels, hint strings, `validateFile`, `formatFileSize` — no hardcoded values elsewhere
+  - 33 new unit tests in `src/lib/files.test.ts` (all valid MIME types, invalid rejections, exact size boundaries, `formatFileSize` across bytes/KB/MB)
+  - 90/90 tests passing; `npm run build` clean
+  - Deferred: R2 bucket CORS policy (bucket config in Cloudflare dashboard — `AllowedMethods: ["PUT"]`, `AllowedHeaders: ["Content-Type"]`)
+  - See `@context/change-log/file-upload-r2.md` for details

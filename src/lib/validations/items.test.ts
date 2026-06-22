@@ -99,7 +99,7 @@ describe("createItemSchema", () => {
   });
 
   it("rejects a typeSlug not in the allowed list", () => {
-    const result = createItemSchema.safeParse({ ...baseSnippet, typeSlug: "files" });
+    const result = createItemSchema.safeParse({ ...baseSnippet, typeSlug: "custom-invalid" });
     expect(result.success).toBe(false);
   });
 

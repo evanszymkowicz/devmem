@@ -6,9 +6,13 @@ export const CREATABLE_TYPE_SLUGS = [
   "commands",
   "notes",
   "links",
+  "files",
+  "images",
 ] as const;
 
 export type CreatableTypeSlug = (typeof CREATABLE_TYPE_SLUGS)[number];
+
+export const FILE_TYPE_SLUGS = new Set<CreatableTypeSlug>(["files", "images"]);
 
 export const createItemSchema = z
   .object({
@@ -21,6 +25,9 @@ export const createItemSchema = z
       (v) => (typeof v === "string" && v.trim() === "" ? null : v),
       z.string().url("Must be a valid URL").nullable().optional(),
     ),
+    fileUrl: z.string().min(1).nullable().optional(),
+    fileName: z.string().min(1).nullable().optional(),
+    fileSize: z.number().positive().int().nullable().optional(),
     tags: z.array(z.string().trim().min(1)).default([]),
   })
   .superRefine((data, ctx) => {
@@ -30,6 +37,29 @@ export const createItemSchema = z
         path: ["url"],
         message: "URL is required for links",
       });
+    }
+    if (FILE_TYPE_SLUGS.has(data.typeSlug)) {
+      if (!data.fileUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["fileUrl"],
+          message: "File must be uploaded first",
+        });
+      }
+      if (!data.fileName) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["fileName"],
+          message: "File name is required",
+        });
+      }
+      if (!data.fileSize) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["fileSize"],
+          message: "File size is required",
+        });
+      }
     }
   });
 

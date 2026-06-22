@@ -15,6 +15,12 @@ vi.mock("@/auth", () => ({
 vi.mock("@/lib/db/items", () => ({
   createItem: vi.fn(),
   updateItem: vi.fn(),
+  deleteItem: vi.fn(),
+  getItemFileUrl: vi.fn(),
+}));
+
+vi.mock("@/lib/r2", () => ({
+  deleteFromR2: vi.fn(),
 }));
 
 import { createItem, updateItem } from "./items";
@@ -134,7 +140,7 @@ describe("createItem action", () => {
 
   it("returns a validation error when typeSlug is invalid", async () => {
     mockAuth.mockResolvedValue(AUTHED_SESSION as never);
-    const result = await createItem({ ...VALID_CREATE_PAYLOAD, typeSlug: "files" });
+    const result = await createItem({ ...VALID_CREATE_PAYLOAD, typeSlug: "custom-invalid" });
     expect(result.success).toBe(false);
   });
 

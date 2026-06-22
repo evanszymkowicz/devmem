@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Code, Copy, Pencil, Pin, Star, Trash2, X, Check } from "lucide-react";
+import { Code, Copy, Download, File as FileIcon, Pencil, Pin, Star, Trash2, X, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ICON_MAP } from "@/lib/icon-map";
+import { formatFileSize } from "@/lib/files";
 import type { ItemDetail } from "@/lib/db/items";
 import { updateItem, deleteItem } from "@/actions/items";
 import { useItemDrawer } from "./ItemDrawerContext";
@@ -35,6 +36,7 @@ import { useItemDrawer } from "./ItemDrawerContext";
 const CONTENT_TYPE_SLUGS = new Set(["snippets", "prompts", "commands", "notes"]);
 const LANGUAGE_TYPE_SLUGS = new Set(["snippets", "commands"]);
 const URL_TYPE_SLUGS = new Set(["links"]);
+const FILE_TYPE_SLUGS = new Set(["files", "images"]);
 
 interface EditState {
   title: string;
@@ -94,6 +96,7 @@ export function ItemDrawer() {
   const showContent = CONTENT_TYPE_SLUGS.has(typeSlug);
   const showLanguage = LANGUAGE_TYPE_SLUGS.has(typeSlug);
   const showUrl = URL_TYPE_SLUGS.has(typeSlug);
+  const showFile = FILE_TYPE_SLUGS.has(typeSlug);
 
   function handleCopy() {
     const text = item?.content ?? item?.url ?? "";
@@ -312,17 +315,35 @@ export function ItemDrawer() {
               />
               Pin
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1.5"
-              disabled={!item}
-              onClick={handleCopy}
-              aria-label="Copy"
-            >
-              <Copy className="size-3.5" />
-              Copy
-            </Button>
+            {showFile ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5"
+                disabled={!item}
+                asChild
+              >
+                <a
+                  href={item ? `/api/download/${item.id}` : undefined}
+                  download={item?.fileName ?? undefined}
+                >
+                  <Download className="size-3.5" />
+                  Download
+                </a>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5"
+                disabled={!item}
+                onClick={handleCopy}
+                aria-label="Copy"
+              >
+                <Copy className="size-3.5" />
+                Copy
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -481,6 +502,36 @@ export function ItemDrawer() {
                   >
                     {item.url}
                   </a>
+                </section>
+              )}
+
+              {showFile && item.fileUrl && (
+                <section className="px-6 py-4">
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {typeSlug === "images" ? "Image" : "File"}
+                  </p>
+                  {typeSlug === "images" && (
+                    <div className="mb-3 flex justify-center">
+                      <img
+                        src={`/api/download/${item.id}`}
+                        alt={item.fileName ?? "Image"}
+                        className="max-h-52 max-w-full rounded-md object-contain"
+                      />
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 rounded-md border border-border bg-muted/30 px-3 py-2.5">
+                    <FileIcon className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {item.fileName ?? "Unknown file"}
+                      </p>
+                      {item.fileSize != null && (
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(item.fileSize)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </section>
               )}
 
