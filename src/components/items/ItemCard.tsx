@@ -1,6 +1,7 @@
 "use client";
 
-import { Code, Pin, Star } from "lucide-react";
+import { Check, Code, Copy, Pin, Star } from "lucide-react";
+import { useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type ItemWithType } from "@/lib/db/items";
@@ -13,13 +14,25 @@ interface ItemCardProps {
 
 export function ItemCard({ item }: ItemCardProps) {
   const { openDrawer } = useItemDrawer();
+  const [copied, setCopied] = useState(false);
   const Icon = ICON_MAP[item.itemType.icon] ?? Code;
   const accent = item.itemType.color;
+
+  const copyValue = item.url ?? item.content ?? null;
+
+  function handleCopy(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!copyValue) return;
+    navigator.clipboard.writeText(copyValue).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
 
   return (
     <Card
       size="sm"
-      className="h-full cursor-pointer border-l-4 transition-colors hover:bg-accent/40"
+      className="group h-full cursor-pointer border-l-4 transition-colors hover:bg-accent/40"
       style={{ borderLeftColor: accent }}
       onClick={() => openDrawer(item.id)}
     >
@@ -48,9 +61,24 @@ export function ItemCard({ item }: ItemCardProps) {
               )}
             </div>
           </div>
-          <time className="shrink-0 text-xs text-muted-foreground">
-            {formatDate(item.updatedAt)}
-          </time>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <time className="text-xs text-muted-foreground">
+              {formatDate(item.updatedAt)}
+            </time>
+            {copyValue && (
+              <button
+                onClick={handleCopy}
+                className="rounded p-0.5 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent"
+                aria-label="Copy"
+              >
+                {copied ? (
+                  <Check className="size-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="size-3.5 text-muted-foreground" />
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </CardHeader>
 
