@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/components/ui/code-editor";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
+import { FileUpload, type UploadedFile } from "@/components/ui/file-upload";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,7 @@ import {
 import { ICON_MAP } from "@/lib/icon-map";
 import { createItem } from "@/actions/items";
 import type { SidebarItemType } from "@/lib/db/items";
-import { CREATABLE_TYPE_SLUGS, type CreatableTypeSlug } from "@/lib/validations/items";
+import { CREATABLE_TYPE_SLUGS, FILE_TYPE_SLUGS, type CreatableTypeSlug } from "@/lib/validations/items";
 
 const CONTENT_SLUGS = new Set<CreatableTypeSlug>(["snippets", "prompts", "commands", "notes"]);
 const LANGUAGE_SLUGS = new Set<CreatableTypeSlug>(["snippets", "commands"]);
@@ -38,6 +39,9 @@ interface FormState {
   language: string;
   url: string;
   tags: string;
+  fileKey: string;
+  fileName: string;
+  fileSize: number;
 }
 
 const EMPTY_FORM: FormState = {
@@ -47,6 +51,9 @@ const EMPTY_FORM: FormState = {
   language: "",
   url: "",
   tags: "",
+  fileKey: "",
+  fileName: "",
+  fileSize: 0,
 };
 
 export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }: NewItemDialogProps) {
@@ -59,16 +66,18 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
     (creatableTypes[0]?.slug as CreatableTypeSlug) ?? "snippets",
   );
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [uploadKey, setUploadKey] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (open) {
       const slug = defaultTypeSlug ?? creatableTypes[0]?.slug ?? "snippets";
       setTypeSlug(slug as CreatableTypeSlug);
       setForm(EMPTY_FORM);
+      setUploadKey((k) => k + 1);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultTypeSlug]);
-  const [submitting, setSubmitting] = useState(false);
 
   const selectedType = creatableTypes.find((t) => t.slug === typeSlug);
   const Icon = selectedType ? (ICON_MAP[selectedType.icon] ?? Code) : Code;
@@ -77,6 +86,7 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
   const showContent = CONTENT_SLUGS.has(typeSlug);
   const showLanguage = LANGUAGE_SLUGS.has(typeSlug);
   const showUrl = typeSlug === "links";
+  const showFile = FILE_TYPE_SLUGS.has(typeSlug);
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -85,14 +95,22 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
   function handleTypeChange(slug: CreatableTypeSlug) {
     setTypeSlug(slug);
     setForm(EMPTY_FORM);
+    setUploadKey((k) => k + 1);
   }
 
   function handleClose(next: boolean) {
     if (!next) {
       setForm(EMPTY_FORM);
       setTypeSlug((creatableTypes[0]?.slug as CreatableTypeSlug) ?? "snippets");
+      setUploadKey((k) => k + 1);
     }
     onOpenChange(next);
+  }
+
+  function handleUploadComplete(data: UploadedFile) {
+    setField("fileKey", data.key);
+    setField("fileName", data.fileName);
+    setField("fileSize", data.fileSize);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -111,6 +129,9 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
       content: form.content || null,
       language: form.language || null,
       url: form.url || null,
+      fileUrl: form.fileKey || null,
+      fileName: form.fileName || null,
+      fileSize: form.fileSize || null,
       tags,
     });
 
@@ -129,6 +150,7 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
   const canSubmit =
     form.title.trim().length > 0 &&
     (typeSlug !== "links" || form.url.trim().length > 0) &&
+    (!showFile || form.fileKey.length > 0) &&
     !submitting;
 
   return (
@@ -190,6 +212,21 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
               className="resize-none text-sm"
             />
           </div>
+
+          {/* File upload */}
+          {showFile && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {typeSlug === "images" ? "Image" : "File"}{" "}
+                <span style={{ color: accent }}>*</span>
+              </label>
+              <FileUpload
+                key={`${typeSlug}-${uploadKey}`}
+                typeSlug={typeSlug as "files" | "images"}
+                onUploadComplete={handleUploadComplete}
+              />
+            </div>
+          )}
 
           {/* Content */}
           {showContent && (

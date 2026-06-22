@@ -115,6 +115,8 @@ const SLUG_TO_CONTENT_TYPE: Record<string, ContentType> = {
   commands: ContentType.TEXT,
   notes: ContentType.TEXT,
   links: ContentType.URL,
+  files: ContentType.FILE,
+  images: ContentType.FILE,
 };
 
 export async function createItem(
@@ -146,11 +148,25 @@ export async function createItem(
         content: data.content ?? null,
         language: data.language ?? null,
         url: data.url ?? null,
+        fileUrl: data.fileUrl ?? null,
+        fileName: data.fileName ?? null,
+        fileSize: data.fileSize ?? null,
         tags: { connect: tagRecords.map((t) => ({ id: t.id })) },
       },
       include: itemDetailInclude,
     });
   });
+}
+
+export async function getItemFileUrl(
+  userId: string,
+  itemId: string,
+): Promise<string | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { fileUrl: true },
+  });
+  return item?.fileUrl ?? null;
 }
 
 export async function deleteItem(

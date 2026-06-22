@@ -5,7 +5,9 @@ import {
   createItem as dbCreateItem,
   updateItem as dbUpdateItem,
   deleteItem as dbDeleteItem,
+  getItemFileUrl,
 } from "@/lib/db/items";
+import { deleteFromR2 } from "@/lib/r2";
 import { createItemSchema, updateItemSchema } from "@/lib/validations/items";
 import type { ItemDetail } from "@/lib/db/items";
 
@@ -73,10 +75,19 @@ export async function deleteItem(
   }
 
   try {
+    const fileUrl = await getItemFileUrl(session.user.id, itemId);
+
     const deleted = await dbDeleteItem(session.user.id, itemId);
     if (!deleted) {
       return { success: false, error: "Item not found" };
     }
+
+    if (fileUrl) {
+      await deleteFromR2(fileUrl).catch((e) =>
+        console.error("R2 cleanup failed for key", fileUrl, e),
+      );
+    }
+
     return { success: true, data: null };
   } catch {
     return { success: false, error: "Failed to delete item" };
