@@ -1,24 +1,12 @@
-# Current Feature: File List View
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Replace the grid-card layout on `/items/files` with a single-column list (Google Drive / Dropbox style)
-- Each row shows: file icon (by extension), file name, file size, upload date, download button
-- Row hover highlight
-- Click row opens ItemDrawer
-- Download button triggers direct download (stop propagation so clicking it doesn't open the drawer)
-- Responsive: stack info vertically on mobile
-
 ## Notes
-
-- Only `/items/files` gets this list layout; other item type pages keep the card grid
-- The download button should reuse the existing `/api/download/[id]` proxy route
-- File icon should vary by extension (e.g. PDF, ZIP, DOCX) — can use a simple extension-to-icon map or a single generic file icon as fallback
-- File size and upload date are already on the `Item` model (`fileSize`, `createdAt`)
 
 ## History
 
@@ -259,3 +247,9 @@ In Progress
   - 90/90 tests passing; `npm run build` clean
   - Deferred: R2 bucket CORS policy (bucket config in Cloudflare dashboard — `AllowedMethods: ["PUT"]`, `AllowedHeaders: ["Content-Type"]`)
   - See `@context/change-log/file-upload-r2.md` for details
+- File List View completed
+  - `/items/files` now renders a single-column list (Google Drive / Dropbox style) instead of card grid
+  - New `FileListRow` component: file icon (mapped by extension), file name, file size, upload date, hover-reveal download button (`/api/download/[id]`, stops propagation)
+  - `items/[type]/page.tsx` branches on `typeSlug === "files"`; all other types keep the card grid
+  - 90/90 tests passing; `npm run build` clean; Playwright-verified hover, drawer open, and download button behaviour
+  - See `@context/change-log/file-list-view.md` for details
