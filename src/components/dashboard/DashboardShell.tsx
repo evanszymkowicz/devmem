@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
+import { SearchCommand } from "@/components/dashboard/SearchCommand";
 import { NewItemDialog } from "@/components/items/NewItemDialog";
 import { NewCollectionDialog } from "@/components/collections/NewCollectionDialog";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,7 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
   const [newItemOpen, setNewItemOpen] = useState(false);
   const [newItemDefaultType, setNewItemDefaultType] = useState<string | undefined>();
   const [newCollectionOpen, setNewCollectionOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   function openNewItem(slug?: string) {
     setNewItemDefaultType(slug);
@@ -121,6 +123,7 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
           onToggleSidebar={openSidebar}
           onNewItem={() => openNewItem()}
           onNewCollection={openNewCollection}
+          onOpenSearch={() => setSearchOpen(true)}
         />
 
         <main className="flex-1 overflow-y-auto">{children}</main>
@@ -137,6 +140,12 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
       <NewCollectionDialog
         open={newCollectionOpen}
         onOpenChange={setNewCollectionOpen}
+      />
+
+      <SearchCommand
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        collections={collections}
       />
     </div>
     </DashboardShellContext.Provider>

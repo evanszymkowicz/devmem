@@ -6,9 +6,13 @@ Not Started
 
 ## Goals
 
+<!-- Bullet points of what success looks like -->
+
 ## TODOs
 
 ## Notes
+
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -44,3 +48,4 @@ Not Started
 - File Upload with Cloudflare R2
 - File List View
 - Collections & Settings
+- Global Search / Command Palette
