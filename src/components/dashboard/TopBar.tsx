@@ -3,7 +3,6 @@
 import { FolderPlus, PanelLeft, Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface TopBarProps {
@@ -11,9 +10,10 @@ interface TopBarProps {
   onToggleSidebar: () => void;
   onNewItem: () => void;
   onNewCollection: () => void;
+  onOpenSearch: () => void;
 }
 
-export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCollection }: TopBarProps) {
+export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCollection, onOpenSearch }: TopBarProps) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-3 border-b px-4 md:px-6">
       <Button
@@ -26,18 +26,18 @@ export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCo
         <PanelLeft className="size-4" />
       </Button>
 
-      <div className="relative w-full max-w-md">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Search items..."
-          aria-label="Search items"
-          className="pl-9"
-        />
-        <kbd className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
+      <button
+        type="button"
+        onClick={onOpenSearch}
+        aria-label="Search items and collections"
+        className="relative flex h-9 w-full max-w-md items-center rounded-md border border-input bg-transparent pr-3 pl-9 text-left text-sm text-muted-foreground shadow-xs transition-colors hover:bg-accent/40 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+      >
+        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+        <span>Search items and collections...</span>
+        <kbd className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium sm:flex">
           ⌘K
         </kbd>
-      </div>
+      </button>
 
       <div className="ml-auto flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={onNewCollection}>
