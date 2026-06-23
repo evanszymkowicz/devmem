@@ -1,13 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Editor from "@monaco-editor/react";
+import { useEffect, useRef, useState } from "react";
+import Editor, { type Monaco } from "@monaco-editor/react";
 import { Copy, Check } from "lucide-react";
 import { MACOS_DOTS, EDITOR_MIN_HEIGHT, EDITOR_MAX_HEIGHT } from "@/lib/editor-constants";
+import { useEditorPreferences } from "@/components/editor/EditorPreferencesProvider";
+import { registerMonacoThemes } from "@/lib/monaco-themes";
 
 interface MinimalEditor {
   getContentHeight(): number;
   onDidContentSizeChange(listener: () => void): { dispose(): void };
+  getModel(): { updateOptions(options: { tabSize: number }): void } | null;
 }
 
 interface CodeEditorProps {
@@ -25,6 +28,7 @@ export function CodeEditor({
   readOnly = false,
   className,
 }: CodeEditorProps) {
+  const { preferences } = useEditorPreferences();
   const editorRef = useRef<MinimalEditor | null>(null);
   const [height, setHeight] = useState(EDITOR_MIN_HEIGHT);
   const [copied, setCopied] = useState(false);
@@ -33,6 +37,17 @@ export function CodeEditor({
     editorRef.current = ed;
     syncHeight(ed);
     ed.onDidContentSizeChange(() => syncHeight(ed));
+    ed.getModel()?.updateOptions({ tabSize: preferences.tabSize });
+  }
+
+  // tabSize is a model option, not an editor option, so it must be applied
+  // through the model rather than the `options` prop.
+  useEffect(() => {
+    editorRef.current?.getModel()?.updateOptions({ tabSize: preferences.tabSize });
+  }, [preferences.tabSize]);
+
+  function handleBeforeMount(monaco: Monaco) {
+    registerMonacoThemes(monaco);
   }
 
   function syncHeight(ed: MinimalEditor) {
@@ -76,7 +91,8 @@ export function CodeEditor({
           value={value}
           onChange={(val) => onChange?.(val ?? "")}
           language={monacoLanguage}
-          theme="vs-dark"
+          theme={preferences.theme}
+          beforeMount={handleBeforeMount}
           onMount={handleMount}
           loading={
             <div
@@ -88,10 +104,9 @@ export function CodeEditor({
           }
           options={{
             readOnly,
-            minimap: { enabled: false },
-            fontSize: 12,
-            lineHeight: 18,
-            wordWrap: "on",
+            minimap: { enabled: preferences.minimap },
+            fontSize: preferences.fontSize,
+            wordWrap: preferences.wordWrap ? "on" : "off",
             automaticLayout: true,
             scrollBeyondLastLine: false,
             lineNumbers: "off",

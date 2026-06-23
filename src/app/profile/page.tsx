@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getProfileData } from "@/lib/db/profile";
 import { getSidebarCollections } from "@/lib/db/collections";
 import { getSystemItemTypes } from "@/lib/db/items";
+import { getEditorPreferences } from "@/lib/db/editor-preferences";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,11 +17,13 @@ export default async function ProfilePage() {
 
   const userId = session.user.id;
 
-  const [profile, itemTypes, collections] = await Promise.all([
-    getProfileData(userId),
-    getSystemItemTypes(userId),
-    getSidebarCollections(userId),
-  ]);
+  const [profile, itemTypes, collections, editorPreferences] =
+    await Promise.all([
+      getProfileData(userId),
+      getSystemItemTypes(userId),
+      getSidebarCollections(userId),
+      getEditorPreferences(userId),
+    ]);
 
   const sidebarUser = {
     name: session.user.name ?? "User",
@@ -39,6 +42,7 @@ export default async function ProfilePage() {
       itemTypes={itemTypes}
       collections={collections}
       user={sidebarUser}
+      editorPreferences={editorPreferences}
     >
       <div className="mx-auto w-full max-w-2xl px-4 py-8 md:px-8">
         <header className="mb-8">
