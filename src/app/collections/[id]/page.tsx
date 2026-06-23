@@ -6,19 +6,27 @@ import {
   getCollectionWithItems,
   getSidebarCollections,
 } from "@/lib/db/collections";
+import { ITEMS_PER_PAGE } from "@/lib/db/limits";
 import { getSystemItemTypes } from "@/lib/db/items";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ItemCard } from "@/components/items/ItemCard";
 import { FileListRow } from "@/components/items/FileListRow";
 import { ItemDrawerWrapper } from "@/components/items/ItemDrawerWrapper";
 import { CollectionDetailActions } from "@/components/collections/CollectionDetailActions";
+import { Pagination } from "@/components/ui/pagination";
+import { pageHref, parsePageParam } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function CollectionDetailPage({ params }: PageProps) {
+export default async function CollectionDetailPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { id } = await params;
+  const page = parsePageParam((await searchParams).page);
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
@@ -27,10 +35,20 @@ export default async function CollectionDetailPage({ params }: PageProps) {
   const [itemTypes, sidebarCollections, collection] = await Promise.all([
     getSystemItemTypes(userId),
     getSidebarCollections(userId),
-    getCollectionWithItems(userId, id),
+    getCollectionWithItems(userId, id, page),
   ]);
 
   if (!collection) notFound();
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(collection.totalItemCount / ITEMS_PER_PAGE),
+  );
+  // Out-of-range page — redirect to the last real page rather than rendering
+  // an empty collection state.
+  if (page > totalPages) {
+    redirect(pageHref(`/collections/${collection.id}`, totalPages));
+  }
 
   const sidebarUser = {
     name: session.user.name ?? "User",
@@ -51,8 +69,8 @@ export default async function CollectionDetailPage({ params }: PageProps) {
               {collection.name}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {collection.items.length}{" "}
-              {collection.items.length === 1 ? "item" : "items"}
+              {collection.totalItemCount}{" "}
+              {collection.totalItemCount === 1 ? "item" : "items"}
             </p>
             {collection.description && (
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
@@ -90,6 +108,12 @@ export default async function CollectionDetailPage({ params }: PageProps) {
             </div>
           </ItemDrawerWrapper>
         )}
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          basePath={`/collections/${collection.id}`}
+        />
       </div>
     </DashboardShell>
   );

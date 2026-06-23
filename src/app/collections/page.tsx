@@ -3,21 +3,35 @@ import { FolderOpen } from "lucide-react";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getCollections, getSidebarCollections } from "@/lib/db/collections";
+import { COLLECTIONS_PER_PAGE } from "@/lib/db/limits";
 import { getSystemItemTypes } from "@/lib/db/items";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
+import { Pagination } from "@/components/ui/pagination";
+import { pageHref, parsePageParam } from "@/lib/utils";
 
-export default async function CollectionsPage() {
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function CollectionsPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
   const userId = session.user.id;
+  const page = parsePageParam((await searchParams).page);
 
-  const [itemTypes, sidebarCollections, collections] = await Promise.all([
-    getSystemItemTypes(userId),
-    getSidebarCollections(userId),
-    getCollections(userId),
-  ]);
+  const [itemTypes, sidebarCollections, { collections, totalCount }] =
+    await Promise.all([
+      getSystemItemTypes(userId),
+      getSidebarCollections(userId),
+      getCollections(userId, page),
+    ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / COLLECTIONS_PER_PAGE));
+  // Out-of-range page — redirect to the last real page rather than rendering
+  // an empty "no collections yet" state.
+  if (page > totalPages) redirect(pageHref("/collections", totalPages));
 
   const sidebarUser = {
     name: session.user.name ?? "User",
@@ -35,8 +49,7 @@ export default async function CollectionsPage() {
         <header className="mb-6">
           <h1 className="text-3xl font-semibold tracking-tight">Collections</h1>
           <p className="text-sm text-muted-foreground">
-            {collections.length}{" "}
-            {collections.length === 1 ? "collection" : "collections"}
+            {totalCount} {totalCount === 1 ? "collection" : "collections"}
           </p>
         </header>
 
@@ -56,6 +69,12 @@ export default async function CollectionsPage() {
             ))}
           </div>
         )}
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          basePath="/collections"
+        />
       </div>
     </DashboardShell>
   );

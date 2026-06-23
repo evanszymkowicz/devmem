@@ -48,4 +48,5 @@ Not Started
 - File Upload with Cloudflare R2
 - File List View
 - Collections & Settings
-- Global Search / Command Palette
+- Global Search/Command Palette
+- Pagination
