@@ -14,8 +14,8 @@ This is the common workflow that we will use for every single feature/fix:
 
 1. **Document** - Document the feature in @context/current-feature.md.
 2. **Branch** - The user will create the branch.
-3. **Implement** - Implement the feature/fix documented in @context/current-feature.md.
-4. **Test** - Verify it works in the browser. Run `npm test` and fix any failures. Run `npm run build` and fix any errors.
+3. **Implement** - Implement the feature/fix documented in @context/current-feature.md. Do NOT test, run `npm test`, or run `npm run build` during this step — testing belongs to the Test step only. If you are uncertain about current best practices for a library, framework, or API, check the latest documentation via Context7 before implementing.
+4. **Test** - Verify it works in the browser. Run `npm test` and fix any failures. Run `npm run build` and fix any errors. Any notes or screenshots captured during verification belong to this step only — never capture them during Implement. When creating those files, always make a new sub-directory inside `.playwright-mcp/` named to clearly identify what was tested (e.g. `.playwright-mcp/Global Search/`). Reuse that same sub-directory for the feature across repeated test runs, and delete any files left in it from a previous run before writing new ones — keep only the latest run's screenshots and notes/yml files, never an accumulation across runs.
 5. **Iterate** - Iterate and change things if needed.
 6. **Commit** - The user will commit to the branch.
 7. **Merge** - The user will review and merge on GitHub's website.

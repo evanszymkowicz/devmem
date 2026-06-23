@@ -5,3 +5,5 @@
 3. Set Status to "In Progress" if it is not yet.
 4. Check to make sure there is a branch. Flag if not.
 5. List the goals, then implement them one by one
+6. Do NOT do any testing as part of implementation — no test runs, builds, browser verification, or capturing notes/screenshots. All of that belongs to `/feature test`.
+7. If you are uncertain about current best practices for a library, framework, or API while implementing, check the latest documentation via Context7 before writing the code.
