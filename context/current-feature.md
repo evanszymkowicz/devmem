@@ -1,32 +1,18 @@
-# Current Feature: Pagination
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add pagination to `/items/[type]` and `/collections/[id]` listing pages
-- Pagination controls at the bottom showing numbered page links plus prev/next
-- Prev/next links are interactive; greyed out (disabled) when not available
-- Use `null` for prev/next when there is no previous/next page
-- Only fetch the rows a single page needs — never fetch all resources at once
+<!-- Bullet points of what success looks like -->
 
 ## TODOs
 
-- Add constants: `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`
-- Add dashboard constants: `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
-- Paginate items listing query (`take` + `skip`, with total count for page numbers)
-- Paginate collections listing query (`take` + `skip`, with total count)
-- Build a reusable pagination control component (page numbers + prev/next)
-- Wire dashboard collections/recent items to the new dashboard limits
-
 ## Notes
 
-- Source spec: `context/features/pagination-spec.md`
-- Likely fewer than 21 items exist in dev data, so verify the single-page (no prev/next) state renders correctly
-- Keep limit constants in `src/lib/db/limits.ts` per coding standards (centralize magic numbers, bounded queries)
-- Each `findMany` must keep an explicit `take` — pagination should reduce, not remove, query bounds
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -63,3 +49,4 @@ In Progress
 - File List View
 - Collections & Settings
 - Global Search/Command Palette
+- Pagination
