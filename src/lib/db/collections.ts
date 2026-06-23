@@ -1,5 +1,10 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import {
+  COLLECTIONS_PER_PAGE,
+  DASHBOARD_COLLECTIONS_LIMIT,
+  ITEMS_PER_PAGE,
+} from "@/lib/db/limits";
 import type {
   CreateCollectionInput,
   UpdateCollectionInput,
@@ -28,20 +33,18 @@ export interface DashboardStats {
   favoriteCollections: number;
 }
 
-const MAX_DASHBOARD_COLLECTIONS = 6;
-const MAX_COLLECTIONS = 200;
-const MAX_COLLECTION_ITEMS = 200;
-
 // Shared loader for the collection-card views (dashboard + /collections). Both
-// need the same dominant-type computation; only the row limit differs.
+// need the same dominant-type computation; only the row window differs.
 async function getCollectionsWithTypes(
   userId: string,
   take: number,
+  skip = 0,
 ): Promise<CollectionWithTypes[]> {
   const collections = await prisma.collection.findMany({
     where: { userId },
     orderBy: [{ isFavorite: "desc" }, { createdAt: "desc" }],
     take,
+    skip,
     include: {
       items: {
         include: {
@@ -89,13 +92,28 @@ async function getCollectionsWithTypes(
 export function getDashboardCollections(
   userId: string,
 ): Promise<CollectionWithTypes[]> {
-  return getCollectionsWithTypes(userId, MAX_DASHBOARD_COLLECTIONS);
+  return getCollectionsWithTypes(userId, DASHBOARD_COLLECTIONS_LIMIT);
 }
 
-export function getCollections(
+export interface PaginatedCollections {
+  collections: CollectionWithTypes[];
+  totalCount: number;
+}
+
+export async function getCollections(
   userId: string,
-): Promise<CollectionWithTypes[]> {
-  return getCollectionsWithTypes(userId, MAX_COLLECTIONS);
+  page = 1,
+): Promise<PaginatedCollections> {
+  const [collections, totalCount] = await Promise.all([
+    getCollectionsWithTypes(
+      userId,
+      COLLECTIONS_PER_PAGE,
+      (page - 1) * COLLECTIONS_PER_PAGE,
+    ),
+    prisma.collection.count({ where: { userId } }),
+  ]);
+
+  return { collections, totalCount };
 }
 
 export interface SidebarCollection {
@@ -162,20 +180,26 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
   return { totalItems, totalCollections, favoriteItems, favoriteCollections };
 }
 
-const collectionDetailInclude = {
-  items: {
-    orderBy: { addedAt: "desc" },
-    take: MAX_COLLECTION_ITEMS,
-    include: {
-      item: {
-        include: { itemType: true, tags: true },
+// A single page of a collection's items, plus the collection's total item
+// count (via _count) so the detail page can render numbered pagination.
+function collectionDetailInclude(page: number) {
+  return {
+    items: {
+      orderBy: { addedAt: "desc" },
+      take: ITEMS_PER_PAGE,
+      skip: (page - 1) * ITEMS_PER_PAGE,
+      include: {
+        item: {
+          include: { itemType: true, tags: true },
+        },
       },
     },
-  },
-} satisfies Prisma.CollectionInclude;
+    _count: { select: { items: true } },
+  } satisfies Prisma.CollectionInclude;
+}
 
-export type CollectionDetailRow = Prisma.CollectionGetPayload<{
-  include: typeof collectionDetailInclude;
+type CollectionDetailRow = Prisma.CollectionGetPayload<{
+  include: ReturnType<typeof collectionDetailInclude>;
 }>;
 
 export interface CollectionDetail {
@@ -184,15 +208,17 @@ export interface CollectionDetail {
   description: string | null;
   isFavorite: boolean;
   items: CollectionDetailRow["items"][number]["item"][];
+  totalItemCount: number;
 }
 
 export async function getCollectionWithItems(
   userId: string,
   collectionId: string,
+  page = 1,
 ): Promise<CollectionDetail | null> {
   const collection = await prisma.collection.findFirst({
     where: { id: collectionId, userId },
-    include: collectionDetailInclude,
+    include: collectionDetailInclude(page),
   });
 
   if (!collection) return null;
@@ -203,6 +229,7 @@ export async function getCollectionWithItems(
     description: collection.description,
     isFavorite: collection.isFavorite,
     items: collection.items.map((ic) => ic.item),
+    totalItemCount: collection._count.items,
   };
 }
 

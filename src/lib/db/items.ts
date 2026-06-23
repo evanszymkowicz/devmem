@@ -1,5 +1,6 @@
 import { ContentType, Prisma, type ItemType } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { DASHBOARD_RECENT_ITEMS_LIMIT, ITEMS_PER_PAGE } from "@/lib/db/limits";
 import type { CreateItemInput } from "@/lib/validations/items";
 
 const itemWithTypeInclude = {
@@ -37,7 +38,6 @@ export interface SidebarItemType {
 }
 
 const MAX_PINNED_DISPLAY = 20;
-const MAX_ITEMS_BY_TYPE = 200;
 
 export async function getPinnedItems(userId: string): Promise<ItemWithType[]> {
   return prisma.item.findMany({
@@ -50,7 +50,7 @@ export async function getPinnedItems(userId: string): Promise<ItemWithType[]> {
 
 export async function getRecentItems(
   userId: string,
-  limit = 10,
+  limit = DASHBOARD_RECENT_ITEMS_LIMIT,
 ): Promise<ItemWithType[]> {
   return prisma.item.findMany({
     where: { userId },
@@ -212,10 +212,17 @@ export async function deleteItem(
   return deleted.count > 0;
 }
 
+export interface PaginatedItemsByType {
+  type: ItemType;
+  items: ItemWithType[];
+  totalCount: number;
+}
+
 export async function getItemsByType(
   userId: string,
   typeSlug: string,
-): Promise<{ type: ItemType; items: ItemWithType[] } | null> {
+  page = 1,
+): Promise<PaginatedItemsByType | null> {
   const type = await prisma.itemType.findFirst({
     where: {
       slug: typeSlug,
@@ -225,14 +232,19 @@ export async function getItemsByType(
 
   if (!type) return null;
 
-  const items = await prisma.item.findMany({
-    where: { userId, itemTypeId: type.id },
-    orderBy: { updatedAt: "desc" },
-    take: MAX_ITEMS_BY_TYPE,
-    include: itemWithTypeInclude,
-  });
+  const where = { userId, itemTypeId: type.id };
+  const [items, totalCount] = await Promise.all([
+    prisma.item.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      take: ITEMS_PER_PAGE,
+      skip: (page - 1) * ITEMS_PER_PAGE,
+      include: itemWithTypeInclude,
+    }),
+    prisma.item.count({ where }),
+  ]);
 
-  return { type, items };
+  return { type, items, totalCount };
 }
 
 // DB returns rows in undefined order; this enforces the canonical UX order

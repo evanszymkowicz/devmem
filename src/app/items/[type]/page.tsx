@@ -1,22 +1,27 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Code } from "lucide-react";
 
 import { auth } from "@/auth";
 import { getSidebarCollections } from "@/lib/db/collections";
 import { getItemsByType, getSystemItemTypes } from "@/lib/db/items";
+import { ITEMS_PER_PAGE } from "@/lib/db/limits";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ItemCard } from "@/components/items/ItemCard";
 import { FileListRow } from "@/components/items/FileListRow";
 import { ItemDrawerWrapper } from "@/components/items/ItemDrawerWrapper";
 import { NewItemButton } from "@/components/items/NewItemButton";
+import { Pagination } from "@/components/ui/pagination";
 import { ICON_MAP } from "@/lib/icon-map";
+import { pageHref, parsePageParam } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ type: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function ItemsTypePage({ params }: PageProps) {
+export default async function ItemsTypePage({ params, searchParams }: PageProps) {
   const { type: typeSlug } = await params;
+  const page = parsePageParam((await searchParams).page);
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
@@ -25,12 +30,16 @@ export default async function ItemsTypePage({ params }: PageProps) {
   const [itemTypes, collections, result] = await Promise.all([
     getSystemItemTypes(userId),
     getSidebarCollections(userId),
-    getItemsByType(userId, typeSlug),
+    getItemsByType(userId, typeSlug, page),
   ]);
 
   if (!result) notFound();
 
-  const { type, items } = result;
+  const { type, items, totalCount } = result;
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
+  // Out-of-range page (e.g. ?page=999) — send the user to the last real page
+  // rather than rendering an empty "no items yet" state.
+  if (page > totalPages) redirect(pageHref(`/items/${type.slug}`, totalPages));
   const Icon = ICON_MAP[type.icon] ?? Code;
 
   const sidebarUser = {
@@ -52,7 +61,7 @@ export default async function ItemsTypePage({ params }: PageProps) {
           <div className="flex-1">
             <h1 className="text-3xl font-semibold tracking-tight">{type.name}</h1>
             <p className="text-sm text-muted-foreground">
-              {items.length} {items.length === 1 ? "item" : "items"}
+              {totalCount} {totalCount === 1 ? "item" : "items"}
             </p>
           </div>
           <NewItemButton
@@ -90,6 +99,12 @@ export default async function ItemsTypePage({ params }: PageProps) {
             )}
           </ItemDrawerWrapper>
         )}
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          basePath={`/items/${type.slug}`}
+        />
       </div>
     </DashboardShell>
   );
