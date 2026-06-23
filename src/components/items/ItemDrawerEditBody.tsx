@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/components/ui/code-editor";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
+import { CollectionPicker } from "@/components/collections/CollectionPicker";
+import type { SidebarCollection } from "@/lib/db/collections";
 import type { EditState } from "./item-drawer-types";
 
 const CONTENT_TYPE_SLUGS = new Set(["snippets", "prompts", "commands", "notes"]);
@@ -14,9 +16,10 @@ interface ItemDrawerEditBodyProps {
   editState: EditState;
   setField: <K extends keyof EditState>(key: K, value: EditState[K]) => void;
   typeSlug: string;
+  collections: SidebarCollection[];
 }
 
-export function ItemDrawerEditBody({ editState, setField, typeSlug }: ItemDrawerEditBodyProps) {
+export function ItemDrawerEditBody({ editState, setField, typeSlug, collections }: ItemDrawerEditBodyProps) {
   const showContent = CONTENT_TYPE_SLUGS.has(typeSlug);
   const showLanguage = LANGUAGE_TYPE_SLUGS.has(typeSlug);
   const showUrl = URL_TYPE_SLUGS.has(typeSlug);
@@ -96,6 +99,17 @@ export function ItemDrawerEditBody({ editState, setField, typeSlug }: ItemDrawer
           className="text-sm"
         />
         <p className="text-[11px] text-muted-foreground">Comma-separated</p>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Collections
+        </label>
+        <CollectionPicker
+          collections={collections}
+          selectedIds={editState.collectionIds}
+          onChange={(ids) => setField("collectionIds", ids)}
+        />
       </div>
     </div>
   );

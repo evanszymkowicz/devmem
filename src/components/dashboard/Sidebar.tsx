@@ -8,6 +8,7 @@ import {
   Code,
   LogOut,
   PanelLeftClose,
+  Settings,
   Star,
 } from "lucide-react";
 
@@ -213,6 +214,14 @@ function UserMenu({
       {open && (
         // Dropdown opens upward, anchored to the bottom user row.
         <div className="absolute bottom-full left-0 right-0 mb-2 overflow-hidden rounded-md border border-sidebar-border bg-popover p-1 shadow-md">
+          <Link
+            href="/settings"
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-popover-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <Settings className="size-4" />
+            Settings
+          </Link>
           <button
             type="button"
             onClick={() => signOut({ redirectTo: "/sign-in" })}

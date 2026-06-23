@@ -74,7 +74,7 @@ export default async function ItemsTypePage({ params }: PageProps) {
             </p>
           </div>
         ) : (
-          <ItemDrawerWrapper>
+          <ItemDrawerWrapper collections={collections}>
             {typeSlug === "files" ? (
               <div className="flex flex-col gap-2">
                 {items.map((item) => (

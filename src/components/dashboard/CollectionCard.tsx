@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   Code,
-  MoreHorizontal,
   Star,
 } from "lucide-react";
 
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import type { CollectionWithTypes } from "@/lib/db/collections";
 import { toggleCollectionFavorite } from "@/actions/collections";
+import { CollectionActionsDropdown } from "@/components/collections/CollectionActionsDropdown";
 import { cn } from "@/lib/utils";
 import { ICON_MAP } from "@/lib/icon-map";
 
@@ -70,13 +70,12 @@ export function CollectionCard({ collection }: CollectionCardProps) {
                   )}
                 />
               </button>
-              <button
-                type="button"
-                aria-label="Collection actions"
-                className="-mr-1 -mt-1 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus:opacity-100"
-              >
-                <MoreHorizontal className="size-4" />
-              </button>
+              <CollectionActionsDropdown
+                collectionId={collection.id}
+                name={collection.name}
+                description={collection.description}
+                isFavorite={collection.isFavorite}
+              />
             </div>
           </div>
           <CardDescription className="text-xs">

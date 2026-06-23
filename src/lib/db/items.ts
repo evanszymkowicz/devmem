@@ -77,6 +77,22 @@ export interface UpdateItemData {
   url?: string | null;
   language?: string | null;
   tags: string[];
+  collectionIds?: string[];
+}
+
+// Filters a requested set of collection ids down to those the user actually
+// owns, so an item can never be attached to someone else's collection (IDOR).
+async function ownedCollectionIds(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  collectionIds: string[],
+): Promise<string[]> {
+  if (collectionIds.length === 0) return [];
+  const rows = await tx.collection.findMany({
+    where: { id: { in: collectionIds }, userId },
+    select: { id: true },
+  });
+  return rows.map((r) => r.id);
 }
 
 export async function updateItem(
@@ -93,6 +109,18 @@ export async function updateItem(
         tx.tag.upsert({ where: { name }, create: { name }, update: {} }),
       ),
     );
+
+    // Replace collection membership atomically when the caller sends a set.
+    // Undefined means "leave membership untouched".
+    if (data.collectionIds !== undefined) {
+      const ownedIds = await ownedCollectionIds(tx, userId, data.collectionIds);
+      await tx.itemCollection.deleteMany({ where: { itemId } });
+      if (ownedIds.length > 0) {
+        await tx.itemCollection.createMany({
+          data: ownedIds.map((collectionId) => ({ itemId, collectionId })),
+        });
+      }
+    }
 
     return tx.item.update({
       where: { id: itemId },
@@ -138,6 +166,8 @@ export async function createItem(
       ),
     );
 
+    const ownedIds = await ownedCollectionIds(tx, userId, data.collectionIds ?? []);
+
     return tx.item.create({
       data: {
         userId,
@@ -152,6 +182,9 @@ export async function createItem(
         fileName: data.fileName ?? null,
         fileSize: data.fileSize ?? null,
         tags: { connect: tagRecords.map((t) => ({ id: t.id })) },
+        collections: {
+          create: ownedIds.map((collectionId) => ({ collectionId })),
+        },
       },
       include: itemDetailInclude,
     });

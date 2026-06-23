@@ -7,6 +7,7 @@ export interface EditState {
   language: string;
   url: string;
   tags: string;
+  collectionIds: string[];
 }
 
 export function itemToEditState(item: ItemDetail): EditState {
@@ -17,5 +18,6 @@ export function itemToEditState(item: ItemDetail): EditState {
     language: item.language ?? "",
     url: item.url ?? "",
     tags: item.tags.map((t) => t.name).join(", "),
+    collectionIds: item.collections.map((ic) => ic.collection.id),
   };
 }

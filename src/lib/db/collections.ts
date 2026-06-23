@@ -1,4 +1,9 @@
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import type {
+  CreateCollectionInput,
+  UpdateCollectionInput,
+} from "@/lib/validations/collections";
 
 export interface CollectionWithTypes {
   id: string;
@@ -23,13 +28,20 @@ export interface DashboardStats {
   favoriteCollections: number;
 }
 
-export async function getDashboardCollections(
+const MAX_DASHBOARD_COLLECTIONS = 6;
+const MAX_COLLECTIONS = 200;
+const MAX_COLLECTION_ITEMS = 200;
+
+// Shared loader for the collection-card views (dashboard + /collections). Both
+// need the same dominant-type computation; only the row limit differs.
+async function getCollectionsWithTypes(
   userId: string,
+  take: number,
 ): Promise<CollectionWithTypes[]> {
   const collections = await prisma.collection.findMany({
     where: { userId },
     orderBy: [{ isFavorite: "desc" }, { createdAt: "desc" }],
-    take: 6,
+    take,
     include: {
       items: {
         include: {
@@ -72,6 +84,18 @@ export async function getDashboardCollections(
       itemTypes,
     };
   });
+}
+
+export function getDashboardCollections(
+  userId: string,
+): Promise<CollectionWithTypes[]> {
+  return getCollectionsWithTypes(userId, MAX_DASHBOARD_COLLECTIONS);
+}
+
+export function getCollections(
+  userId: string,
+): Promise<CollectionWithTypes[]> {
+  return getCollectionsWithTypes(userId, MAX_COLLECTIONS);
 }
 
 export interface SidebarCollection {
@@ -136,4 +160,90 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     ]);
 
   return { totalItems, totalCollections, favoriteItems, favoriteCollections };
+}
+
+const collectionDetailInclude = {
+  items: {
+    orderBy: { addedAt: "desc" },
+    take: MAX_COLLECTION_ITEMS,
+    include: {
+      item: {
+        include: { itemType: true, tags: true },
+      },
+    },
+  },
+} satisfies Prisma.CollectionInclude;
+
+export type CollectionDetailRow = Prisma.CollectionGetPayload<{
+  include: typeof collectionDetailInclude;
+}>;
+
+export interface CollectionDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  items: CollectionDetailRow["items"][number]["item"][];
+}
+
+export async function getCollectionWithItems(
+  userId: string,
+  collectionId: string,
+): Promise<CollectionDetail | null> {
+  const collection = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+    include: collectionDetailInclude,
+  });
+
+  if (!collection) return null;
+
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isFavorite: collection.isFavorite,
+    items: collection.items.map((ic) => ic.item),
+  };
+}
+
+export async function createCollection(
+  userId: string,
+  data: CreateCollectionInput,
+) {
+  return prisma.collection.create({
+    data: {
+      userId,
+      name: data.name,
+      description: data.description ?? null,
+    },
+  });
+}
+
+export async function updateCollection(
+  userId: string,
+  collectionId: string,
+  data: UpdateCollectionInput,
+): Promise<boolean> {
+  // updateMany scopes to userId so a non-owner can't update another user's row.
+  const result = await prisma.collection.updateMany({
+    where: { id: collectionId, userId },
+    data: {
+      ...(data.name !== undefined ? { name: data.name } : {}),
+      ...(data.description !== undefined
+        ? { description: data.description ?? null }
+        : {}),
+    },
+  });
+  return result.count > 0;
+}
+
+export async function deleteCollection(
+  userId: string,
+  collectionId: string,
+): Promise<boolean> {
+  // deleteMany gives an atomic ownership check; join rows cascade, items stay.
+  const result = await prisma.collection.deleteMany({
+    where: { id: collectionId, userId },
+  });
+  return result.count > 0;
 }

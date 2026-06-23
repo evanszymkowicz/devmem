@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ICON_MAP } from "@/lib/icon-map";
 import type { ItemDetail } from "@/lib/db/items";
+import type { SidebarCollection } from "@/lib/db/collections";
 import { updateItem, deleteItem } from "@/actions/items";
 import { useItemDrawer } from "./ItemDrawerContext";
 import { ItemDrawerViewBody } from "./ItemDrawerViewBody";
@@ -34,7 +35,11 @@ import { type EditState, itemToEditState } from "./item-drawer-types";
 
 const FILE_TYPE_SLUGS = new Set(["files", "images"]);
 
-export function ItemDrawer() {
+interface ItemDrawerProps {
+  collections: SidebarCollection[];
+}
+
+export function ItemDrawer({ collections }: ItemDrawerProps) {
   const { activeItemId, closeDrawer } = useItemDrawer();
   const router = useRouter();
 
@@ -126,6 +131,7 @@ export function ItemDrawer() {
       language: editState.language || null,
       url: editState.url || null,
       tags,
+      collectionIds: editState.collectionIds,
     });
 
     setSaving(false);
@@ -312,6 +318,7 @@ export function ItemDrawer() {
                 editState={editState}
                 setField={setField}
                 typeSlug={typeSlug}
+                collections={collections}
               />
             ) : item ? (
               <ItemDrawerViewBody item={item} />

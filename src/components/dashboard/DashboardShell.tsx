@@ -12,16 +12,19 @@ import {
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { NewItemDialog } from "@/components/items/NewItemDialog";
+import { NewCollectionDialog } from "@/components/collections/NewCollectionDialog";
 import { cn } from "@/lib/utils";
 import type { SidebarCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
 
 interface DashboardShellContextValue {
   openNewItem: (slug?: string) => void;
+  openNewCollection: () => void;
 }
 
 export const DashboardShellContext = createContext<DashboardShellContextValue>({
   openNewItem: () => {},
+  openNewCollection: () => {},
 });
 
 export function useDashboardShell() {
@@ -42,10 +45,15 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newItemOpen, setNewItemOpen] = useState(false);
   const [newItemDefaultType, setNewItemDefaultType] = useState<string | undefined>();
+  const [newCollectionOpen, setNewCollectionOpen] = useState(false);
 
   function openNewItem(slug?: string) {
     setNewItemDefaultType(slug);
     setNewItemOpen(true);
+  }
+
+  function openNewCollection() {
+    setNewCollectionOpen(true);
   }
 
   useEffect(() => {
@@ -68,7 +76,7 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
   const sidebarProps = { itemTypes, collections, user };
 
   return (
-    <DashboardShellContext.Provider value={{ openNewItem }}>
+    <DashboardShellContext.Provider value={{ openNewItem, openNewCollection }}>
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       {/* Desktop sidebar (collapsible) */}
       <aside
@@ -112,6 +120,7 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
           desktopSidebarOpen={desktopOpen}
           onToggleSidebar={openSidebar}
           onNewItem={() => openNewItem()}
+          onNewCollection={openNewCollection}
         />
 
         <main className="flex-1 overflow-y-auto">{children}</main>
@@ -121,7 +130,13 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
         open={newItemOpen}
         onOpenChange={setNewItemOpen}
         itemTypes={itemTypes}
+        collections={collections}
         defaultTypeSlug={newItemDefaultType}
+      />
+
+      <NewCollectionDialog
+        open={newCollectionOpen}
+        onOpenChange={setNewCollectionOpen}
       />
     </div>
     </DashboardShellContext.Provider>

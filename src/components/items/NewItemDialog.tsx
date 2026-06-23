@@ -19,7 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { ICON_MAP } from "@/lib/icon-map";
 import { createItem } from "@/actions/items";
+import { CollectionPicker } from "@/components/collections/CollectionPicker";
 import type { SidebarItemType } from "@/lib/db/items";
+import type { SidebarCollection } from "@/lib/db/collections";
 import { CREATABLE_TYPE_SLUGS, FILE_TYPE_SLUGS, type CreatableTypeSlug } from "@/lib/validations/items";
 
 const CONTENT_SLUGS = new Set<CreatableTypeSlug>(["snippets", "prompts", "commands", "notes"]);
@@ -29,6 +31,7 @@ interface NewItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   itemTypes: SidebarItemType[];
+  collections: SidebarCollection[];
   defaultTypeSlug?: string;
 }
 
@@ -56,7 +59,7 @@ const EMPTY_FORM: FormState = {
   fileSize: 0,
 };
 
-export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }: NewItemDialogProps) {
+export function NewItemDialog({ open, onOpenChange, itemTypes, collections, defaultTypeSlug }: NewItemDialogProps) {
   const router = useRouter();
   const creatableTypes = itemTypes.filter((t) =>
     (CREATABLE_TYPE_SLUGS as readonly string[]).includes(t.slug),
@@ -66,6 +69,7 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
     (creatableTypes[0]?.slug as CreatableTypeSlug) ?? "snippets",
   );
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [uploadKey, setUploadKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
@@ -74,6 +78,7 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
       const slug = defaultTypeSlug ?? creatableTypes[0]?.slug ?? "snippets";
       setTypeSlug(slug as CreatableTypeSlug);
       setForm(EMPTY_FORM);
+      setCollectionIds([]);
       setUploadKey((k) => k + 1);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -100,6 +105,7 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
   function handleClose(next: boolean) {
     if (!next) {
       setForm(EMPTY_FORM);
+      setCollectionIds([]);
       setTypeSlug((creatableTypes[0]?.slug as CreatableTypeSlug) ?? "snippets");
       setUploadKey((k) => k + 1);
     }
@@ -132,6 +138,7 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
       fileName: form.fileName || null,
       fileSize: form.fileSize || null,
       tags,
+      collectionIds,
     });
 
     setSubmitting(false);
@@ -292,6 +299,18 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, defaultTypeSlug }
               className="text-sm"
             />
             <p className="text-[11px] text-muted-foreground">Comma-separated</p>
+          </div>
+
+          {/* Collections */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Collections
+            </label>
+            <CollectionPicker
+              collections={collections}
+              selectedIds={collectionIds}
+              onChange={setCollectionIds}
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-1">
