@@ -1,4 +1,4 @@
-import { Code } from "lucide-react";
+import { Code, Files } from "lucide-react";
 
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -40,11 +40,11 @@ export default async function ProfilePage() {
       collections={collections}
       user={sidebarUser}
     >
-      <div className="mx-auto w-full max-w-2xl px-4 py-8 md:px-8">
+      <div className="mx-auto w-full max-w-4xl px-4 py-8 md:px-8">
         <header className="mb-8">
           <h1 className="text-3xl font-semibold tracking-tight">Profile</h1>
           <p className="text-sm text-muted-foreground">
-            Your account details and usage stats
+            Manage your account settings
           </p>
         </header>
 
@@ -82,34 +82,44 @@ export default async function ProfilePage() {
               <CardTitle>Usage</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-4 grid grid-cols-2 gap-3">
-                <div className="rounded-lg bg-muted/50 px-4 py-3">
-                  <p className="text-2xl font-semibold">{profile.totalItems}</p>
-                  <p className="text-xs text-muted-foreground">Total items</p>
+              <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-3">
+                  <Code className="size-8 shrink-0" style={{ color: "#3b82f6" }} />
+                  <div className="min-w-0">
+                    <p className="text-2xl font-semibold leading-none">
+                      {profile.totalItems}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Total items
+                    </p>
+                  </div>
                 </div>
-                <div className="rounded-lg bg-muted/50 px-4 py-3">
-                  <p className="text-2xl font-semibold">
-                    {profile.totalCollections}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Total collections
-                  </p>
+                <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-3">
+                  <Files className="size-8 shrink-0" style={{ color: "#6b7280" }} />
+                  <div className="min-w-0">
+                    <p className="text-2xl font-semibold leading-none">
+                      {profile.totalCollections}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Total collections
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {profile.itemsByType.map((t) => {
                   const Icon = ICON_MAP[t.icon] ?? Code;
                   return (
                     <div
                       key={t.id}
-                      className="flex items-center gap-3 rounded-md px-2 py-1.5"
+                      className="flex items-center gap-2 rounded-md bg-muted/30 px-3 py-2"
                     >
                       <Icon
                         className="size-4 shrink-0"
                         style={{ color: t.color }}
                       />
-                      <span className="flex-1 text-sm">{t.name}</span>
+                      <span className="flex-1 truncate text-sm">{t.name}</span>
                       <span className="text-sm font-medium tabular-nums">
                         {t.count}
                       </span>
