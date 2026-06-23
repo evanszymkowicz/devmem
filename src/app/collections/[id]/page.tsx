@@ -8,6 +8,7 @@ import {
 } from "@/lib/db/collections";
 import { ITEMS_PER_PAGE } from "@/lib/db/limits";
 import { getSystemItemTypes } from "@/lib/db/items";
+import { getEditorPreferences } from "@/lib/db/editor-preferences";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ItemCard } from "@/components/items/ItemCard";
 import { FileListRow } from "@/components/items/FileListRow";
@@ -32,11 +33,13 @@ export default async function CollectionDetailPage({
 
   const userId = session.user.id;
 
-  const [itemTypes, sidebarCollections, collection] = await Promise.all([
-    getSystemItemTypes(userId),
-    getSidebarCollections(userId),
-    getCollectionWithItems(userId, id, page),
-  ]);
+  const [itemTypes, sidebarCollections, collection, editorPreferences] =
+    await Promise.all([
+      getSystemItemTypes(userId),
+      getSidebarCollections(userId),
+      getCollectionWithItems(userId, id, page),
+      getEditorPreferences(userId),
+    ]);
 
   if (!collection) notFound();
 
@@ -61,6 +64,7 @@ export default async function CollectionDetailPage({
       itemTypes={itemTypes}
       collections={sidebarCollections}
       user={sidebarUser}
+      editorPreferences={editorPreferences}
     >
       <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <header className="mb-6 flex items-start gap-3">

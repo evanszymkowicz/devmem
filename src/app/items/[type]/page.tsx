@@ -4,6 +4,7 @@ import { Code } from "lucide-react";
 import { auth } from "@/auth";
 import { getSidebarCollections } from "@/lib/db/collections";
 import { getItemsByType, getSystemItemTypes } from "@/lib/db/items";
+import { getEditorPreferences } from "@/lib/db/editor-preferences";
 import { ITEMS_PER_PAGE } from "@/lib/db/limits";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ItemCard } from "@/components/items/ItemCard";
@@ -27,11 +28,13 @@ export default async function ItemsTypePage({ params, searchParams }: PageProps)
 
   if (!userId) notFound();
 
-  const [itemTypes, collections, result] = await Promise.all([
-    getSystemItemTypes(userId),
-    getSidebarCollections(userId),
-    getItemsByType(userId, typeSlug, page),
-  ]);
+  const [itemTypes, collections, result, editorPreferences] =
+    await Promise.all([
+      getSystemItemTypes(userId),
+      getSidebarCollections(userId),
+      getItemsByType(userId, typeSlug, page),
+      getEditorPreferences(userId),
+    ]);
 
   if (!result) notFound();
 
@@ -49,7 +52,12 @@ export default async function ItemsTypePage({ params, searchParams }: PageProps)
   };
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={sidebarUser}>
+    <DashboardShell
+      itemTypes={itemTypes}
+      collections={collections}
+      user={sidebarUser}
+      editorPreferences={editorPreferences}
+    >
       <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <header className="mb-6 flex items-center gap-3">
           <span

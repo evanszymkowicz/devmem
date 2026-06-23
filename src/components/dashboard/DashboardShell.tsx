@@ -14,9 +14,11 @@ import { TopBar } from "@/components/dashboard/TopBar";
 import { SearchCommand } from "@/components/dashboard/SearchCommand";
 import { NewItemDialog } from "@/components/items/NewItemDialog";
 import { NewCollectionDialog } from "@/components/collections/NewCollectionDialog";
+import { EditorPreferencesProvider } from "@/components/editor/EditorPreferencesProvider";
 import { cn } from "@/lib/utils";
 import type { SidebarCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
+import type { EditorPreferences } from "@/lib/editor-preferences";
 
 interface DashboardShellContextValue {
   openNewItem: (slug?: string) => void;
@@ -37,11 +39,12 @@ interface DashboardShellProps {
   itemTypes: SidebarItemType[];
   collections: SidebarCollection[];
   user: { name: string; email: string; image?: string | null };
+  editorPreferences: EditorPreferences;
 }
 
 // Sidebar data is fetched in the server page and passed as props because this
 // component needs "use client" for open/close state, preventing direct DB access.
-export function DashboardShell({ children, itemTypes, collections, user }: DashboardShellProps) {
+export function DashboardShell({ children, itemTypes, collections, user, editorPreferences }: DashboardShellProps) {
   const [desktopOpen, setDesktopOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newItemOpen, setNewItemOpen] = useState(false);
@@ -79,6 +82,7 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
 
   return (
     <DashboardShellContext.Provider value={{ openNewItem, openNewCollection }}>
+    <EditorPreferencesProvider initialPreferences={editorPreferences}>
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       {/* Desktop sidebar (collapsible) */}
       <aside
@@ -148,6 +152,7 @@ export function DashboardShell({ children, itemTypes, collections, user }: Dashb
         collections={collections}
       />
     </div>
+    </EditorPreferencesProvider>
     </DashboardShellContext.Provider>
   );
 }

@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { getSidebarCollections } from "@/lib/db/collections";
 import { getSystemItemTypes } from "@/lib/db/items";
+import { getEditorPreferences } from "@/lib/db/editor-preferences";
+import { DEFAULT_EDITOR_PREFERENCES } from "@/lib/editor-preferences";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { PinnedItems } from "@/components/dashboard/PinnedItems";
 import { RecentCollections } from "@/components/dashboard/RecentCollections";
@@ -14,12 +16,13 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
-  const [itemTypes, collections] = userId
+  const [itemTypes, collections, editorPreferences] = userId
     ? await Promise.all([
         getSystemItemTypes(userId),
         getSidebarCollections(userId),
+        getEditorPreferences(userId),
       ])
-    : [[], []];
+    : [[], [], DEFAULT_EDITOR_PREFERENCES];
 
   const sidebarUser = {
     name: session?.user?.name ?? "User",
@@ -28,7 +31,12 @@ export default async function DashboardPage() {
   };
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={sidebarUser}>
+    <DashboardShell
+      itemTypes={itemTypes}
+      collections={collections}
+      user={sidebarUser}
+      editorPreferences={editorPreferences}
+    >
       <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <header className="mb-6">
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>

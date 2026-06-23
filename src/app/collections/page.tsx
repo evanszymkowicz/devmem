@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getCollections, getSidebarCollections } from "@/lib/db/collections";
 import { COLLECTIONS_PER_PAGE } from "@/lib/db/limits";
 import { getSystemItemTypes } from "@/lib/db/items";
+import { getEditorPreferences } from "@/lib/db/editor-preferences";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { Pagination } from "@/components/ui/pagination";
@@ -21,12 +22,17 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
   const userId = session.user.id;
   const page = parsePageParam((await searchParams).page);
 
-  const [itemTypes, sidebarCollections, { collections, totalCount }] =
-    await Promise.all([
-      getSystemItemTypes(userId),
-      getSidebarCollections(userId),
-      getCollections(userId, page),
-    ]);
+  const [
+    itemTypes,
+    sidebarCollections,
+    { collections, totalCount },
+    editorPreferences,
+  ] = await Promise.all([
+    getSystemItemTypes(userId),
+    getSidebarCollections(userId),
+    getCollections(userId, page),
+    getEditorPreferences(userId),
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / COLLECTIONS_PER_PAGE));
   // Out-of-range page — redirect to the last real page rather than rendering
@@ -44,6 +50,7 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
       itemTypes={itemTypes}
       collections={sidebarCollections}
       user={sidebarUser}
+      editorPreferences={editorPreferences}
     >
       <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <header className="mb-6">

@@ -50,3 +50,4 @@ Not Started
 - Collections & Settings
 - Global Search/Command Palette
 - Pagination
+- Editor Preferences Settings
