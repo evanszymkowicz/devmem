@@ -29,6 +29,7 @@ export const createItemSchema = z
     fileName: z.string().min(1).nullable().optional(),
     fileSize: z.number().positive().int().nullable().optional(),
     tags: z.array(z.string().trim().min(1)).default([]),
+    collectionIds: z.array(z.string()).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.typeSlug === "links" && !data.url) {
@@ -75,6 +76,7 @@ export const updateItemSchema = z.object({
     z.string().url("Must be a valid URL").nullable().optional(),
   ),
   tags: z.array(z.string().trim().min(1)).default([]),
+  collectionIds: z.array(z.string()).optional(),
 });
 
 export type UpdateItemInput = z.infer<typeof updateItemSchema>;

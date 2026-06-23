@@ -10,9 +10,10 @@ interface TopBarProps {
   desktopSidebarOpen: boolean;
   onToggleSidebar: () => void;
   onNewItem: () => void;
+  onNewCollection: () => void;
 }
 
-export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem }: TopBarProps) {
+export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCollection }: TopBarProps) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-3 border-b px-4 md:px-6">
       <Button
@@ -39,7 +40,7 @@ export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem }: TopBa
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={onNewCollection}>
           <FolderPlus className="size-4" />
           <span className="hidden sm:inline">New Collection</span>
         </Button>

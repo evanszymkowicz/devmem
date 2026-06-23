@@ -8,8 +8,6 @@ import { getSystemItemTypes } from "@/lib/db/items";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChangePasswordForm } from "@/components/profile/ChangePasswordForm";
-import { DeleteAccountDialog } from "@/components/profile/DeleteAccountDialog";
 import { ICON_MAP } from "@/lib/icon-map";
 
 export default async function ProfilePage() {
@@ -119,32 +117,6 @@ export default async function ProfilePage() {
                   );
                 })}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Change password — only for email/password accounts */}
-          {profile.hasPassword && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Change password</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChangePasswordForm />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Danger zone */}
-          <Card className="border-destructive/40">
-            <CardHeader>
-              <CardTitle className="text-destructive">Danger zone</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-4 text-sm text-muted-foreground">
-                Permanently delete your account and all associated data. This
-                cannot be undone.
-              </p>
-              <DeleteAccountDialog />
             </CardContent>
           </Card>
         </div>

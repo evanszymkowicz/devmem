@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 
+import type { SidebarCollection } from "@/lib/db/collections";
 import { ItemDrawerContext } from "./ItemDrawerContext";
 import { ItemDrawer } from "./ItemDrawer";
 
-export function ItemDrawerWrapper({ children }: { children: React.ReactNode }) {
+interface ItemDrawerWrapperProps {
+  children: React.ReactNode;
+  collections?: SidebarCollection[];
+}
+
+export function ItemDrawerWrapper({ children, collections = [] }: ItemDrawerWrapperProps) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
   return (
@@ -17,7 +23,7 @@ export function ItemDrawerWrapper({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-      <ItemDrawer />
+      <ItemDrawer collections={collections} />
     </ItemDrawerContext.Provider>
   );
 }
