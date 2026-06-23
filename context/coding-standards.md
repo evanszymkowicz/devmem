@@ -98,6 +98,7 @@ Example v4 configuration:
 ## Security
 
 - Every Server Action: read the session, assert it exists, and scope all Prisma queries to `userId: session.user.id`. Never trust a client-supplied `userId`
+- **Ownership on related writes:** when an action accepts arrays of foreign ids (e.g. `collectionIds`, `tagIds`), filter them to rows the user owns *before* writing join rows — scoping only the parent record is not enough. A client can post ids it doesn't own; resolve `findMany({ where: { id: { in: ids }, userId } })` and write only the returned ids (IDOR on join tables)
 - No secrets, passwords, or API keys in source — read from env; keep `.env*` gitignored
 - Validate required env vars at module load and throw loudly; never silently fall back to a weak default (e.g. a known demo password) when a security-relevant var is missing
 - Fail loud over fail silent: prefer throwing at startup to surfacing an opaque error deep in a driver later

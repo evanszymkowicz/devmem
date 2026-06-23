@@ -65,6 +65,7 @@ Before handing off a change, scan it for the issues our code-scans repeatedly ca
 - **Bounded queries** — every `findMany` has a `take`; no unbounded fetches
 - **Env guards** — required env vars validated at module load and fail loud
 - **Ownership** — every Server Action reads the session and scopes queries to the user; no client-trusted `userId`
+- **Ownership on related writes** — arrays of foreign ids (`collectionIds`, `tagIds`) are filtered to user-owned rows before writing join rows; scoping only the parent is not enough (IDOR on join tables)
 - **No secrets in source** — passwords/keys come from gitignored env, never literals or weak fallbacks
 - **DRY** — no duplicated constants/maps; shared data resolved once, not re-fetched per component
 - **Defensive rendering** — empty states, input guards, no blank screens
