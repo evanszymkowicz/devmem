@@ -3,24 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Star, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  deleteCollection,
-  toggleCollectionFavorite,
-} from "@/actions/collections";
+import { toggleCollectionFavorite } from "@/actions/collections";
 import { EditCollectionDialog } from "./EditCollectionDialog";
+import { DeleteCollectionDialog } from "./DeleteCollectionDialog";
 
 interface CollectionDetailActionsProps {
   collectionId: string;
@@ -38,7 +25,6 @@ export function CollectionDetailActions({
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [favoriting, setFavoriting] = useState(false);
 
   async function handleFavorite() {
@@ -46,21 +32,6 @@ export function CollectionDetailActions({
     await toggleCollectionFavorite(collectionId);
     setFavoriting(false);
     router.refresh();
-  }
-
-  async function handleDelete() {
-    setDeleting(true);
-    const result = await deleteCollection(collectionId);
-    setDeleting(false);
-    setConfirmDelete(false);
-
-    if (!result.success) {
-      toast.error(result.error);
-      return;
-    }
-
-    toast.success("Collection deleted");
-    router.push("/collections");
   }
 
   return (
@@ -104,27 +75,13 @@ export function CollectionDetailActions({
         initialDescription={description}
       />
 
-      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete collection?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This deletes the “{name}” collection. The items inside it are not
-              deleted and remain in your library.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleting ? "Deleting…" : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteCollectionDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        collectionId={collectionId}
+        name={name}
+        onDeleted={() => router.push("/collections")}
+      />
     </div>
   );
 }
