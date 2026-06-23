@@ -8,3 +8,7 @@ export const COLLECTIONS_PER_PAGE = 21;
 // Dashboard section limits (single-page previews, no pagination)
 export const DASHBOARD_COLLECTIONS_LIMIT = 6;
 export const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
+
+// Account deletion pages through a user's file items in bounded batches so the
+// R2 cleanup query stays capped without orphaning files for heavy uploaders.
+export const ACCOUNT_DELETE_FILE_BATCH = 200;

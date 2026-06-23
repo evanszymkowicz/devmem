@@ -1,10 +1,15 @@
 "use server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
 import { deleteFromR2 } from "@/lib/r2";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { changePasswordSchema } from "@/lib/validations/auth";
+import {
+  deleteUser,
+  getUserFileUrls,
+  getUserPasswordHash,
+  updateUserPassword,
+} from "@/lib/db/profile";
 
 export async function changePassword(input: {
   currentPassword: string;
@@ -26,25 +31,19 @@ export async function changePassword(input: {
 
   const { currentPassword, newPassword } = parsed.data;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { password: true },
-  });
+  const passwordHash = await getUserPasswordHash(session.user.id);
 
-  if (!user?.password) {
+  if (!passwordHash) {
     return { success: false, error: "No password set on this account" };
   }
 
-  const valid = await verifyPassword(currentPassword, user.password);
+  const valid = await verifyPassword(currentPassword, passwordHash);
   if (!valid) {
     return { success: false, error: "Current password is incorrect" };
   }
 
   const hashed = await hashPassword(newPassword);
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { password: hashed },
-  });
+  await updateUserPassword(session.user.id, hashed);
 
   return { success: true };
 }
@@ -59,21 +58,16 @@ export async function deleteAccount(): Promise<{
   }
 
   try {
-    const fileItems = await prisma.item.findMany({
-      where: { userId: session.user.id, fileUrl: { not: null } },
-      select: { fileUrl: true },
-    });
+    const fileUrls = await getUserFileUrls(session.user.id);
 
-    await prisma.user.delete({ where: { id: session.user.id } });
+    await deleteUser(session.user.id);
 
     await Promise.allSettled(
-      fileItems
-        .filter((item): item is { fileUrl: string } => item.fileUrl !== null)
-        .map((item) =>
-          deleteFromR2(item.fileUrl).catch((e) =>
-            console.error("R2 cleanup failed on account delete:", e),
-          ),
+      fileUrls.map((url) =>
+        deleteFromR2(url).catch((e) =>
+          console.error("R2 cleanup failed on account delete:", e),
         ),
+      ),
     );
 
     return { success: true };
