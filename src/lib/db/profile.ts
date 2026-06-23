@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { SYSTEM_TYPE_ORDER } from "@/lib/db/items";
+import { ACCOUNT_DELETE_FILE_BATCH } from "@/lib/db/limits";
 
 export interface ProfileItemTypeStat {
   id: string;
@@ -71,4 +72,54 @@ export async function getProfileData(userId: string): Promise<ProfileData> {
     totalCollections,
     itemsByType,
   };
+}
+
+export async function getUserPasswordHash(
+  userId: string,
+): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { password: true },
+  });
+  return user?.password ?? null;
+}
+
+export async function updateUserPassword(
+  userId: string,
+  hash: string,
+): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hash },
+  });
+}
+
+export async function getUserFileUrls(userId: string): Promise<string[]> {
+  const urls: string[] = [];
+  let cursor: string | undefined;
+
+  // Page through in bounded batches so no single query pulls unbounded rows,
+  // while still collecting every file so R2 cleanup leaves nothing orphaned.
+  for (;;) {
+    const batch = await prisma.item.findMany({
+      where: { userId, fileUrl: { not: null } },
+      select: { id: true, fileUrl: true },
+      orderBy: { id: "asc" },
+      take: ACCOUNT_DELETE_FILE_BATCH,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+
+    for (const item of batch) {
+      if (item.fileUrl !== null) urls.push(item.fileUrl);
+    }
+
+    if (batch.length < ACCOUNT_DELETE_FILE_BATCH) break;
+    cursor = batch[batch.length - 1]!.id;
+  }
+
+  return urls;
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  await prisma.user.delete({ where: { id: userId } });
 }
