@@ -1,25 +1,18 @@
-# Current Feature: Favorite Toggle Buttons
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a favorite (star) toggle button to the item drawer that toggles `Item.isFavorite`
-- Add a favorite toggle to collection cards/pages that toggles `Collection.isFavorite`
-- Add a favorite toggle to item cards so favoriting works inline without opening the drawer
-- Reflect favorite state instantly in the UI (optimistic update) and persist via Server Action
-- Keep favorited collections/items in sync with the existing Favorites page and sidebar Favorites group
+<!-- Bullet points of what success looks like -->
 
 ## TODOs
 
 ## Notes
 
-- The Favorites page already exists (see History); this feature is the per-item / per-collection toggle controls that drive it.
-- Both `Item` and `Collection` already have an `isFavorite` boolean in the schema — no migration required.
-- Toggle via Server Actions: read the session, scope queries to `userId: session.user.id`, prefer a single atomic update over read-then-write.
-- Use semantically distinct icons (filled vs. outline star) for on/off state; show a toast on action.
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -59,3 +52,4 @@ In Progress
 - Pagination
 - Editor Preferences Settings
 - Favorites Page
+- Favorite Toggle Buttons
