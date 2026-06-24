@@ -27,7 +27,7 @@ import {
 import { ICON_MAP } from "@/lib/icon-map";
 import type { ItemDetail } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
-import { updateItem, deleteItem } from "@/actions/items";
+import { updateItem, deleteItem, toggleItemFavorite } from "@/actions/items";
 import { useItemDrawer } from "./ItemDrawerContext";
 import { ItemDrawerViewBody } from "./ItemDrawerViewBody";
 import { ItemDrawerEditBody } from "./ItemDrawerEditBody";
@@ -50,6 +50,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [favoriting, setFavoriting] = useState(false);
 
   useEffect(() => {
     if (!activeItemId) {
@@ -79,6 +80,24 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
     const text = item?.content ?? item?.url ?? "";
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => toast.success("Copied to clipboard"));
+  }
+
+  async function handleToggleFavorite() {
+    if (!item) return;
+    const next = !item.isFavorite;
+    setFavoriting(true);
+    setItem((cur) => (cur ? { ...cur, isFavorite: next } : cur));
+
+    const result = await toggleItemFavorite(item.id);
+    setFavoriting(false);
+
+    if (!result.success) {
+      setItem((cur) => (cur ? { ...cur, isFavorite: !next } : cur));
+      toast.error(result.error);
+      return;
+    }
+
+    router.refresh();
   }
 
   function handleEdit() {
@@ -261,7 +280,14 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
             </div>
           ) : (
             <div className="flex items-center gap-0.5 border-b px-3 py-1.5">
-              <Button variant="ghost" size="sm" className="gap-1.5" disabled={!item} aria-label="Favorite">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5"
+                disabled={!item || favoriting}
+                onClick={handleToggleFavorite}
+                aria-label={item?.isFavorite ? "Remove from favorites" : "Add to favorites"}
+              >
                 <Star className={item?.isFavorite ? "size-3.5 fill-amber-400 text-amber-400" : "size-3.5"} />
                 Favorite
               </Button>

@@ -1,6 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import {
   createItem as dbCreateItem,
   updateItem as dbUpdateItem,
@@ -14,6 +16,41 @@ import type { ItemDetail } from "@/lib/db/items";
 type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
+
+export async function toggleItemFavorite(
+  itemId: string,
+): Promise<ActionResult<{ isFavorite: boolean }>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    // Prisma has no atomic boolean toggle, so read the current value first.
+    // Both queries scope to userId to prevent IDOR.
+    const item = await prisma.item.findUnique({
+      where: { id: itemId, userId: session.user.id },
+      select: { isFavorite: true },
+    });
+
+    if (!item) {
+      return { success: false, error: "Item not found" };
+    }
+
+    const updated = await prisma.item.update({
+      where: { id: itemId, userId: session.user.id },
+      data: { isFavorite: !item.isFavorite },
+      select: { isFavorite: true },
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/favorites");
+
+    return { success: true, data: { isFavorite: updated.isFavorite } };
+  } catch {
+    return { success: false, error: "Failed to update favorite" };
+  }
+}
 
 export async function createItem(
   raw: unknown,

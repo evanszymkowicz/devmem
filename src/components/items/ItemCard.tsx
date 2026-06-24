@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Code, Copy, Pin, Star } from "lucide-react";
+import { Check, Code, Copy, Pin } from "lucide-react";
 import { useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { type ItemWithType } from "@/lib/db/items";
 import { ICON_MAP } from "@/lib/icon-map";
 import { formatDateShort } from "@/lib/format-date";
 import { useItemDrawer } from "./ItemDrawerContext";
+import { ItemFavoriteButton } from "./ItemFavoriteButton";
 
 interface ItemCardProps {
   item: ItemWithType;
@@ -54,18 +55,13 @@ export function ItemCard({ item }: ItemCardProps) {
                   aria-label="Pinned"
                 />
               )}
-              {item.isFavorite && (
-                <Star
-                  className="size-3 shrink-0 fill-amber-400 text-amber-400"
-                  aria-label="Favorite"
-                />
-              )}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <time className="text-xs text-muted-foreground">
               {formatDateShort(item.updatedAt)}
             </time>
+            <ItemFavoriteButton itemId={item.id} initialFavorite={item.isFavorite} />
             {copyValue && (
               <button
                 onClick={handleCopy}
