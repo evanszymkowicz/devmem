@@ -10,6 +10,24 @@ import type {
   UpdateCollectionInput,
 } from "@/lib/validations/collections";
 
+// Neutral gray fallback for collections with no items (no dominant type).
+export const FALLBACK_TYPE_COLOR = "#6b7280";
+
+// Given a collection's item types (with repeats), returns the color of the
+// most frequent type. Empty collections fall back to neutral gray.
+export function dominantTypeColor(
+  types: { id: string; color: string }[],
+): string {
+  const counts = new Map<string, { count: number; color: string }>();
+  for (const t of types) {
+    const existing = counts.get(t.id);
+    if (existing) existing.count++;
+    else counts.set(t.id, { count: 1, color: t.color });
+  }
+  const dominant = [...counts.values()].sort((a, b) => b.count - a.count)[0];
+  return dominant?.color ?? FALLBACK_TYPE_COLOR;
+}
+
 export interface CollectionWithTypes {
   id: string;
   name: string;
@@ -144,28 +162,13 @@ export async function getSidebarCollections(
     },
   });
 
-  return collections.map((col) => {
-    const typeCounts = new Map<string, { count: number; color: string }>();
-    for (const ic of col.items) {
-      const t = ic.item.itemType;
-      const existing = typeCounts.get(t.id);
-      if (existing) {
-        existing.count++;
-      } else {
-        typeCounts.set(t.id, { count: 1, color: t.color });
-      }
-    }
-    const dominant = [...typeCounts.values()].sort((a, b) => b.count - a.count)[0];
-    return {
-      id: col.id,
-      name: col.name,
-      isFavorite: col.isFavorite,
-      itemCount: col.items.length,
-      // Empty collections have no items, so typeCounts is empty and dominant is
-      // undefined; gray is the neutral fallback color.
-      dominantColor: dominant?.color ?? "#6b7280",
-    };
-  });
+  return collections.map((col) => ({
+    id: col.id,
+    name: col.name,
+    isFavorite: col.isFavorite,
+    itemCount: col.items.length,
+    dominantColor: dominantTypeColor(col.items.map((ic) => ic.item.itemType)),
+  }));
 }
 
 export async function getDashboardStats(userId: string): Promise<DashboardStats> {

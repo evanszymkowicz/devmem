@@ -1,18 +1,28 @@
-# Current Feature
+# Current Feature: Favorites Page
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Add a star icon button to the TopBar linking to `/favorites`
+- Create a protected `/favorites` route
+- Fetch all of the user's favorited items and collections
+- Display them in a compact, dev-focused list view (VS Code/terminal style, not cards)
+- Each row shows: type icon, title, type badge, date added
+- Separate sections for items and collections, each with a count
+- Clicking an item opens the ItemDrawer; clicking a collection navigates to `/collections/[id]`
+- Empty state when there are no favorites
+- Sort by most recently favorited (`updatedAt`)
 
 ## TODOs
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- UI style: monospace or semi-monospace font, minimal padding / high density
+- Subtle hover states; no cards or heavy borders — clean lines only
+- Scope all queries to the signed-in user (`userId: session.user.id`)
 
 ## History
 
