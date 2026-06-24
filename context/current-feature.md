@@ -53,3 +53,5 @@ Not Started
 - Editor Preferences Settings
 - Favorites Page
 - Pinned Items
+- Favorite Toggle Buttons
+- Favorites Page Client-Side Sorting

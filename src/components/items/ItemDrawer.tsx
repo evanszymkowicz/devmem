@@ -82,6 +82,24 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
     navigator.clipboard.writeText(text).then(() => toast.success("Copied to clipboard"));
   }
 
+  async function handleToggleFavorite() {
+    if (!item) return;
+    const next = !item.isFavorite;
+    setFavoriting(true);
+    setItem((cur) => (cur ? { ...cur, isFavorite: next } : cur));
+
+    const result = await toggleItemFavorite(item.id);
+    setFavoriting(false);
+
+    if (!result.success) {
+      setItem((cur) => (cur ? { ...cur, isFavorite: !next } : cur));
+      toast.error(result.error);
+      return;
+    }
+
+    router.refresh();
+  }
+
   function handleEdit() {
     if (!item) return;
     setEditState(itemToEditState(item));
@@ -285,7 +303,14 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
             </div>
           ) : (
             <div className="flex items-center gap-0.5 border-b px-3 py-1.5">
-              <Button variant="ghost" size="sm" className="gap-1.5" disabled={!item} aria-label="Favorite">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5"
+                disabled={!item || favoriting}
+                onClick={handleToggleFavorite}
+                aria-label={item?.isFavorite ? "Remove from favorites" : "Add to favorites"}
+              >
                 <Star className={item?.isFavorite ? "size-3.5 fill-amber-400 text-amber-400" : "size-3.5"} />
                 Favorite
               </Button>

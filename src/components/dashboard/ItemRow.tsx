@@ -1,12 +1,13 @@
 "use client";
 
-import { Code, Pin, Star } from "lucide-react";
+import { Code, Pin } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { type ItemWithType } from "@/lib/db/items";
 import { ICON_MAP } from "@/lib/icon-map";
 import { formatDateShort } from "@/lib/format-date";
 import { useItemDrawer } from "@/components/items/ItemDrawerContext";
+import { ItemFavoriteButton } from "@/components/items/ItemFavoriteButton";
 
 interface ItemRowProps {
   item: ItemWithType;
@@ -20,7 +21,7 @@ export function ItemRow({ item }: ItemRowProps) {
   return (
     <Card
       size="sm"
-      className="cursor-pointer border-l-4 transition-colors hover:bg-accent/40"
+      className="group cursor-pointer border-l-4 transition-colors hover:bg-accent/40"
       style={{ borderLeftColor: accent }}
       onClick={() => openDrawer(item.id)}
     >
@@ -38,12 +39,6 @@ export function ItemRow({ item }: ItemRowProps) {
               <Pin
                 className="size-3 shrink-0 text-muted-foreground"
                 aria-label="Pinned"
-              />
-            )}
-            {item.isFavorite && (
-              <Star
-                className="size-3 shrink-0 fill-amber-400 text-amber-400"
-                aria-label="Favorite"
               />
             )}
           </div>
@@ -65,9 +60,12 @@ export function ItemRow({ item }: ItemRowProps) {
             </div>
           )}
         </div>
-        <time className="shrink-0 text-xs text-muted-foreground">
-          {formatDateShort(item.updatedAt)}
-        </time>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <time className="text-xs text-muted-foreground">
+            {formatDateShort(item.updatedAt)}
+          </time>
+          <ItemFavoriteButton itemId={item.id} initialFavorite={item.isFavorite} />
+        </div>
       </CardContent>
     </Card>
   );
