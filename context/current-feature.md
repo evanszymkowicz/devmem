@@ -51,3 +51,4 @@ Not Started
 - Global Search/Command Palette
 - Pagination
 - Editor Preferences Settings
+- Favorites Page

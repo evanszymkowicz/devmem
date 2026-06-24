@@ -1,6 +1,7 @@
 "use client";
 
-import { FolderPlus, PanelLeft, Plus, Search } from "lucide-react";
+import Link from "next/link";
+import { FolderPlus, PanelLeft, Plus, Search, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,11 @@ export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCo
       </button>
 
       <div className="ml-auto flex items-center gap-2">
+        <Button variant="ghost" size="icon-sm" aria-label="Favorites" asChild>
+          <Link href="/favorites">
+            <Star className="size-4" />
+          </Link>
+        </Button>
         <Button variant="outline" size="sm" onClick={onNewCollection}>
           <FolderPlus className="size-4" />
           <span className="hidden sm:inline">New Collection</span>
