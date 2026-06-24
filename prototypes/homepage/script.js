@@ -89,7 +89,7 @@
     "#6366f1", "#06b6d4", "#9aa3b8", "#f59e0b"
   ];
 
-  var SIZE = 48;
+  var SIZE = 64;
   var items = [];
   var rect = field.getBoundingClientRect();
   var W = rect.width;
@@ -105,10 +105,10 @@
       el: el,
       x: Math.random() * Math.max(1, W - SIZE),
       y: Math.random() * Math.max(1, H - SIZE),
-      vx: (Math.random() - 0.5) * 1.1,
-      vy: (Math.random() - 0.5) * 1.1,
+      vx: (Math.random() - 0.5) * 0.7,
+      vy: (Math.random() - 0.5) * 0.7,
       rot: Math.random() * 360,
-      vr: (Math.random() - 0.5) * 0.6,
+      vr: (Math.random() - 0.5) * 0.35,
       phase: Math.random() * Math.PI * 2
     });
   });
@@ -144,7 +144,7 @@
         var dy = cy - mouse.y;
         var dist = Math.sqrt(dx * dx + dy * dy) || 1;
         if (dist < REPEL_RADIUS) {
-          var force = (1 - dist / REPEL_RADIUS) * 0.9;
+          var force = (1 - dist / REPEL_RADIUS) * 0.35;
           it.vx += (dx / dist) * force;
           it.vy += (dy / dist) * force;
         }
@@ -158,9 +158,9 @@
 
       // Keep a little life so they never fully stop.
       var speed = Math.sqrt(it.vx * it.vx + it.vy * it.vy);
-      if (speed < 0.25) {
-        it.vx += (Math.random() - 0.5) * 0.4;
-        it.vy += (Math.random() - 0.5) * 0.4;
+      if (speed < 0.15) {
+        it.vx += (Math.random() - 0.5) * 0.2;
+        it.vy += (Math.random() - 0.5) * 0.2;
       }
 
       // Bounce off walls.

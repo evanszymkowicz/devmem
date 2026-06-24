@@ -1,83 +1,70 @@
-# DevStash Homepage Mockup Spec
+# Marketing Homepage
 
-Create a marketing homepage for DevStash - a developer knowledge hub for code snippets, AI prompts, commands, notes, files, images, and links.
+## Overview
 
-**Output:** `prototypes/homepage/` with `index.html`, `styles.css`, `script.js`
-
----
-
-## Color Palette
-
-Dark theme with these accent colors for item types:
-
-- Snippet: `#3b82f6` (Blue)
-- Prompt: `#f59e0b` (Amber)
-- Command: `#06b6d4` (Cyan)
-- Note: `#22c55e` (Green)
-- File: `#64748b` (Slate)
-- Image: `#ec4899` (Pink)
-- URL: `#6366f1` (Indigo)
+Convert `prototypes/homepage/` into the real Next.js marketing homepage at `/`. Public page, auth-aware nav, built with Tailwind CSS v4 + ShadCN. No dashboard sidebar on this page.
 
 ---
 
-## Hero Section (Main Focus)
+## File Structure
 
-The hero shows a "chaos to order" concept with three elements side by side:
+**New**
 
-### Chaos Container (Left)
+- `src/app/(marketing)/page.tsx` — Homepage server component (assembles sections)
+- `src/app/(marketing)/layout.tsx` — Layout without sidebar; ambient glow background
+- `src/components/marketing/MarketingNav.tsx` — Server component, auth-aware nav
+- `src/components/marketing/NavScrollEffect.tsx` — `'use client'` scroll opacity handler
+- `src/components/marketing/HeroChaos.tsx` — `'use client'` animated chaos icons
+- `src/components/marketing/PricingToggle.tsx` — `'use client'` monthly/annual billing toggle + plan cards
 
-A box labeled "Your knowledge today..." containing 8 floating icons representing where developers currently scatter their knowledge:
+**Modified**
 
-- Notion, GitHub, Slack, VS Code logos
-- Browser tabs, Terminal, Text file, Bookmark icons
-
-**The icons should animate:**
-
-- Float around randomly, bouncing off walls
-- Subtle rotation and scale pulsing
-- Move away from mouse cursor on hover
-
-### Transform Arrow (Center)
-
-A pulsing arrow pointing from chaos to order.
-
-### Dashboard Preview (Right)
-
-A box labeled "...with DevStash" showing a simplified dashboard mockup:
-
-- Sidebar with nav items
-- Grid of item cards with colored top borders (using the item type colors)
+- `src/middleware.ts` — Add `/` to the public routes list so unauthenticated visitors aren't redirected
 
 ---
 
-## Other Sections
+## Component Breakdown
 
-1. **Navigation** - Fixed top nav with logo, "Features"/"Pricing" links, Sign In/Get Started buttons
+### Server
 
-2. **Hero Text** - Above the visual: "Stop Losing Your Developer Knowledge" headline with gradient text, subheadline about scattered knowledge, CTA buttons
+**`page.tsx`** — Renders sections in order: MarketingNav → Hero → Features → AI → PricingToggle → CTA → Footer. All static sections are inline JSX here.
 
-3. **Features** - 6 cards in a grid: Code Snippets, AI Prompts, Instant Search, Commands, Files & Docs, Collections. Each card uses its item type accent color.
+**`MarketingNav.tsx`** — Calls `auth()` to read the session. Authenticated users see a "Go to Dashboard →" link instead of Sign In + Get Started buttons.
 
-4. **AI Section** - Two columns: Left has "Pro Feature" badge and checklist of AI capabilities. Right shows a code editor mockup with "AI Generated Tags" demo.
+**`(marketing)/layout.tsx`** — Sets dark background and the ambient radial-gradient glow (as a fixed pseudo-element via Tailwind `before:` or a `<div aria-hidden>` overlay). Includes scroll-behavior smooth.
 
-5. **Pricing** - Free ($0, 50 items, 3 collections) vs Pro ($8/mo, unlimited, AI features). Pro card highlighted with "Most Popular" badge. Also add a toggle for the $72 annual option.
+### Client
 
-6. **CTA** - "Ready to Organize Your Knowledge?" with button
+**`NavScrollEffect.tsx`** — Mounts a passive `scroll` listener, toggles a `data-scrolled` attribute (or a Tailwind class) on the `<nav>` element for the frosted-glass border effect.
 
-7. **Footer** - Logo, link columns, copyright with current year.
+**`HeroChaos.tsx`** — Ports the `requestAnimationFrame` animation from `script.js`. Uses a `useRef` on a container div, creates icon elements, runs the bounce + mouse-repulsion loop. Skips the loop and renders a static grid when `prefers-reduced-motion` is set. Icons from Lucide React.
 
----
-
-## Animations
-
-- **Chaos icons**: JavaScript animation using requestAnimationFrame. Icons drift, bounce off walls, repel from mouse cursor.
-- **Arrow**: CSS pulse animation
-- **Scroll**: Elements fade in when scrolling into view
-- **Navbar**: Gets more opaque on scroll
+**`PricingToggle.tsx`** — Owns `isAnnual` state. Renders the billing toggle (ShadCN `Switch`) and both plan cards. Swaps Pro price between `$8/mo` and `$6/mo ($72/yr)` based on state.
 
 ---
 
-## Responsive
+## Links
 
-- Mobile: Stack the chaos/arrow/dashboard vertically, single column grids
-- Arrow rotates 90° on mobile to point down
+| Element | Destination |
+|---|---|
+| Logo | `/` |
+| Features nav link | `#features` |
+| Pricing nav link | `#pricing` |
+| Sign In | `/auth/signin` |
+| Get Started (nav + hero + free plan) | `/auth/register` |
+| Go to Dashboard (authed nav) | `/dashboard` |
+| Hero "See Features" | `#features` |
+| Go Pro button | `/auth/register` |
+| Footer Changelog / About / Blog / Contact / Privacy / Terms | `#` (placeholder) |
+
+---
+
+## Implementation Notes
+
+- **Item-type colors:** Check `src/app/globals.css` for existing `--color-snippet` etc. vars before adding new ones. If absent, add them to `@theme`.
+- **Scroll reveal:** Use a small `ScrollReveal` client wrapper that applies `opacity-0 translate-y-6` initially and removes those classes after the element enters the viewport (IntersectionObserver). Wrap static sections in it.
+- **Dashboard preview panel** (hero right side): static JSX with colored dot + label rows and skeleton cards — no real data.
+- **Editor mockup** (AI section): static `<pre><code>` with `<span>` tags for syntax highlighting, plus animated tag chips using Tailwind `animate-` classes.
+- **Scroll padding:** Set `scroll-padding-top` in the layout to account for the fixed nav height (`64px`).
+- **Font:** Use `font-mono` (JetBrains Mono is already loaded or use system mono) for the editor mockup.
+- **Responsive:** Stack the hero chaos/arrow/dashboard vertically below `md:`. Single-column feature and pricing grids on mobile. Hide nav links on small screens, keep action buttons.

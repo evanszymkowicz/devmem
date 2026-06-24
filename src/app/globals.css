@@ -5,6 +5,13 @@
 @custom-variant dark (&:is(.dark, .dark *));
 
 @theme inline {
+  --color-snippet: #3b82f6;
+  --color-prompt: #8b5cf6;
+  --color-command: #f97316;
+  --color-note: #fde047;
+  --color-file: #6b7280;
+  --color-image: #ec4899;
+  --color-link: #10b981;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -120,6 +127,7 @@
   }
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 80px;
   }
   html,
   body {
@@ -127,7 +135,14 @@
   }
 }
 
-/* Homepage chaos animation arrow pulse */
+/* Marketing homepage animations */
+@keyframes tag-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes pulse-arrow {
   0%,
   100% {

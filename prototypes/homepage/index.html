@@ -86,16 +86,42 @@
               <span class="dot dot--note"></span> Notes
             </div>
             <div class="dash__nav">
+              <span class="dot dot--file"></span> Files
+            </div>
+            <div class="dash__nav">
+              <span class="dot dot--image"></span> Images
+            </div>
+            <div class="dash__nav">
               <span class="dot dot--url"></span> Links
             </div>
           </div>
           <div class="dash__main">
-            <div class="dash__card" style="--accent: var(--c-snippet)"></div>
-            <div class="dash__card" style="--accent: var(--c-prompt)"></div>
-            <div class="dash__card" style="--accent: var(--c-command)"></div>
-            <div class="dash__card" style="--accent: var(--c-note)"></div>
-            <div class="dash__card" style="--accent: var(--c-image)"></div>
-            <div class="dash__card" style="--accent: var(--c-url)"></div>
+            <span class="dash__section-label">Collections</span>
+            <div class="dash__card" style="--accent: var(--c-snippet)">
+              <div class="dash__bar"></div>
+              <div class="dash__bar dash__bar--short"></div>
+            </div>
+            <div class="dash__card" style="--accent: var(--c-prompt)">
+              <div class="dash__bar"></div>
+              <div class="dash__bar dash__bar--short"></div>
+            </div>
+            <div class="dash__card" style="--accent: var(--c-command)">
+              <div class="dash__bar"></div>
+              <div class="dash__bar dash__bar--short"></div>
+            </div>
+            <div class="dash__card" style="--accent: var(--c-note)">
+              <div class="dash__bar"></div>
+              <div class="dash__bar dash__bar--short"></div>
+            </div>
+            <span class="dash__section-label">Recent Items</span>
+            <div class="dash__card" style="--accent: var(--c-image)">
+              <div class="dash__bar"></div>
+              <div class="dash__bar dash__bar--short"></div>
+            </div>
+            <div class="dash__card" style="--accent: var(--c-url)">
+              <div class="dash__bar"></div>
+              <div class="dash__bar dash__bar--short"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -103,6 +129,7 @@
   </header>
 
   <!-- ============ FEATURES ============ -->
+  <div class="section-bg">
   <section class="section" id="features">
     <div class="section__head reveal">
       <h2 class="section__title">Everything in One Place</h2>
@@ -153,6 +180,7 @@
       </article>
     </div>
   </section>
+  </div>
 
   <!-- ============ AI SECTION ============ -->
   <section class="section ai">
@@ -239,7 +267,7 @@
           <li>File &amp; image uploads</li>
           <li>AI tagging, summaries &amp; explain</li>
           <li>Prompt optimizer</li>
-          <li>Export (JSON / ZIP)</li>
+          <li>Export (JSON/ZIP)</li>
           <li>Priority support</li>
         </ul>
         <a href="#" class="btn btn--primary btn--block">Go Pro</a>

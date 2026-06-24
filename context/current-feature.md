@@ -1,18 +1,44 @@
-# Current Feature
+# Current Feature: Marketing Homepage
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Convert `prototypes/homepage/` into the real Next.js marketing homepage at `/`
+- Public page accessible without auth; middleware updated to allow unauthenticated visitors
+- Auth-aware nav: authenticated users see "Go to Dashboard →" instead of Sign In + Get Started
+- Animated hero chaos icons using `requestAnimationFrame` (static grid for `prefers-reduced-motion`)
+- Pricing toggle (monthly vs annual) using ShadCN `Switch`, swapping Pro price accordingly
+- Scroll reveal on static sections via IntersectionObserver
+- Frosted-glass nav border on scroll via `NavScrollEffect` client component
+- Ambient radial-gradient glow background in the marketing layout
+- Fully responsive: stacked hero on mobile, single-column features/pricing grids
 
 ## TODOs
 
+- [x] `/` is public — `src/proxy.ts` (Next.js 16 convention) never included it in the protected matcher
+- [x] Create `src/app/(marketing)/layout.tsx` — dark bg + ambient glow, scroll-padding-top 64px
+- [x] Create `src/app/(marketing)/page.tsx` — assembles all sections
+- [x] Create `src/components/marketing/MarketingNav.tsx` — server component, auth-aware
+- [x] Create `src/components/marketing/NavScrollEffect.tsx` — `'use client'` scroll listener
+- [x] Create `src/components/marketing/HeroChaos.tsx` — `'use client'` rAF animation
+- [x] Create `src/components/marketing/PricingToggle.tsx` — `'use client'` billing toggle + plan cards
+- [x] Implement static sections inline in `page.tsx`: Hero, Features, AI, CTA, Footer
+- [x] Add ScrollReveal client wrapper for section entrance animations
+- [x] Check `src/app/globals.css` for existing color vars before adding new ones
+
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- **File structure:** New files in `src/app/(marketing)/` and `src/components/marketing/`
+- **Links:** Logo → `/`, Features → `#features`, Pricing → `#pricing`, Sign In → `/auth/signin`, Get Started → `/auth/register`, Dashboard → `/dashboard`, Go Pro → `/auth/register`, Footer links → `#` (placeholder)
+- **Dashboard preview panel** (hero right): static JSX with colored dot + label rows and skeleton cards
+- **Editor mockup** (AI section): static `<pre><code>` with `<span>` syntax highlighting + animated tag chips
+- **Font:** `font-mono` for the editor mockup (JetBrains Mono already loaded or system mono)
+- **Scroll padding:** `scroll-padding-top: 64px` in layout to account for fixed nav height
+- **No dashboard sidebar** on marketing pages
+- **Item-type colors:** check `globals.css` `@theme` for existing `--color-snippet` etc. vars before adding
 
 ## History
 
