@@ -27,7 +27,7 @@ import {
 import { ICON_MAP } from "@/lib/icon-map";
 import type { ItemDetail } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
-import { updateItem, deleteItem } from "@/actions/items";
+import { updateItem, deleteItem, toggleItemPin } from "@/actions/items";
 import { useItemDrawer } from "./ItemDrawerContext";
 import { ItemDrawerViewBody } from "./ItemDrawerViewBody";
 import { ItemDrawerEditBody } from "./ItemDrawerEditBody";
@@ -50,6 +50,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [pinning, setPinning] = useState(false);
 
   useEffect(() => {
     if (!activeItemId) {
@@ -94,6 +95,29 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
 
   function setField<K extends keyof EditState>(key: K, value: EditState[K]) {
     setEditState((prev) => (prev ? { ...prev, [key]: value } : prev));
+  }
+
+  async function handlePin() {
+    if (!item) return;
+    const previous = item.isPinned;
+
+    // Optimistically flip the pin state for instant feedback.
+    setItem((prev) => (prev ? { ...prev, isPinned: !previous } : prev));
+    setPinning(true);
+
+    const result = await toggleItemPin(item.id);
+
+    setPinning(false);
+
+    if (!result.success) {
+      // Revert on failure.
+      setItem((prev) => (prev ? { ...prev, isPinned: previous } : prev));
+      toast.error(result.error);
+      return;
+    }
+
+    toast.success(result.data.isPinned ? "Item pinned" : "Item unpinned");
+    router.refresh();
   }
 
   async function handleDelete() {
@@ -265,7 +289,14 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
                 <Star className={item?.isFavorite ? "size-3.5 fill-amber-400 text-amber-400" : "size-3.5"} />
                 Favorite
               </Button>
-              <Button variant="ghost" size="sm" className="gap-1.5" disabled={!item} aria-label="Pin">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5"
+                disabled={!item || pinning}
+                onClick={handlePin}
+                aria-label={item?.isPinned ? "Unpin" : "Pin"}
+              >
                 <Pin className={item?.isPinned ? "size-3.5 fill-foreground" : "size-3.5"} />
                 Pin
               </Button>

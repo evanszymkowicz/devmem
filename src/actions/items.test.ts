@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    item: { findFirst: vi.fn(), update: vi.fn() },
+    item: { findFirst: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
     tag: { upsert: vi.fn() },
     $transaction: vi.fn(),
   },
@@ -10,6 +10,10 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/auth", () => ({
   auth: vi.fn(),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
 }));
 
 vi.mock("@/lib/db/items", () => ({
@@ -23,13 +27,16 @@ vi.mock("@/lib/r2", () => ({
   deleteFromR2: vi.fn(),
 }));
 
-import { createItem, updateItem } from "./items";
+import { createItem, updateItem, toggleItemPin } from "./items";
 import { createItem as dbCreateItem, updateItem as dbUpdateItem } from "@/lib/db/items";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 const mockAuth = vi.mocked(auth);
 const mockDbCreate = vi.mocked(dbCreateItem);
 const mockDbUpdate = vi.mocked(dbUpdateItem);
+const mockItemFindUnique = vi.mocked(prisma.item.findUnique);
+const mockItemUpdate = vi.mocked(prisma.item.update);
 
 const AUTHED_SESSION = { user: { id: "user-1" } };
 
@@ -187,5 +194,72 @@ describe("createItem action", () => {
     mockDbCreate.mockRejectedValue(new Error("db error"));
     const result = await createItem(VALID_CREATE_PAYLOAD);
     expect(result).toEqual({ success: false, error: "Failed to create item" });
+  });
+});
+
+describe("toggleItemPin action", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns unauthorized when there is no session", async () => {
+    mockAuth.mockResolvedValue(null as never);
+    const result = await toggleItemPin("item-1");
+    expect(result).toEqual({ success: false, error: "Unauthorized" });
+    expect(mockItemFindUnique).not.toHaveBeenCalled();
+    expect(mockItemUpdate).not.toHaveBeenCalled();
+  });
+
+  it("returns item-not-found when the item is missing or not owned", async () => {
+    mockAuth.mockResolvedValue(AUTHED_SESSION as never);
+    mockItemFindUnique.mockResolvedValue(null as never);
+    const result = await toggleItemPin("item-1");
+    expect(result).toEqual({ success: false, error: "Item not found" });
+    expect(mockItemUpdate).not.toHaveBeenCalled();
+  });
+
+  it("scopes the lookup to the authed user (no IDOR)", async () => {
+    mockAuth.mockResolvedValue(AUTHED_SESSION as never);
+    mockItemFindUnique.mockResolvedValue({ isPinned: false } as never);
+    mockItemUpdate.mockResolvedValue({ isPinned: true } as never);
+    await toggleItemPin("item-abc");
+    expect(mockItemFindUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "item-abc", userId: "user-1" },
+      }),
+    );
+  });
+
+  it("pins an unpinned item and returns the new state", async () => {
+    mockAuth.mockResolvedValue(AUTHED_SESSION as never);
+    mockItemFindUnique.mockResolvedValue({ isPinned: false } as never);
+    mockItemUpdate.mockResolvedValue({ isPinned: true } as never);
+    const result = await toggleItemPin("item-1");
+    expect(mockItemUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "item-1", userId: "user-1" },
+        data: { isPinned: true },
+      }),
+    );
+    expect(result).toEqual({ success: true, data: { isPinned: true } });
+  });
+
+  it("unpins a pinned item and returns the new state", async () => {
+    mockAuth.mockResolvedValue(AUTHED_SESSION as never);
+    mockItemFindUnique.mockResolvedValue({ isPinned: true } as never);
+    mockItemUpdate.mockResolvedValue({ isPinned: false } as never);
+    const result = await toggleItemPin("item-1");
+    expect(mockItemUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { isPinned: false } }),
+    );
+    expect(result).toEqual({ success: true, data: { isPinned: false } });
+  });
+
+  it("returns a generic error when the update throws", async () => {
+    mockAuth.mockResolvedValue(AUTHED_SESSION as never);
+    mockItemFindUnique.mockResolvedValue({ isPinned: false } as never);
+    mockItemUpdate.mockRejectedValue(new Error("connection lost"));
+    const result = await toggleItemPin("item-1");
+    expect(result).toEqual({ success: false, error: "Failed to update pin" });
   });
 });
