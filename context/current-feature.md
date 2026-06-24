@@ -1,34 +1,18 @@
-# Current Feature: Favorites Page Client-Side Sorting
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a sort control to the Favorites page (`FavoritesView`) letting the user reorder favorites by **Name**, **Date**, and **Item Type**.
-- Sorting is **client-side only** — no new server queries or DB changes; reorder the already-fetched `items`/`collections` arrays in the existing `"use client"` component.
-- Sort applies within each existing section (Items, Collections) — the Items/Collections grouping stays; only the order inside each list changes.
-- Each sort key supports a sensible default direction (e.g. Name A→Z, Date newest-first) with a toggle for ascending/descending.
-- Sorting is stable, handles empty sections gracefully, and the default view (before any interaction) matches the current server order.
+<!-- Bullet points of what success looks like -->
 
 ## TODOs
 
-- [ ] Add a sort dropdown/segmented control to the Favorites header or above the sections.
-- [ ] Implement `useMemo`-based sorting in `FavoritesView` keyed on sort field + direction.
-- [ ] Name sort: case-insensitive compare of item/collection title.
-- [ ] Date sort: compare `updatedAt`.
-- [ ] Item Type sort: by `itemType.name` for items; collections sort by their "Collection" badge / name (decide consistent ordering since collections have no item type).
-- [ ] Keep collections section sorting coherent (Item Type sort is a no-op ordering for collections — fall back to name).
-- [ ] Unit-test the pure sort/comparator logic.
-
 ## Notes
 
-- `FavoritesView` (`src/components/favorites/FavoritesView.tsx`) is already a client component receiving `items: ItemWithType[]` and `collections: FavoriteCollection[]`.
-- Items expose `title`, `updatedAt`, `itemType.name`/`itemType.color`. Collections expose `name`, `updatedAt`, `dominantColor` (no item type).
-- Extract the comparator into a small pure helper (e.g. `src/lib/sort-favorites.ts`) so it can be unit-tested without rendering.
-- Keep styling consistent with the existing mono/minimal favorites UI and shadcn primitives.
-- Open question for `start`: one shared sort control for both sections, or per-section? Default assumption: a single shared control applied to both.
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -69,3 +53,4 @@ In Progress
 - Editor Preferences Settings
 - Favorites Page
 - Favorite Toggle Buttons
+- Favorites Page Client-Side Sorting
