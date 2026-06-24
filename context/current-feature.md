@@ -1,18 +1,27 @@
-# Current Feature
+# Current Feature: Marketing Homepage Mockup
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Build a static marketing homepage prototype in `prototypes/homepage/` (`index.html`, `styles.css`, `script.js`)
+- Dark theme using item-type accent colors (Snippet blue, Prompt amber, Command cyan, Note green, File slate, Image pink, URL indigo)
+- Hero section with a "chaos to order" visual: chaos container (left, 8 animated floating icons), pulsing transform arrow (center), dashboard preview (right)
+- Supporting sections: fixed navigation, hero text with gradient headline + CTAs, 6-card features grid, AI/Pro section with code-editor mockup, pricing (Free vs Pro with monthly/annual toggle), bottom CTA, footer
+- Animations: requestAnimationFrame chaos icons (drift, wall bounce, mouse repel), CSS arrow pulse, scroll fade-in, navbar opacity on scroll
+- Responsive: stack chaos/arrow/dashboard vertically + single-column grids on mobile; arrow rotates 90° to point down
 
 ## TODOs
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Source spec: `context/features/homepage-spec.md`
+- The spec's wordmark says **DevMemory** — that is outdated. Use **DevMemory** (**DevMem** for short) throughout. See [[product-name]].
+- This is a standalone static prototype (plain HTML/CSS/JS in `prototypes/`), not part of the Next.js app — no React/Tailwind/Prisma involved.
+- Pricing: Free = $0 / 50 items / 3 collections; Pro = $8/mo or $72/yr, unlimited + AI features; Pro card highlighted "Most Popular".
+- Footer copyright uses the current year.
 
 ## History
 
