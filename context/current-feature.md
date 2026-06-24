@@ -1,30 +1,18 @@
-# Current Feature: Pinned Items
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Make the existing Pin button in `ItemDrawer` functional (it exists but has no `onClick`)
-- Pinned items appear at the top of listings and in the dashboard's pinned items section
-- Provide optimistic UI updates for instant feedback
-- Show a toast notification on success/error
+<!-- Bullet points of what success looks like -->
 
 ## TODOs
 
-- Create `toggleItemPin` server action
-- Wire up the Pin button in `ItemDrawer` with an `onClick` handler
-- Add optimistic UI updates
-- Add success/error toast notifications
-- Sort pinned items to the top of listings
-- Keep the Pin icon on `ItemCard` as a static indicator
-
 ## Notes
 
-- Follow the existing Favorite Button pattern.
-- Items only — not collections.
-- The Pin icon on `ItemCard` remains a static indicator (display only, not interactive).
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -64,3 +52,4 @@ In Progress
 - Pagination
 - Editor Preferences Settings
 - Favorites Page
+- Pinned Items
