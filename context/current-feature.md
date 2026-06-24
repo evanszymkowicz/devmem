@@ -54,3 +54,4 @@ Not Started
 - Favorites Page
 - Favorite Toggle Buttons
 - Favorites Page Client-Side Sorting
+- Marketing Homepage Mockup
