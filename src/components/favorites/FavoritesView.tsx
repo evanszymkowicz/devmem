@@ -1,10 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { Code, FolderOpen, Star } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowDown, ArrowUp, Code, FolderOpen, Star } from "lucide-react";
 
 import { ICON_MAP } from "@/lib/icon-map";
 import { formatDateShort } from "@/lib/format-date";
+import {
+  defaultDirection,
+  sortFavoriteCollections,
+  sortFavoriteItems,
+  type SortField,
+  type SortDirection,
+} from "@/lib/sort-favorites";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useItemDrawer } from "@/components/items/ItemDrawerContext";
 import type { ItemWithType } from "@/lib/db/items";
 import type { FavoriteCollection } from "@/lib/db/favorites";
@@ -14,7 +30,36 @@ interface FavoritesViewProps {
   collections: FavoriteCollection[];
 }
 
+const SORT_FIELD_LABELS: Record<SortField, string> = {
+  date: "Date",
+  name: "Name",
+  type: "Item type",
+};
+
 export function FavoritesView({ items, collections }: FavoritesViewProps) {
+  // Default matches the server order (most recently favorited first).
+  const [field, setField] = useState<SortField>("date");
+  const [direction, setDirection] = useState<SortDirection>("desc");
+
+  const sortedItems = useMemo(
+    () => sortFavoriteItems(items, { field, direction }),
+    [items, field, direction],
+  );
+  const sortedCollections = useMemo(
+    () => sortFavoriteCollections(collections, { field, direction }),
+    [collections, field, direction],
+  );
+
+  function handleFieldChange(next: SortField) {
+    setField(next);
+    // Reset to that field's natural direction; the toggle can flip it.
+    setDirection(defaultDirection(next));
+  }
+
+  function toggleDirection() {
+    setDirection((d) => (d === "asc" ? "desc" : "asc"));
+  }
+
   if (items.length === 0 && collections.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -29,18 +74,48 @@ export function FavoritesView({ items, collections }: FavoritesViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-8 font-mono">
-      {items.length > 0 && (
-        <Section title="Items" count={items.length}>
-          {items.map((item) => (
+    <div className="flex flex-col gap-6 font-mono">
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-xs text-muted-foreground">Sort by</span>
+        <Select
+          value={field}
+          onValueChange={(v) => handleFieldChange(v as SortField)}
+        >
+          <SelectTrigger className="h-8 w-36" aria-label="Sort favorites by">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(["date", "name", "type"] as const).map((f) => (
+              <SelectItem key={f} value={f}>
+                {SORT_FIELD_LABELS[f]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleDirection}
+          aria-label={
+            direction === "asc" ? "Sort ascending" : "Sort descending"
+          }
+          title={direction === "asc" ? "Ascending" : "Descending"}
+        >
+          {direction === "asc" ? <ArrowUp /> : <ArrowDown />}
+        </Button>
+      </div>
+
+      {sortedItems.length > 0 && (
+        <Section title="Items" count={sortedItems.length}>
+          {sortedItems.map((item) => (
             <ItemFavoriteRow key={item.id} item={item} />
           ))}
         </Section>
       )}
 
-      {collections.length > 0 && (
-        <Section title="Collections" count={collections.length}>
-          {collections.map((col) => (
+      {sortedCollections.length > 0 && (
+        <Section title="Collections" count={sortedCollections.length}>
+          {sortedCollections.map((col) => (
             <CollectionFavoriteRow key={col.id} collection={col} />
           ))}
         </Section>

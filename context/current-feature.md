@@ -52,3 +52,5 @@ Not Started
 - Pagination
 - Editor Preferences Settings
 - Favorites Page
+- Favorite Toggle Buttons
+- Favorites Page Client-Side Sorting
