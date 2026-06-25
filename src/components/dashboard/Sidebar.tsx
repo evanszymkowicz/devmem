@@ -19,6 +19,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { toggleCollectionFavorite } from "@/actions/collections";
 import type { SidebarCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { ICON_MAP } from "@/lib/icon-map";
 
 interface SidebarProps {
@@ -43,9 +44,7 @@ export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps)
           href="/dashboard"
           className="flex items-center gap-2 font-semibold"
         >
-          <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm">
-            D
-          </span>
+          <BrandLogo size="sm" />
           <span className="text-base tracking-tight">DevMemory</span>
         </Link>
         <Button

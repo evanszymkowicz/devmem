@@ -46,11 +46,11 @@ export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCo
             <Star className="size-4" />
           </Link>
         </Button>
-        <Button variant="outline" size="sm" onClick={onNewCollection}>
+        <Button variant="outline" size="sm" aria-label="New Collection" onClick={onNewCollection}>
           <FolderPlus className="size-4" />
           <span className="hidden sm:inline">New Collection</span>
         </Button>
-        <Button size="sm" onClick={onNewItem}>
+        <Button size="sm" aria-label="New Item" onClick={onNewItem}>
           <Plus className="size-4" />
           <span className="hidden sm:inline">New Item</span>
         </Button>

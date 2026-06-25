@@ -6,13 +6,9 @@ Not Started
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
-
 ## TODOs
 
 ## Notes
-
-<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -55,3 +51,6 @@ Not Started
 - Favorite Toggle Buttons
 - Favorites Page Client-Side Sorting
 - Marketing Homepage Mockup
+- Marketing Homepage Functionality
+- UI Polish & Accessibility Fixes
+- Auth Pages Marketing Nav
