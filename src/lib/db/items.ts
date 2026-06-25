@@ -236,7 +236,8 @@ export async function getItemsByType(
   const [items, totalCount] = await Promise.all([
     prisma.item.findMany({
       where,
-      orderBy: { updatedAt: "desc" },
+      // Pinned items sort to the top, then most-recently-updated first.
+      orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
       take: ITEMS_PER_PAGE,
       skip: (page - 1) * ITEMS_PER_PAGE,
       include: itemWithTypeInclude,

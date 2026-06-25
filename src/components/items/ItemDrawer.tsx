@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Code, Copy, Download, Pencil, Pin, Star, Trash2, X, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -27,13 +27,54 @@ import {
 import { ICON_MAP } from "@/lib/icon-map";
 import type { ItemDetail } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
-import { updateItem, deleteItem, toggleItemFavorite } from "@/actions/items";
+import { updateItem, deleteItem, toggleItemPin, toggleItemFavorite } from "@/actions/items";
 import { useItemDrawer } from "./ItemDrawerContext";
 import { ItemDrawerViewBody } from "./ItemDrawerViewBody";
 import { ItemDrawerEditBody } from "./ItemDrawerEditBody";
 import { type EditState, itemToEditState } from "./item-drawer-types";
 
 const FILE_TYPE_SLUGS = new Set(["files", "images"]);
+
+type DrawerCoreState = {
+  item: ItemDetail | null;
+  loading: boolean;
+  isEditing: boolean;
+  editState: EditState | null;
+};
+
+type DrawerCoreAction =
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; item: ItemDetail }
+  | { type: "FETCH_ERROR" }
+  | { type: "PATCH_ITEM"; patch: Partial<ItemDetail> }
+  | { type: "START_EDIT"; item: ItemDetail }
+  | { type: "CANCEL_EDIT" }
+  | { type: "SAVE_SUCCESS"; item: ItemDetail }
+  | { type: "SET_FIELD"; key: keyof EditState; value: EditState[keyof EditState] };
+
+function drawerReducer(state: DrawerCoreState, action: DrawerCoreAction): DrawerCoreState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { item: null, loading: true, isEditing: false, editState: null };
+    case "FETCH_SUCCESS":
+      return { ...state, loading: false, item: action.item };
+    case "FETCH_ERROR":
+      return { item: null, loading: false, isEditing: false, editState: null };
+    case "PATCH_ITEM":
+      return { ...state, item: state.item ? { ...state.item, ...action.patch } : null };
+    case "START_EDIT":
+      return { ...state, isEditing: true, editState: itemToEditState(action.item) };
+    case "CANCEL_EDIT":
+      return { ...state, isEditing: false, editState: null };
+    case "SAVE_SUCCESS":
+      return { ...state, item: action.item, isEditing: false, editState: null };
+    case "SET_FIELD":
+      return {
+        ...state,
+        editState: state.editState ? { ...state.editState, [action.key]: action.value } : null,
+      };
+  }
+}
 
 interface ItemDrawerProps {
   collections: SidebarCollection[];
@@ -43,32 +84,31 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
   const { activeItemId, closeDrawer } = useItemDrawer();
   const router = useRouter();
 
-  const [item, setItem] = useState<ItemDetail | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editState, setEditState] = useState<EditState | null>(null);
+  const [{ item, loading, isEditing, editState }, dispatch] = useReducer(drawerReducer, {
+    item: null,
+    loading: false,
+    isEditing: false,
+    editState: null,
+  });
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [pinning, setPinning] = useState(false);
   const [favoriting, setFavoriting] = useState(false);
 
   useEffect(() => {
-    if (!activeItemId) {
-      setItem(null);
-      setIsEditing(false);
-      setEditState(null);
-      return;
-    }
-    setLoading(true);
-    setIsEditing(false);
+    if (!activeItemId) return;
+    dispatch({ type: "FETCH_START" });
     fetch(`/api/items/${activeItemId}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load item");
         return res.json() as Promise<ItemDetail>;
       })
-      .then(setItem)
-      .catch(() => toast.error("Failed to load item"))
-      .finally(() => setLoading(false));
+      .then((fetched) => dispatch({ type: "FETCH_SUCCESS", item: fetched }))
+      .catch(() => {
+        dispatch({ type: "FETCH_ERROR" });
+        toast.error("Failed to load item");
+      });
   }, [activeItemId]);
 
   const Icon = item ? (ICON_MAP[item.itemType.icon] ?? Code) : Code;
@@ -86,13 +126,13 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
     if (!item) return;
     const next = !item.isFavorite;
     setFavoriting(true);
-    setItem((cur) => (cur ? { ...cur, isFavorite: next } : cur));
+    dispatch({ type: "PATCH_ITEM", patch: { isFavorite: next } });
 
     const result = await toggleItemFavorite(item.id);
     setFavoriting(false);
 
     if (!result.success) {
-      setItem((cur) => (cur ? { ...cur, isFavorite: !next } : cur));
+      dispatch({ type: "PATCH_ITEM", patch: { isFavorite: !next } });
       toast.error(result.error);
       return;
     }
@@ -102,17 +142,36 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
 
   function handleEdit() {
     if (!item) return;
-    setEditState(itemToEditState(item));
-    setIsEditing(true);
+    dispatch({ type: "START_EDIT", item });
   }
 
   function handleCancel() {
-    setIsEditing(false);
-    setEditState(null);
+    dispatch({ type: "CANCEL_EDIT" });
   }
 
   function setField<K extends keyof EditState>(key: K, value: EditState[K]) {
-    setEditState((prev) => (prev ? { ...prev, [key]: value } : prev));
+    dispatch({ type: "SET_FIELD", key, value });
+  }
+
+  async function handlePin() {
+    if (!item) return;
+    const previous = item.isPinned;
+
+    dispatch({ type: "PATCH_ITEM", patch: { isPinned: !previous } });
+    setPinning(true);
+
+    const result = await toggleItemPin(item.id);
+
+    setPinning(false);
+
+    if (!result.success) {
+      dispatch({ type: "PATCH_ITEM", patch: { isPinned: previous } });
+      toast.error(result.error);
+      return;
+    }
+
+    toast.success(result.data.isPinned ? "Item pinned" : "Item unpinned");
+    router.refresh();
   }
 
   async function handleDelete() {
@@ -160,9 +219,7 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
       return;
     }
 
-    setItem(result.data);
-    setIsEditing(false);
-    setEditState(null);
+    dispatch({ type: "SAVE_SUCCESS", item: result.data });
     toast.success("Changes saved");
     router.refresh();
   }
@@ -291,7 +348,14 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
                 <Star className={item?.isFavorite ? "size-3.5 fill-amber-400 text-amber-400" : "size-3.5"} />
                 Favorite
               </Button>
-              <Button variant="ghost" size="sm" className="gap-1.5" disabled={!item} aria-label="Pin">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5"
+                disabled={!item || pinning}
+                onClick={handlePin}
+                aria-label={item?.isPinned ? "Unpin" : "Pin"}
+              >
                 <Pin className={item?.isPinned ? "size-3.5 fill-foreground" : "size-3.5"} />
                 Pin
               </Button>

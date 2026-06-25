@@ -17,6 +17,41 @@ type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+export async function toggleItemPin(
+  itemId: string,
+): Promise<ActionResult<{ isPinned: boolean }>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  // Prisma has no atomic toggle, so we read the current value first to invert it.
+  // Both queries scope to userId to prevent IDOR.
+  const item = await prisma.item.findUnique({
+    where: { id: itemId, userId: session.user.id },
+    select: { isPinned: true },
+  });
+
+  if (!item) {
+    return { success: false, error: "Item not found" };
+  }
+
+  try {
+    const updated = await prisma.item.update({
+      where: { id: itemId, userId: session.user.id },
+      data: { isPinned: !item.isPinned },
+      select: { isPinned: true },
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/items", "layout");
+
+    return { success: true, data: { isPinned: updated.isPinned } };
+  } catch {
+    return { success: false, error: "Failed to update pin" };
+  }
+}
+
 export async function toggleItemFavorite(
   itemId: string,
 ): Promise<ActionResult<{ isFavorite: boolean }>> {
@@ -26,8 +61,6 @@ export async function toggleItemFavorite(
   }
 
   try {
-    // Prisma has no atomic boolean toggle, so read the current value first.
-    // Both queries scope to userId to prevent IDOR.
     const item = await prisma.item.findUnique({
       where: { id: itemId, userId: session.user.id },
       select: { isFavorite: true },
@@ -44,6 +77,7 @@ export async function toggleItemFavorite(
     });
 
     revalidatePath("/dashboard");
+    revalidatePath("/items", "layout");
     revalidatePath("/favorites");
 
     return { success: true, data: { isFavorite: updated.isFavorite } };
