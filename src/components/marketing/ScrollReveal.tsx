@@ -31,7 +31,7 @@ export function ScrollReveal({ children, className = "" }: { children: React.Rea
   return (
     <div
       ref={ref}
-      className={`opacity-0 translate-y-6 transition-[opacity,transform] duration-[600ms] ease-out [&.reveal-visible]:opacity-100 [&.reveal-visible]:translate-y-0 motion-reduce:opacity-100 motion-reduce:translate-y-0 motion-reduce:transition-none ${className}`}
+      className={`scroll-reveal opacity-0 translate-y-6 transition-[opacity,transform] duration-[600ms] ease-out [&.reveal-visible]:opacity-100 [&.reveal-visible]:translate-y-0 motion-reduce:opacity-100 motion-reduce:translate-y-0 motion-reduce:transition-none ${className}`}
     >
       {children}
     </div>

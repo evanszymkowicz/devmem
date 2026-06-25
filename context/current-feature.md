@@ -1,18 +1,28 @@
-# Current Feature
+# Current Feature: Auth Pages Marketing Nav
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Add the homepage `MarketingNav` to the auth layout so sign-in, register, forgot-password, reset-password, and verify-email pages all show the full top nav
+- Remove the standalone "D" placeholder logo link from the auth layout (the MarketingNav already provides the brand)
+- Adjust auth layout so the form card is centered in the space below the fixed 64px nav (no overlap)
+- The dashboard Sidebar already has the correct book SVG logo matching the homepage nav — no change needed there
 
 ## TODOs
 
+- [x] Document feature
+- [x] Update `src/app/(auth)/layout.tsx`: add `<MarketingNav />`, remove standalone logo link, offset form area below nav
+- [x] Verify sign-in, register, forgot-password, and reset-password pages all render correctly with the nav
+
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- `MarketingNav` is a Server Component (calls `auth()`) — safe to use directly in the auth layout
+- The nav is fixed-positioned (`h-16`, `top-0`) — the layout wrapper needs `pt-16` or `min-h-[calc(100vh-4rem)]` to avoid overlap
+- The existing standalone logo in the auth layout (`href="/"`, text "D") should be removed; the nav covers it
+- The Sidebar's "D" was already replaced with the book SVG in the current working tree (from the previous in-progress session)
 
 ## History
 
@@ -56,3 +66,4 @@ Not Started
 - Favorites Page Client-Side Sorting
 - Marketing Homepage Mockup
 - Marketing Homepage Functionality
+- UI Polish & Accessibility Fixes

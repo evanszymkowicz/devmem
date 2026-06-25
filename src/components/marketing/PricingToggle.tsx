@@ -132,6 +132,8 @@ export function PricingToggle() {
 function CheckIcon() {
   return (
     <span
+      role="img"
+      aria-label="Included"
       className="flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-full"
       style={{
         background:

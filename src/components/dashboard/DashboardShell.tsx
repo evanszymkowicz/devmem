@@ -130,7 +130,7 @@ export function DashboardShell({ children, itemTypes, collections, user, editorP
           onOpenSearch={() => setSearchOpen(true)}
         />
 
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main id="main-content" className="flex-1 overflow-y-auto">{children}</main>
       </div>
 
       <NewItemDialog

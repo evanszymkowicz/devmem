@@ -147,11 +147,18 @@
   0%,
   100% {
     opacity: 0.4;
-    transform: scale(1);
+    scale: 1;
   }
   50% {
     opacity: 1;
-    transform: scale(1.15);
+    scale: 1.15;
+  }
+}
+
+@media (scripting: none) {
+  .scroll-reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

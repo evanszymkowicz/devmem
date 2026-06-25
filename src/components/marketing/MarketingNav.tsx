@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { NavScrollEffect } from "./NavScrollEffect";
+import { MobileNav } from "./MobileNav";
 
 export async function MarketingNav() {
   const session = await auth();
@@ -19,38 +21,19 @@ export async function MarketingNav() {
             className="inline-flex items-center gap-2 text-[1.12rem] font-extrabold text-foreground"
             aria-label="DevMemory home"
           >
-            <span
-              aria-hidden
-              className="grid h-[30px] w-[30px] place-items-center rounded-lg text-white"
-              style={{
-                background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-              }}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-[17px] w-[17px]"
-              >
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              </svg>
-            </span>
+            <BrandLogo />
             <span>DevMemory</span>
           </Link>
 
           <div className="ml-2 hidden items-center gap-6 sm:flex">
             <Link
-              href="#features"
+              href="/#features"
               className="text-[0.95rem] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Features
             </Link>
             <Link
-              href="#pricing"
+              href="/#pricing"
               className="text-[0.95rem] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Pricing
@@ -75,7 +58,7 @@ export async function MarketingNav() {
                 </Link>
                 <Link
                   href="/register"
-                  className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-[0_6px_20px_rgba(59,130,246,0.3)] transition-shadow hover:shadow-[0_8px_26px_rgba(99,102,241,0.45)]"
+                  className="hidden sm:inline-flex rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-[0_6px_20px_rgba(59,130,246,0.3)] transition-shadow hover:shadow-[0_8px_26px_rgba(99,102,241,0.45)]"
                   style={{
                     background: "linear-gradient(135deg, #3b82f6, #6366f1)",
                   }}
@@ -84,6 +67,7 @@ export async function MarketingNav() {
                 </Link>
               </>
             )}
+            <MobileNav />
           </div>
         </div>
       </nav>

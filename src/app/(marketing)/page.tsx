@@ -16,41 +16,43 @@ export default function HomePage() {
       <MarketingNav />
 
       {/* ====== HERO ====== */}
-      <header className="mx-auto max-w-[1180px] px-6 pb-18 pt-[calc(4rem+64px)] text-center">
+      <header id="main-content" className="mx-auto w-full max-w-[1400px] px-6 pb-18 pt-[calc(4rem+64px)] text-center">
         <ScrollReveal>
-          <span className="mb-5 inline-block rounded-full border border-[rgba(99,102,241,0.25)] bg-[rgba(99,102,241,0.10)] px-[13px] py-[5px] text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-[#6366f1]">
-            Your developer knowledge hub
-          </span>
-          <h1 className="mx-auto mb-5 max-w-[16ch] text-[clamp(2.2rem,5.5vw,4rem)] font-extrabold leading-[1.08] tracking-tight">
-            Store your{" "}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage:
-                  "linear-gradient(120deg, #3b82f6, #ec4899 55%, #8b5cf6)",
-              }}
-            >
-              Developer Knowledge
+          <div className="mx-auto max-w-3xl">
+            <span className="mb-5 inline-block rounded-full border border-[rgba(99,102,241,0.25)] bg-[rgba(99,102,241,0.10)] px-[13px] py-[5px] text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-[#6366f1]">
+              Your developer knowledge hub
             </span>
-          </h1>
-          <p className="mx-auto mb-8 max-w-[60ch] text-[clamp(1rem,1.6vw,1.18rem)] text-muted-foreground">
-            Snippets, prompts, commands, notes, files, and links centralized.
-            DevMemory pulls them into one fast, searchable, AI-enhanced hub.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3.5">
-            <Link
-              href="/register"
-              className="inline-flex items-center rounded-[9px] px-[26px] py-[13px] text-[1rem] font-semibold text-white shadow-[0_6px_20px_rgba(59,130,246,0.3)] transition-shadow hover:shadow-[0_8px_26px_rgba(99,102,241,0.45)]"
-              style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}
-            >
-              Get Started for Free
-            </Link>
-            <Link
-              href="#features"
-              className="inline-flex items-center rounded-[9px] border border-[#232838] bg-white/[0.03] px-[26px] py-[13px] text-[1rem] font-semibold text-foreground transition-colors hover:bg-white/[0.07]"
-            >
-              See Features
-            </Link>
+            <h1 className="mb-5 text-balance text-[clamp(2.2rem,5.5vw,4.5rem)] font-extrabold leading-[1.08] tracking-tight">
+              Store your{" "}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(120deg, #3b82f6, #ec4899 55%, #8b5cf6)",
+                }}
+              >
+                Developer Knowledge
+              </span>
+            </h1>
+            <p className="mx-auto mb-8 max-w-[60ch] text-[clamp(1rem,1.6vw,1.18rem)] text-muted-foreground">
+              Snippets, prompts, commands, notes, files, and links centralized.
+              DevMemory pulls them into one fast, searchable, AI-enhanced hub.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3.5">
+              <Link
+                href="/register"
+                className="inline-flex items-center rounded-[9px] px-[26px] py-[13px] text-[1rem] font-semibold text-white shadow-[0_6px_20px_rgba(59,130,246,0.3)] transition-shadow hover:shadow-[0_8px_26px_rgba(99,102,241,0.45)]"
+                style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}
+              >
+                Get Started for Free
+              </Link>
+              <Link
+                href="#features"
+                className="inline-flex items-center rounded-[9px] border border-[#232838] bg-white/[0.03] px-[26px] py-[13px] text-[1rem] font-semibold text-foreground transition-colors hover:bg-white/[0.07]"
+              >
+                See Features
+              </Link>
+            </div>
           </div>
         </ScrollReveal>
 
@@ -71,7 +73,7 @@ export default function HomePage() {
             {/* Arrow */}
             <div
               aria-hidden
-              className="mx-auto grid h-14 w-14 place-items-center rounded-full text-white shadow-[0_8px_24px_rgba(99,102,241,0.45)] md:rotate-0 rotate-90 animate-[pulse-arrow_1.8s_ease-in-out_infinite]"
+              className="mx-auto grid h-14 w-14 place-items-center rounded-full text-white shadow-[0_8px_24px_rgba(99,102,241,0.45)] rotate-90 md:rotate-0 animate-[pulse-arrow_1.8s_ease-in-out_infinite]"
               style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}
             >
               <svg
@@ -98,59 +100,73 @@ export default function HomePage() {
               </span>
               <div className="grid h-[340px] grid-cols-[96px_1fr] gap-3 rounded-[9px] border border-[#232838] bg-[#0a0c12] p-3">
                 {/* Sidebar */}
-                <div className="flex flex-col gap-2.5">
-                  <div
-                    className="mb-1 h-[18px] rounded-[5px]"
-                    style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}
-                  />
-                  {(
-                    [
-                      ["#3b82f6", "Snippets"],
-                      ["#8b5cf6", "Prompts"],
-                      ["#f97316", "Commands"],
-                      ["#fde047", "Notes"],
-                      ["#6b7280", "Files"],
-                      ["#ec4899", "Images"],
-                      ["#10b981", "Links"],
-                    ] as [string, string][]
-                  ).map(([color, label]) => (
-                    <div key={label} className="flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
-                      <span
-                        className="h-2 w-2 shrink-0 rounded-full"
-                        style={{ background: color }}
-                      />
-                      {label}
-                    </div>
-                  ))}
+                <div className="flex h-full flex-col">
+                  <div className="flex flex-col gap-2.5">
+                    <div
+                      className="mb-1 h-[18px] rounded-[5px]"
+                      style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}
+                    />
+                    {(
+                      [
+                        ["#3b82f6", "Snippets"],
+                        ["#8b5cf6", "Prompts"],
+                        ["#f97316", "Commands"],
+                        ["#fde047", "Notes"],
+                        ["#6b7280", "Files"],
+                        ["#ec4899", "Images"],
+                        ["#10b981", "Links"],
+                      ] as [string, string][]
+                    ).map(([color, label]) => (
+                      <div key={label} className="flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full"
+                          style={{ background: color }}
+                        />
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-auto flex items-center gap-1.5 border-t border-[#232838] pt-2">
+                    <div className="h-[18px] w-[18px] shrink-0 rounded-full bg-[#232838]" />
+                    <div className="h-[5px] flex-1 rounded bg-[#6b7384] opacity-25" />
+                  </div>
                 </div>
                 {/* Main */}
-                <div className="grid grid-cols-2 gap-2 content-start">
-                  <span className="col-span-2 text-[0.54rem] font-bold uppercase tracking-[0.07em] text-[#6b7384]">
-                    Collections
-                  </span>
-                  {(["#3b82f6", "#8b5cf6", "#f97316", "#fde047"] as string[]).map((accent) => (
-                    <div
-                      key={accent}
-                      className="h-[52px] rounded-lg border border-[#232838] bg-[#161a25] p-2"
-                      style={{ borderTop: `3px solid ${accent}` }}
-                    >
-                      <div className="mb-1 h-[5px] rounded bg-[#6b7384] opacity-25" />
-                      <div className="h-[5px] w-[60%] rounded bg-[#6b7384] opacity-25" />
+                <div className="grid h-full grid-rows-2 gap-3">
+                  <div>
+                    <span className="mb-1.5 block text-[0.54rem] font-bold uppercase tracking-[0.07em] text-[#6b7384]">
+                      Collections
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(["#3b82f6", "#8b5cf6", "#f97316", "#fde047"] as string[]).map((accent) => (
+                        <div
+                          key={accent}
+                          className="h-[52px] rounded-lg border border-[#232838] bg-[#161a25] p-2"
+                          style={{ borderTop: `3px solid ${accent}` }}
+                        >
+                          <div className="mb-1 h-[5px] rounded bg-[#6b7384] opacity-25" />
+                          <div className="h-[5px] w-[60%] rounded bg-[#6b7384] opacity-25" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                  <span className="col-span-2 mt-1 text-[0.54rem] font-bold uppercase tracking-[0.07em] text-[#6b7384]">
-                    Recent Items
-                  </span>
-                  {(["#ec4899", "#10b981"] as string[]).map((accent) => (
-                    <div
-                      key={accent}
-                      className="h-[52px] rounded-lg border border-[#232838] bg-[#161a25] p-2"
-                      style={{ borderTop: `3px solid ${accent}` }}
-                    >
-                      <div className="mb-1 h-[5px] rounded bg-[#6b7384] opacity-25" />
-                      <div className="h-[5px] w-[60%] rounded bg-[#6b7384] opacity-25" />
+                  </div>
+                  <div>
+                    <span className="mb-1.5 block text-[0.54rem] font-bold uppercase tracking-[0.07em] text-[#6b7384]">
+                      Recent Items
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(["#ec4899", "#10b981", "#8b5cf6", "#3b82f6"] as string[]).map((accent) => (
+                        <div
+                          key={accent}
+                          className="h-[52px] rounded-lg border border-[#232838] bg-[#161a25] p-2"
+                          style={{ borderTop: `3px solid ${accent}` }}
+                        >
+                          <div className="mb-1 h-[5px] rounded bg-[#6b7384] opacity-25" />
+                          <div className="h-[5px] w-[60%] rounded bg-[#6b7384] opacity-25" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
             </section>
@@ -220,6 +236,8 @@ export default function HomePage() {
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-[1.02rem]">
                   <span
+                    role="img"
+                    aria-label="Included"
                     className="flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-full"
                     style={{
                       background:
