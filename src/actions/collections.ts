@@ -12,6 +12,7 @@ import {
   createCollectionSchema,
   updateCollectionSchema,
 } from "@/lib/validations/collections";
+import { FREE_TIER_COLLECTION_LIMIT } from "@/lib/db/limits";
 
 type ActionResult<T> =
   | { success: true; data: T }
@@ -58,7 +59,13 @@ export async function createCollection(
     revalidatePath("/dashboard");
     revalidatePath("/collections");
     return { success: true, data: { id: created.id } };
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && err.message === "FREE_TIER_LIMIT_REACHED") {
+      return {
+        success: false,
+        error: `You've reached the ${FREE_TIER_COLLECTION_LIMIT}-collection limit on the free plan. Upgrade to Pro for unlimited collections.`,
+      };
+    }
     return { success: false, error: "Failed to create collection" };
   }
 }

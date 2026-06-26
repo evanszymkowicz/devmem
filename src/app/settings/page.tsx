@@ -4,11 +4,13 @@ import { getProfileData } from "@/lib/db/profile";
 import { getSidebarCollections } from "@/lib/db/collections";
 import { getSystemItemTypes } from "@/lib/db/items";
 import { getEditorPreferences } from "@/lib/db/editor-preferences";
+import { getUserUsage } from "@/lib/db/usage-limits";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChangePasswordForm } from "@/components/profile/ChangePasswordForm";
 import { DeleteAccountDialog } from "@/components/profile/DeleteAccountDialog";
 import { EditorPreferencesForm } from "@/components/settings/EditorPreferencesForm";
+import { BillingSection } from "@/components/settings/BillingSection";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -16,12 +18,15 @@ export default async function SettingsPage() {
 
   const userId = session.user.id;
 
-  const [profile, itemTypes, collections, editorPreferences] =
+  const isPro = session.user.isPro ?? false;
+
+  const [profile, itemTypes, collections, editorPreferences, usage] =
     await Promise.all([
       getProfileData(userId),
       getSystemItemTypes(userId),
       getSidebarCollections(userId),
       getEditorPreferences(userId),
+      getUserUsage(userId, isPro),
     ]);
 
   const sidebarUser = {
@@ -46,6 +51,20 @@ export default async function SettingsPage() {
         </header>
 
         <div className="flex flex-col gap-6">
+          {/* Billing / plan */}
+          <Card id="billing">
+            <CardHeader>
+              <CardTitle>Billing</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BillingSection
+                isPro={isPro}
+                itemCount={usage.itemCount}
+                collectionCount={usage.collectionCount}
+              />
+            </CardContent>
+          </Card>
+
           {/* Editor preferences — auto-saved on change */}
           <Card>
             <CardHeader>

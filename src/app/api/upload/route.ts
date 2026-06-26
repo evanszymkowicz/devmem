@@ -4,6 +4,7 @@ import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { getPresignedUploadUrl } from "@/lib/r2";
 import { uploadLimiter, checkRateLimit, getIp, rateLimitResponse } from "@/lib/rate-limit";
 import {
@@ -12,6 +13,7 @@ import {
   MAX_IMAGE_SIZE,
   MAX_FILE_SIZE,
 } from "@/lib/files";
+import { FEATURE_GATING_ENABLED } from "@/lib/config/features";
 
 const UPLOAD_SLUGS = new Set(["files", "images"]);
 
@@ -23,6 +25,19 @@ export async function POST(req: NextRequest) {
 
   const rl = await checkRateLimit(uploadLimiter, `upload:${getIp(req)}:${session.user.id}`);
   if (rl.limited) return rateLimitResponse(rl.retryAfter);
+
+  if (FEATURE_GATING_ENABLED) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isPro: true },
+    });
+    if (!user?.isPro) {
+      return NextResponse.json(
+        { error: "File uploads require a Pro subscription" },
+        { status: 403 },
+      );
+    }
+  }
 
   let body: Record<string, unknown>;
   try {

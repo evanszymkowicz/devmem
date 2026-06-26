@@ -5,6 +5,8 @@ import {
   DASHBOARD_COLLECTIONS_LIMIT,
   ITEMS_PER_PAGE,
 } from "@/lib/db/limits";
+import { isCollectionLimitReached } from "@/lib/db/usage-limits";
+import { FEATURE_GATING_ENABLED } from "@/lib/config/features";
 import type {
   CreateCollectionInput,
   UpdateCollectionInput,
@@ -240,6 +242,20 @@ export async function createCollection(
   userId: string,
   data: CreateCollectionInput,
 ) {
+  if (FEATURE_GATING_ENABLED) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isPro: true },
+    });
+
+    if (!user?.isPro) {
+      const count = await prisma.collection.count({ where: { userId } });
+      if (isCollectionLimitReached(count, false)) {
+        throw new Error("FREE_TIER_LIMIT_REACHED");
+      }
+    }
+  }
+
   return prisma.collection.create({
     data: {
       userId,

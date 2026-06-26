@@ -8,3 +8,9 @@
 // domain (the dev sender only delivers to the account owner).
 export const EMAIL_VERIFICATION_ENABLED =
   process.env.EMAIL_VERIFICATION_ENABLED !== "false";
+
+// Free-tier usage limits (item/collection caps, Pro-only type blocks, upload gate).
+// Set NEXT_PUBLIC_FEATURE_GATING_ENABLED=false in .env to disable during development.
+// Remove or set to any other value to enable at launch.
+export const FEATURE_GATING_ENABLED =
+  process.env.NEXT_PUBLIC_FEATURE_GATING_ENABLED !== "false";

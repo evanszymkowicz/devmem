@@ -11,6 +11,7 @@ import {
 } from "@/lib/db/items";
 import { deleteFromR2 } from "@/lib/r2";
 import { createItemSchema, updateItemSchema } from "@/lib/validations/items";
+import { FREE_TIER_ITEM_LIMIT } from "@/lib/db/limits";
 import type { ItemDetail } from "@/lib/db/items";
 
 type ActionResult<T> =
@@ -110,7 +111,16 @@ export async function createItem(
       return { success: false, error: "Item type not found" };
     }
     return { success: true, data: created };
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && err.message === "PRO_TYPE_REQUIRED") {
+      return { success: false, error: "File and image uploads require a Pro subscription." };
+    }
+    if (err instanceof Error && err.message === "FREE_TIER_LIMIT_REACHED") {
+      return {
+        success: false,
+        error: `You've reached the ${FREE_TIER_ITEM_LIMIT}-item limit on the free plan. Upgrade to Pro for unlimited items.`,
+      };
+    }
     return { success: false, error: "Failed to create item" };
   }
 }
