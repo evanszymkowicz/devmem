@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
@@ -16,21 +16,21 @@ Not Started
 ## TODOs
 
 ### New Files
-- [ ] `src/lib/stripe.ts` — Stripe SDK init, export client + price-ID constants, throw on missing env vars
-- [ ] `src/lib/db/usage-limits.ts` — `getUserUsage`, `isItemLimitReached`, `isCollectionLimitReached`
-- [ ] `src/lib/db/usage-limits.test.ts` — 12 Vitest unit tests (Prisma mocked)
-- [ ] `src/app/api/stripe/checkout/route.ts` — Create Stripe Checkout session
-- [ ] `src/app/api/stripe/portal/route.ts` — Create Stripe Customer Portal session
+- [x] `src/lib/stripe.ts` — Stripe SDK init, export client + price-ID constants, throw on missing env vars
+- [x] `src/lib/db/usage-limits.ts` — `getUserUsage`, `isItemLimitReached`, `isCollectionLimitReached`
+- [x] `src/lib/db/usage-limits.test.ts` — 12 Vitest unit tests (Prisma mocked)
+- [x] `src/app/api/stripe/checkout/route.ts` — Create Stripe Checkout session
+- [x] `src/app/api/stripe/portal/route.ts` — Create Stripe Customer Portal session
 
 ### Modified Files
-- [ ] `src/lib/db/limits.ts` — Append `FREE_TIER_ITEM_LIMIT = 50` and `FREE_TIER_COLLECTION_LIMIT = 3`
-- [ ] `src/types/next-auth.d.ts` — Add `isPro: boolean` to `Session` and `JWT`
-- [ ] `src/auth.ts` — Async JWT callback syncing `isPro` from DB; session callback passes `isPro`
-- [ ] `.env.example` — Append Stripe + `NEXT_PUBLIC_APP_URL` vars
+- [x] `src/lib/db/limits.ts` — Append `FREE_TIER_ITEM_LIMIT = 50` and `FREE_TIER_COLLECTION_LIMIT = 3`
+- [x] `src/types/next-auth.d.ts` — Add `isPro: boolean` to `Session` and `JWT`
+- [x] `src/auth.ts` — Async JWT callback syncing `isPro` from DB; session callback passes `isPro`
+- [x] `.env.example` — Append Stripe + `NEXT_PUBLIC_APP_URL` vars
 
 ### Install
-- [ ] `npm install stripe`
-- [ ] Pin `apiVersion` in `src/lib/stripe.ts` after checking `node_modules/stripe/src/stripe.core.ts`
+- [x] `npm install stripe`
+- [x] Pin `apiVersion` in `src/lib/stripe.ts` after checking `node_modules/stripe/src/stripe.core.ts`
 
 ## Notes
 
