@@ -45,16 +45,17 @@ export function PricingToggle() {
         </ScrollReveal>
       </div>
 
-      <div className="grid justify-center gap-6 sm:grid-cols-2 sm:max-w-[760px] mx-auto">
+      <div className="grid justify-center gap-6 sm:grid-cols-2 sm:max-w-[760px] mx-auto items-stretch">
         {/* Free plan */}
-        <ScrollReveal>
-          <div className="relative rounded-[14px] border border-[#232838] bg-[#11141d] p-8">
+        <ScrollReveal className="h-full">
+          <div className="relative flex flex-col h-full rounded-[14px] border border-[#232838] bg-[#11141d] p-8">
             <p className="text-[1.05rem] font-semibold text-muted-foreground">Free</p>
             <div className="mt-3 flex items-baseline gap-1">
               <span className="text-[2.8rem] font-extrabold tracking-tight">$0</span>
               <span className="text-muted-foreground">/forever</span>
             </div>
-            <ul className="mt-4 mb-6 grid gap-2.5">
+            <p className="mb-4 min-h-[1.2em] text-[0.85rem] text-muted-foreground" />
+            <ul className="mb-6 grid flex-1 content-start gap-2.5">
               {["50 items", "3 collections", "All text item types", "Basic search", "Community support"].map(
                 (f) => (
                   <li key={f} className="flex items-center gap-2 text-[0.95rem] text-muted-foreground">
@@ -74,9 +75,9 @@ export function PricingToggle() {
         </ScrollReveal>
 
         {/* Pro plan */}
-        <ScrollReveal>
+        <ScrollReveal className="h-full">
           <div
-            className="relative rounded-[14px] border bg-[#11141d] p-8"
+            className="relative flex flex-col h-full rounded-[14px] border bg-[#11141d] p-8"
             style={{
               borderColor: "color-mix(in srgb, #6366f1 55%, #232838)",
               boxShadow:
@@ -99,7 +100,7 @@ export function PricingToggle() {
             <p className="mb-4 min-h-[1.2em] text-[0.85rem] text-muted-foreground">
               {isAnnual ? "$72 billed annually" : "Billed monthly"}
             </p>
-            <ul className="mb-6 grid gap-2.5">
+            <ul className="mb-6 grid flex-1 content-start gap-2.5">
               {[
                 "Unlimited items",
                 "Unlimited collections",
