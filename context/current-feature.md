@@ -55,3 +55,6 @@ Not Started
 - Marketing Homepage Functionality
 - UI Polish & Accessibility Fixes
 - Auth Pages Marketing Nav
+- Stripe Integration Phase 1: Core Infrastructure
+- Stripe Integration Phase 2: Webhooks, Feature Gating & UI
+- Upgrade Button & Page

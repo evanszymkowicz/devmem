@@ -72,14 +72,24 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    // Persist the user id on the token at sign-in, then surface it on the
-    // session so server components and actions can scope queries to the user.
-    jwt({ token, user }) {
+    // Persist the user id at sign-in, then sync isPro from the DB on every JWT
+    // validation so a page reload after a webhook picks up the change immediately.
+    async jwt({ token, user }) {
       if (user) token.id = user.id;
+
+      if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { isPro: true },
+        });
+        token.isPro = dbUser?.isPro ?? false;
+      }
+
       return token;
     },
     session({ session, token }) {
       if (token.id) session.user.id = token.id as string;
+      if (token.isPro !== undefined) session.user.isPro = token.isPro as boolean;
       return session;
     },
   },

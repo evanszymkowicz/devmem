@@ -38,7 +38,7 @@ interface DashboardShellProps {
   children: React.ReactNode;
   itemTypes: SidebarItemType[];
   collections: SidebarCollection[];
-  user: { name: string; email: string; image?: string | null };
+  user: { name: string; email: string; image?: string | null; isPro: boolean };
   editorPreferences: EditorPreferences;
 }
 
@@ -128,6 +128,7 @@ export function DashboardShell({ children, itemTypes, collections, user, editorP
           onNewItem={() => openNewItem()}
           onNewCollection={openNewCollection}
           onOpenSearch={() => setSearchOpen(true)}
+          isPro={user.isPro}
         />
 
         <main id="main-content" className="flex-1 overflow-y-auto">{children}</main>
@@ -139,6 +140,7 @@ export function DashboardShell({ children, itemTypes, collections, user, editorP
         itemTypes={itemTypes}
         collections={collections}
         defaultTypeSlug={newItemDefaultType}
+        isPro={user.isPro}
       />
 
       <NewCollectionDialog

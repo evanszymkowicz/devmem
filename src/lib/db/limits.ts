@@ -16,3 +16,7 @@ export const FAVORITES_PER_SECTION = 100;
 // Account deletion pages through a user's file items in bounded batches so the
 // R2 cleanup query stays capped without orphaning files for heavy uploaders.
 export const ACCOUNT_DELETE_FILE_BATCH = 200;
+
+// Free tier hard limits
+export const FREE_TIER_ITEM_LIMIT = 50;
+export const FREE_TIER_COLLECTION_LIMIT = 3;

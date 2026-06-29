@@ -1,6 +1,8 @@
 import { ContentType, Prisma, type ItemType } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { DASHBOARD_RECENT_ITEMS_LIMIT, ITEMS_PER_PAGE } from "@/lib/db/limits";
+import { isItemLimitReached } from "@/lib/db/usage-limits";
+import { FEATURE_GATING_ENABLED } from "@/lib/config/features";
 import type { CreateItemInput } from "@/lib/validations/items";
 
 const itemWithTypeInclude = {
@@ -151,6 +153,23 @@ export async function createItem(
   userId: string,
   data: CreateItemInput,
 ): Promise<ItemDetail | null> {
+  if (FEATURE_GATING_ENABLED) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isPro: true },
+    });
+
+    if (!user?.isPro) {
+      if (data.typeSlug === "files" || data.typeSlug === "images") {
+        throw new Error("PRO_TYPE_REQUIRED");
+      }
+      const count = await prisma.item.count({ where: { userId } });
+      if (isItemLimitReached(count, false)) {
+        throw new Error("FREE_TIER_LIMIT_REACHED");
+      }
+    }
+  }
+
   const type = await prisma.itemType.findFirst({
     where: {
       slug: data.typeSlug,
