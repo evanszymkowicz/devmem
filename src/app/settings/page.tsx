@@ -33,6 +33,7 @@ export default async function SettingsPage() {
     name: session.user.name ?? "User",
     email: session.user.email ?? "",
     image: session.user.image ?? null,
+    isPro: isPro,
   };
 
   return (

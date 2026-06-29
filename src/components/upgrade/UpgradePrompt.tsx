@@ -16,7 +16,7 @@ export function UpgradePrompt({ title, description }: Props) {
       </div>
       <p className="text-sm text-muted-foreground">{description}</p>
       <Button asChild size="sm" variant="outline" className="border-purple-500/30 text-purple-300">
-        <Link href="/settings#billing">Upgrade to Pro</Link>
+        <Link href="/upgrade">Upgrade to Pro</Link>
       </Button>
     </div>
   );

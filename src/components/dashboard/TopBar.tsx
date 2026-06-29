@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FolderPlus, PanelLeft, Plus, Search, Star } from "lucide-react";
+import { FolderPlus, PanelLeft, Plus, Search, Sparkles, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,9 +12,10 @@ interface TopBarProps {
   onNewItem: () => void;
   onNewCollection: () => void;
   onOpenSearch: () => void;
+  isPro?: boolean;
 }
 
-export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCollection, onOpenSearch }: TopBarProps) {
+export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCollection, onOpenSearch, isPro }: TopBarProps) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-3 border-b px-4 md:px-6">
       <Button
@@ -41,6 +42,14 @@ export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCo
       </button>
 
       <div className="ml-auto flex items-center gap-2">
+        {!isPro && (
+          <Button variant="ghost" size="sm" aria-label="Upgrade to Pro" asChild>
+            <Link href="/upgrade">
+              <Sparkles className="size-4" />
+              <span className="hidden sm:inline">Upgrade</span>
+            </Link>
+          </Button>
+        )}
         <Button variant="ghost" size="icon-sm" aria-label="Favorites" asChild>
           <Link href="/favorites">
             <Star className="size-4" />
