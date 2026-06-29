@@ -2,25 +2,13 @@
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-Add an "Upgrade" ghost button to the app header that appears for free users, linking to a dedicated `/upgrade` page. The upgrade page mirrors the marketing homepage pricing section, lets users toggle between monthly ($8) and annual ($72) billing, and sends them to Stripe checkout.
-
 ## TODOs
 
-- [x] Document feature
-- [x] Extend DashboardShell user prop with `isPro`
-- [x] Update TopBar to show ghost "Upgrade" button for free users
-- [x] Update all DashboardShell pages to pass `isPro`
-- [x] Create `/upgrade` page (server component, redirects Pro users)
-- [x] Create `UpgradePricing` client component
-
 ## Notes
-
-- Checkout success still redirects to `/settings?upgraded=true`
-- Ghost variant keeps the button subtle relative to New Collection / New Item
 
 ## History
 
@@ -69,3 +57,4 @@ Add an "Upgrade" ghost button to the app header that appears for free users, lin
 - Auth Pages Marketing Nav
 - Stripe Integration Phase 1: Core Infrastructure
 - Stripe Integration Phase 2: Webhooks, Feature Gating & UI
+- Upgrade Button & Page
