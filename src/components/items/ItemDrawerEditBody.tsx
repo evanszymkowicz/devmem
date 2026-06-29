@@ -4,13 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/components/ui/code-editor";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
+import { LanguageSelect } from "./LanguageSelect";
 import { CollectionPicker } from "@/components/collections/CollectionPicker";
+import {
+  CONTENT_TYPE_SLUGS,
+  LANGUAGE_TYPE_SLUGS,
+  URL_TYPE_SLUGS,
+} from "@/lib/validations/items";
 import type { SidebarCollection } from "@/lib/db/collections";
 import type { EditState } from "./item-drawer-types";
-
-const CONTENT_TYPE_SLUGS = new Set(["snippets", "prompts", "commands", "notes"]);
-const LANGUAGE_TYPE_SLUGS = new Set(["snippets", "commands"]);
-const URL_TYPE_SLUGS = new Set(["links"]);
 
 interface ItemDrawerEditBodyProps {
   editState: EditState;
@@ -41,9 +43,17 @@ export function ItemDrawerEditBody({ editState, setField, typeSlug, collections 
 
       {showContent && (
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Content
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Content
+            </label>
+            {showLanguage && (
+              <LanguageSelect
+                value={editState.language ?? ""}
+                onChange={(v) => setField("language", v)}
+              />
+            )}
+          </div>
           {showLanguage ? (
             <CodeEditor
               value={editState.content}
@@ -56,20 +66,6 @@ export function ItemDrawerEditBody({ editState, setField, typeSlug, collections 
               onChange={(v) => setField("content", v)}
             />
           )}
-        </div>
-      )}
-
-      {showLanguage && (
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Language
-          </label>
-          <Input
-            value={editState.language}
-            onChange={(e) => setField("language", e.target.value)}
-            placeholder="e.g. typescript"
-            className="text-sm"
-          />
         </div>
       )}
 

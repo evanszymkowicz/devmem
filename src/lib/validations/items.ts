@@ -12,7 +12,21 @@ export const CREATABLE_TYPE_SLUGS = [
 
 export type CreatableTypeSlug = (typeof CREATABLE_TYPE_SLUGS)[number];
 
-export const FILE_TYPE_SLUGS = new Set<CreatableTypeSlug>(["files", "images"]);
+// Typed as Set<string> so .has(string) works at call sites that receive a plain
+// string slug from the database. The `satisfies` clause validates that every
+// value is a known CreatableTypeSlug at definition time.
+export const FILE_TYPE_SLUGS = new Set<string>(
+  (["files", "images"] satisfies CreatableTypeSlug[]),
+);
+export const CONTENT_TYPE_SLUGS = new Set<string>(
+  (["snippets", "prompts", "commands", "notes"] satisfies CreatableTypeSlug[]),
+);
+export const LANGUAGE_TYPE_SLUGS = new Set<string>(
+  (["snippets", "commands"] satisfies CreatableTypeSlug[]),
+);
+export const URL_TYPE_SLUGS = new Set<string>(
+  (["links"] satisfies CreatableTypeSlug[]),
+);
 
 export const createItemSchema = z
   .object({
