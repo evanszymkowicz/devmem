@@ -58,7 +58,7 @@ const completion = await client.chat.completions.create({
 
 ### Other gotchas
 
-- `max_tokens` is NOT supported by gpt-5-nano — use `max_completion_tokens` if using Chat Completions (but don't use Chat Completions, use Responses API)
+- If `max_tokens` is not available use `max_completion_tokens` if using Chat Completions (but don't use Chat Completions, use Responses API)
 - `zodResponseFormat` structured output consumes excessive tokens with this model and hits length limits — use `json_object` format instead and parse manually
 - The model may return `{"tags": ["a", "b"]}` OR `["a", "b"]` — handle both formats
 - Always normalize tags to lowercase after receiving them

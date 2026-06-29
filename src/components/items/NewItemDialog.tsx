@@ -18,6 +18,7 @@ import { ICON_MAP } from "@/lib/icon-map";
 import { CollectionPicker } from "@/components/collections/CollectionPicker";
 import { UpgradePrompt } from "@/components/upgrade/UpgradePrompt";
 import { LanguageSelect } from "./LanguageSelect";
+import { TagSuggestions } from "./TagSuggestions";
 import { useNewItemForm } from "./use-new-item-form";
 import { FILE_TYPE_SLUGS, type CreatableTypeSlug } from "@/lib/validations/items";
 import type { SidebarItemType } from "@/lib/db/items";
@@ -53,6 +54,11 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, collections, defa
     handleClose,
     handleUploadComplete,
     handleSubmit,
+    tagSuggestions,
+    suggestingTags,
+    handleSuggestTags,
+    handleAcceptTag,
+    handleRejectTag,
   } = useNewItemForm({ open, onOpenChange, itemTypes, defaultTypeSlug, isPro });
 
   return (
@@ -189,14 +195,34 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, collections, defa
 
             {/* Tags */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Tags
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Tags
+                </label>
+                {isPro && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 gap-1 px-2 text-[11px]"
+                    onClick={handleSuggestTags}
+                    disabled={!form.title.trim() || suggestingTags}
+                  >
+                    <Sparkles className="size-3" />
+                    {suggestingTags ? "Suggesting…" : "Suggest Tags"}
+                  </Button>
+                )}
+              </div>
               <Input
                 value={form.tags}
                 onChange={(e) => setField("tags", e.target.value)}
                 placeholder="react, typescript, hooks"
                 className="text-sm"
+              />
+              <TagSuggestions
+                suggestions={tagSuggestions}
+                onAccept={handleAcceptTag}
+                onReject={handleRejectTag}
               />
               <p className="text-[11px] text-muted-foreground">Comma-separated</p>
             </div>

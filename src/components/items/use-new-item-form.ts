@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createItem } from "@/actions/items";
+import { generateAutoTags } from "@/actions/ai";
 import {
   CREATABLE_TYPE_SLUGS,
   FILE_TYPE_SLUGS,
@@ -67,6 +68,8 @@ export function useNewItemForm({
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [uploadKey, setUploadKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [suggestingTags, setSuggestingTags] = useState(false);
 
   // Track previous prop values in state so we can reset the form synchronously
   // during render when the dialog opens or the requested type changes.
@@ -85,6 +88,7 @@ export function useNewItemForm({
       setForm(EMPTY_FORM);
       setCollectionIds([]);
       setUploadKey((k) => k + 1);
+      setTagSuggestions([]);
     }
   }
 
@@ -111,6 +115,7 @@ export function useNewItemForm({
     setTypeSlug(slug);
     setForm(EMPTY_FORM);
     setUploadKey((k) => k + 1);
+    setTagSuggestions([]);
   }
 
   function handleClose(next: boolean) {
@@ -119,8 +124,33 @@ export function useNewItemForm({
       setCollectionIds([]);
       setTypeSlug((creatableTypes[0]?.slug as CreatableTypeSlug) ?? "snippets");
       setUploadKey((k) => k + 1);
+      setTagSuggestions([]);
     }
     onOpenChange(next);
+  }
+
+  async function handleSuggestTags() {
+    setSuggestingTags(true);
+    const result = await generateAutoTags({ title: form.title, content: form.content || null });
+    setSuggestingTags(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    const existing = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
+    setTagSuggestions(result.data.filter((t) => !existing.includes(t)));
+  }
+
+  function handleAcceptTag(tag: string) {
+    const existing = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
+    if (!existing.includes(tag)) {
+      setField("tags", [...existing, tag].join(", "));
+    }
+    setTagSuggestions((prev) => prev.filter((t) => t !== tag));
+  }
+
+  function handleRejectTag(tag: string) {
+    setTagSuggestions((prev) => prev.filter((t) => t !== tag));
   }
 
   function handleUploadComplete(data: UploadedFile) {
@@ -178,11 +208,16 @@ export function useNewItemForm({
     showUrl,
     showFile,
     showUpgradePrompt,
+    tagSuggestions,
+    suggestingTags,
     setField,
     setCollectionIds,
     handleTypeChange,
     handleClose,
     handleUploadComplete,
     handleSubmit,
+    handleSuggestTags,
+    handleAcceptTag,
+    handleRejectTag,
   };
 }

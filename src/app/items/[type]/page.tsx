@@ -92,7 +92,7 @@ export default async function ItemsTypePage({ params, searchParams }: PageProps)
             </p>
           </div>
         ) : (
-          <ItemDrawerWrapper collections={collections}>
+          <ItemDrawerWrapper collections={collections} isPro={sidebarUser.isPro}>
             {typeSlug === "files" ? (
               <div className="flex flex-col gap-2">
                 {items.map((item) => (

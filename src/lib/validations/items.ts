@@ -34,7 +34,7 @@ export const createItemSchema = z
     title: z.string().trim().min(1, "Title is required"),
     description: z.string().trim().nullable().optional(),
     content: z.string().nullable().optional(),
-    language: z.string().trim().nullable().optional(),
+    language: z.string().trim().max(50).nullable().optional(),
     url: z.preprocess(
       (v) => (typeof v === "string" && v.trim() === "" ? null : v),
       z.string().url("Must be a valid URL").nullable().optional(),
@@ -84,7 +84,7 @@ export const updateItemSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   description: z.string().trim().nullable().optional(),
   content: z.string().nullable().optional(),
-  language: z.string().trim().nullable().optional(),
+  language: z.string().trim().max(50).nullable().optional(),
   url: z.preprocess(
     (v) => (typeof v === "string" && v.trim() === "" ? null : v),
     z.string().url("Must be a valid URL").nullable().optional(),

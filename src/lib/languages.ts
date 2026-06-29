@@ -1,5 +1,4 @@
 export const LANGUAGES = [
-  { value: "plaintext", label: "Plain text" },
   { value: "typescript", label: "TypeScript" },
   { value: "javascript", label: "JavaScript" },
   { value: "python", label: "Python" },
@@ -8,7 +7,7 @@ export const LANGUAGES = [
   { value: "json", label: "JSON" },
   { value: "markdown", label: "Markdown" },
   { value: "sql", label: "SQL" },
-  { value: "bash", label: "Bash / Shell" },
+  { value: "shell", label: "Bash / Shell" },
   { value: "go", label: "Go" },
   { value: "rust", label: "Rust" },
   { value: "java", label: "Java" },
@@ -27,5 +26,4 @@ export const LANGUAGES = [
   { value: "r", label: "R" },
   { value: "lua", label: "Lua" },
   { value: "scala", label: "Scala" },
-  { value: "toml", label: "TOML" },
 ];

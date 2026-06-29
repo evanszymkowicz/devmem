@@ -101,7 +101,7 @@ export default async function CollectionDetailPage({
             </p>
           </div>
         ) : (
-          <ItemDrawerWrapper collections={sidebarCollections}>
+          <ItemDrawerWrapper collections={sidebarCollections} isPro={sidebarUser.isPro}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {collection.items.map((item) =>
                 item.itemType.slug === "files" ? (
