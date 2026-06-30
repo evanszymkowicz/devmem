@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 import { signInWithGitHub } from "@/actions/auth";
 import { Loader2 } from "lucide-react";
 
+import { GithubIcon } from "@/components/ui/github-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SIGN_IN_ERROR_CODE } from "@/lib/auth/error-codes";
