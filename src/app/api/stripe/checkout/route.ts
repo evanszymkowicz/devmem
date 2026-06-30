@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { requireApiSession } from "@/lib/api/session";
 import { getStripe, getStripePriceMonthly, getStripePriceYearly } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authed = await requireApiSession();
+  if (authed instanceof NextResponse) return authed;
 
   let body: Record<string, unknown>;
   try {
@@ -22,7 +20,7 @@ export async function POST(req: Request) {
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authed.userId },
     select: { email: true, stripeCustomerId: true, isPro: true },
   });
 
@@ -46,12 +44,12 @@ export async function POST(req: Request) {
       customer: user.stripeCustomerId ?? undefined,
       customer_email: user.stripeCustomerId ? undefined : (user.email ?? undefined),
       line_items: [{ price: priceId, quantity: 1 }],
-      metadata: { userId: session.user.id },
+      metadata: { userId: authed.userId },
       success_url: `${appUrl}/settings?upgraded=true`,
       cancel_url: `${appUrl}/settings`,
       allow_promotion_codes: true,
       subscription_data: {
-        metadata: { userId: session.user.id },
+        metadata: { userId: authed.userId },
       },
     });
 

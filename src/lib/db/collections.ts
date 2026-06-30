@@ -30,6 +30,27 @@ export function dominantTypeColor(
   return dominant?.color ?? FALLBACK_TYPE_COLOR;
 }
 
+// Minimal include for computing a collection's dominant-type color: just the
+// id + color of each member item's type. Shared by the sidebar and favorites
+// loaders so the query shape can't drift from toDominantColor's expectations.
+export const dominantColorInclude = {
+  items: {
+    include: {
+      item: { include: { itemType: { select: { id: true, color: true } } } },
+    },
+  },
+} satisfies Prisma.CollectionInclude;
+
+type DominantColorRow = Prisma.CollectionGetPayload<{
+  include: typeof dominantColorInclude;
+}>;
+
+// Derives the dominant-type color from a collection fetched with
+// dominantColorInclude.
+export function toDominantColor(col: DominantColorRow): string {
+  return dominantTypeColor(col.items.map((ic) => ic.item.itemType));
+}
+
 export interface CollectionWithTypes {
   id: string;
   name: string;
@@ -153,15 +174,7 @@ export async function getSidebarCollections(
     where: { userId },
     orderBy: [{ isFavorite: "desc" }, { createdAt: "desc" }],
     take: MAX_SIDEBAR_COLLECTIONS,
-    include: {
-      items: {
-        include: {
-          item: {
-            include: { itemType: { select: { id: true, color: true } } },
-          },
-        },
-      },
-    },
+    include: dominantColorInclude,
   });
 
   return collections.map((col) => ({
@@ -169,7 +182,7 @@ export async function getSidebarCollections(
     name: col.name,
     isFavorite: col.isFavorite,
     itemCount: col.items.length,
-    dominantColor: dominantTypeColor(col.items.map((ic) => ic.item.itemType)),
+    dominantColor: toDominantColor(col),
   }));
 }
 

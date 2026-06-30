@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ICON_MAP } from "@/lib/icon-map";
+import { FILE_TYPE_SLUGS } from "@/lib/validations/items";
 import type { ItemDetail } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
 import { updateItem, deleteItem, toggleItemPin, toggleItemFavorite } from "@/actions/items";
@@ -33,8 +34,6 @@ import { useItemDrawer } from "./ItemDrawerContext";
 import { ItemDrawerViewBody } from "./ItemDrawerViewBody";
 import { ItemDrawerEditBody } from "./ItemDrawerEditBody";
 import { type EditState, itemToEditState } from "./item-drawer-types";
-
-const FILE_TYPE_SLUGS = new Set(["files", "images"]);
 
 type DrawerCoreState = {
   item: ItemDetail | null;

@@ -2,19 +2,41 @@
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- bullet points of what success looks like -->
+DRY refactor — eliminate the five high-priority duplication patterns surfaced by the
+refactor-scanner across the `actions`, `app/api`, `lib`, and `components` layers.
+Each one encodes a security/validation invariant, so consolidating them removes
+real drift risk (the auth-guard messages and the 401 response shapes had already
+diverged).
 
 ## TODOs
 
-<!-- checklist of implementation steps -->
+1. **Action auth guard + Pro gate** — add `requireUserId({ requirePro })` in
+   `src/lib/actions.ts`; refactor `items`, `collections`, `ai`, `search`, `profile`,
+   `editor-preferences` actions onto it. Normalize the divergent
+   "Not authenticated" message to "Unauthorized" (update the 2 affected tests).
+2. **API session guard** — add `requireApiSession()` in `src/lib/api/session.ts`;
+   refactor the 5 protected routes (`download`, `items`, `upload`, `stripe/checkout`,
+   `stripe/portal`). Normalizes `download`'s plain-text 401 to JSON.
+3. **API body parsing** — add `parseJsonBody()` in `src/lib/api/parse-body.ts`;
+   refactor the 4 auth POST routes (`register`, `forgot-password`, `reset-password`,
+   `resend-verification`) onto it.
+4. **Hashed-token lifecycle** — add `src/lib/auth/hashed-token.ts`
+   (`issueHashedToken` / `consumeHashedToken`, shared TTL + SHA-256 hashing);
+   refactor `reset-token.ts` and `verification-token.ts` to thin wrappers.
+5. **Slug Sets** — replace the re-hardcoded `FILE_TYPE_SLUGS` / `LANGUAGE_TYPE_SLUGS`
+   literals in `ItemDrawer.tsx` and `ItemDrawerViewBody.tsx` with imports from
+   `@/lib/validations/items` (removes a Pro-gating/content-shape drift risk).
 
 ## Notes
 
-<!-- additional context, constraints, or details -->
+- Behavior-preserving except for two intentional normalizations: action auth error
+  → "Unauthorized" everywhere; API 401 → JSON `{ error: "Unauthorized" }` everywhere.
+- Token consolidation keeps reset's `reset:` namespace guard via the `accept`
+  predicate, and preserves the accept-before-expiry ordering of the original.
 
 ## History
 
@@ -68,3 +90,4 @@ Not Started
 - AI Description Generator
 - AI Explain Code
 - AI Prompt Optimizer
+- UI Polish (Auth Layout + Footer Cleanup)

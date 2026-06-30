@@ -8,9 +8,8 @@ import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { formatFileSize } from "@/lib/files";
 import { formatDateLong } from "@/lib/format-date";
 import { explainCode, optimizePrompt } from "@/actions/ai";
+import { LANGUAGE_TYPE_SLUGS } from "@/lib/validations/items";
 import type { ItemDetail } from "@/lib/db/items";
-
-const LANGUAGE_TYPE_SLUGS = new Set(["snippets", "commands"]);
 
 interface ItemDrawerViewBodyProps {
   item: ItemDetail;

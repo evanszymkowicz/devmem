@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { parseJsonBody } from "@/lib/api/parse-body";
 import { hashPassword } from "@/lib/auth/password";
 import { issueAndSendVerification } from "@/lib/auth/send-verification";
 import { registerSchema } from "@/lib/validations/auth";
@@ -14,30 +14,10 @@ export async function POST(request: Request) {
   const rl = await checkRateLimit(registerLimiter, `register:${getIp(request)}`);
   if (rl.limited) return rateLimitResponse(rl.retryAfter);
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { success: false, error: "Invalid JSON body" },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(request, registerSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
-  let parsed;
-  try {
-    parsed = registerSchema.parse(body);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.issues[0]?.message ?? "Invalid input" },
-        { status: 400 },
-      );
-    }
-    throw error;
-  }
-
-  const { name, email, password } = parsed;
+  const { name, email, password } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
   try {

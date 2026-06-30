@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   ChevronDown,
   Code,
+  Lock,
   LogOut,
   PanelLeftClose,
   Settings,
@@ -13,7 +15,6 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { toggleCollectionFavorite } from "@/actions/collections";
@@ -32,6 +33,7 @@ interface SidebarProps {
 export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps) {
   const [typesOpen, setTypesOpen] = useState(true);
   const [collectionsOpen, setCollectionsOpen] = useState(true);
+  const pathname = usePathname();
 
   const favoriteCollections = collections.filter((c) => c.isFavorite);
   const otherCollections = collections.filter((c) => !c.isFavorite);
@@ -69,11 +71,18 @@ export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps)
           <ul className="mt-1 space-y-0.5">
             {itemTypes.map((type) => {
               const Icon = ICON_MAP[type.icon] ?? Code;
+              const isActive = pathname === `/items/${type.slug}`;
               return (
                 <li key={type.id}>
                   <Link
                     href={`/items/${type.slug}`}
-                    className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                        : "text-sidebar-foreground/90",
+                    )}
                   >
                     <Icon
                       className="size-4 shrink-0"
@@ -81,9 +90,7 @@ export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps)
                     />
                     <span className="flex-1 truncate">{type.name}</span>
                     {(type.slug === "files" || type.slug === "images") && (
-                      <Badge variant="outline" className="h-4 px-1 text-[10px] font-medium text-muted-foreground">
-                        PRO
-                      </Badge>
+                      <Lock className="size-3 shrink-0 text-sidebar-foreground/40" aria-label="Pro feature" />
                     )}
                     <span className="text-xs text-muted-foreground">
                       {type.count}
@@ -115,9 +122,9 @@ export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps)
                             type="button"
                             aria-label="Remove from favorites"
                             onClick={() => toggleCollectionFavorite(col.id)}
-                            className="shrink-0"
+                            className="shrink-0 rounded p-1 hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
-                            <Star className="size-4 fill-amber-400 text-amber-400" />
+                            <Star className="size-3.5 fill-amber-400 text-amber-400" />
                           </button>
                           <Link href={`/collections/${col.id}`} className="flex flex-1 items-center gap-2.5 truncate">
                             <span className="flex-1 truncate">{col.name}</span>
@@ -149,7 +156,7 @@ export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps)
                             type="button"
                             aria-label="Add to favorites"
                             onClick={() => toggleCollectionFavorite(col.id)}
-                            className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="shrink-0 rounded p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Star className="size-3.5 text-muted-foreground hover:fill-amber-400 hover:text-amber-400" />
                           </button>
@@ -163,7 +170,7 @@ export function Sidebar({ onClose, itemTypes, collections, user }: SidebarProps)
               <div className="mt-3 px-2">
                 <Link
                   href="/collections"
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="block py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   View all collections →
                 </Link>
@@ -279,7 +286,7 @@ function SectionHeader({
     <button
       type="button"
       onClick={onToggle}
-      className="flex w-full items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      className="flex w-full items-center gap-1 px-2 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded"
     >
       <span>{label}</span>
       <ChevronDown

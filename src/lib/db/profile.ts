@@ -1,15 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { SYSTEM_TYPE_ORDER } from "@/lib/db/items";
+import { getSystemItemTypes, type SidebarItemType } from "@/lib/db/items";
 import { ACCOUNT_DELETE_FILE_BATCH } from "@/lib/db/limits";
-
-export interface ProfileItemTypeStat {
-  id: string;
-  name: string;
-  slug: string;
-  icon: string;
-  color: string;
-  count: number;
-}
 
 export interface ProfileData {
   id: string;
@@ -20,11 +11,13 @@ export interface ProfileData {
   createdAt: Date;
   totalItems: number;
   totalCollections: number;
-  itemsByType: ProfileItemTypeStat[];
+  itemsByType: SidebarItemType[];
 }
 
 export async function getProfileData(userId: string): Promise<ProfileData> {
-  const [user, itemTypes, totalCollections] = await Promise.all([
+  // getSystemItemTypes already returns the per-type counts in canonical order,
+  // so reuse it rather than re-running the same itemType+_count query here.
+  const [user, itemsByType, totalCollections] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: userId },
       select: {
@@ -36,28 +29,9 @@ export async function getProfileData(userId: string): Promise<ProfileData> {
         createdAt: true,
       },
     }),
-    prisma.itemType.findMany({
-      where: { isSystem: true },
-      include: {
-        _count: { select: { items: { where: { userId } } } },
-      },
-    }),
+    getSystemItemTypes(userId),
     prisma.collection.count({ where: { userId } }),
   ]);
-
-  const itemsByType = itemTypes
-    .map((t) => ({
-      id: t.id,
-      name: t.name,
-      slug: t.slug,
-      icon: t.icon,
-      color: t.color,
-      count: t._count.items,
-    }))
-    .sort(
-      (a, b) =>
-        SYSTEM_TYPE_ORDER.indexOf(a.slug) - SYSTEM_TYPE_ORDER.indexOf(b.slug),
-    );
 
   const totalItems = itemsByType.reduce((sum, t) => sum + t.count, 0);
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { requireUserId } from "@/lib/actions";
 import { prisma } from "@/lib/prisma";
 import {
   createItem as dbCreateItem,
@@ -21,15 +21,13 @@ type ActionResult<T> =
 export async function toggleItemPin(
   itemId: string,
 ): Promise<ActionResult<{ isPinned: boolean }>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   // Prisma has no atomic toggle, so we read the current value first to invert it.
   // Both queries scope to userId to prevent IDOR.
   const item = await prisma.item.findUnique({
-    where: { id: itemId, userId: session.user.id },
+    where: { id: itemId, userId: gate.userId },
     select: { isPinned: true },
   });
 
@@ -39,7 +37,7 @@ export async function toggleItemPin(
 
   try {
     const updated = await prisma.item.update({
-      where: { id: itemId, userId: session.user.id },
+      where: { id: itemId, userId: gate.userId },
       data: { isPinned: !item.isPinned },
       select: { isPinned: true },
     });
@@ -56,14 +54,12 @@ export async function toggleItemPin(
 export async function toggleItemFavorite(
   itemId: string,
 ): Promise<ActionResult<{ isFavorite: boolean }>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   try {
     const item = await prisma.item.findUnique({
-      where: { id: itemId, userId: session.user.id },
+      where: { id: itemId, userId: gate.userId },
       select: { isFavorite: true },
     });
 
@@ -72,7 +68,7 @@ export async function toggleItemFavorite(
     }
 
     const updated = await prisma.item.update({
-      where: { id: itemId, userId: session.user.id },
+      where: { id: itemId, userId: gate.userId },
       data: { isFavorite: !item.isFavorite },
       select: { isFavorite: true },
     });
@@ -90,10 +86,8 @@ export async function toggleItemFavorite(
 export async function createItem(
   raw: unknown,
 ): Promise<ActionResult<ItemDetail>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = createItemSchema.safeParse(raw);
   if (!parsed.success) {
@@ -101,12 +95,12 @@ export async function createItem(
     return { success: false, error: message };
   }
 
-  if (parsed.data.fileUrl && !parsed.data.fileUrl.startsWith(`users/${session.user.id}/`)) {
+  if (parsed.data.fileUrl && !parsed.data.fileUrl.startsWith(`users/${gate.userId}/`)) {
     return { success: false, error: "Invalid file reference" };
   }
 
   try {
-    const created = await dbCreateItem(session.user.id, parsed.data);
+    const created = await dbCreateItem(gate.userId, parsed.data);
     if (!created) {
       return { success: false, error: "Item type not found" };
     }
@@ -129,10 +123,8 @@ export async function updateItem(
   itemId: string,
   raw: unknown,
 ): Promise<ActionResult<ItemDetail>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = updateItemSchema.safeParse(raw);
   if (!parsed.success) {
@@ -141,7 +133,7 @@ export async function updateItem(
   }
 
   try {
-    const updated = await dbUpdateItem(session.user.id, itemId, parsed.data);
+    const updated = await dbUpdateItem(gate.userId, itemId, parsed.data);
     if (!updated) {
       return { success: false, error: "Item not found" };
     }
@@ -154,15 +146,13 @@ export async function updateItem(
 export async function deleteItem(
   itemId: string,
 ): Promise<ActionResult<null>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   try {
-    const fileUrl = await getItemFileUrl(session.user.id, itemId);
+    const fileUrl = await getItemFileUrl(gate.userId, itemId);
 
-    const deleted = await dbDeleteItem(session.user.id, itemId);
+    const deleted = await dbDeleteItem(gate.userId, itemId);
     if (!deleted) {
       return { success: false, error: "Item not found" };
     }

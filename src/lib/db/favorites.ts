@@ -1,13 +1,7 @@
-import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { dominantTypeColor } from "@/lib/db/collections";
+import { dominantColorInclude, toDominantColor } from "@/lib/db/collections";
 import { FAVORITES_PER_SECTION } from "@/lib/db/limits";
-import type { ItemWithType } from "@/lib/db/items";
-
-const itemWithTypeInclude = {
-  itemType: true,
-  tags: true,
-} satisfies Prisma.ItemInclude;
+import { itemWithTypeInclude, type ItemWithType } from "@/lib/db/items";
 
 export interface FavoriteCollection {
   id: string;
@@ -37,15 +31,7 @@ export async function getFavorites(userId: string): Promise<Favorites> {
       where: { userId, isFavorite: true },
       orderBy: { updatedAt: "desc" },
       take: FAVORITES_PER_SECTION,
-      include: {
-        items: {
-          include: {
-            item: {
-              include: { itemType: { select: { id: true, color: true } } },
-            },
-          },
-        },
-      },
+      include: dominantColorInclude,
     }),
   ]);
 
@@ -53,7 +39,7 @@ export async function getFavorites(userId: string): Promise<Favorites> {
     id: col.id,
     name: col.name,
     updatedAt: col.updatedAt,
-    dominantColor: dominantTypeColor(col.items.map((ic) => ic.item.itemType)),
+    dominantColor: toDominantColor(col),
   }));
 
   return { items, collections: favoriteCollections };

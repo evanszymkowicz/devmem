@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/auth";
+import { requireUserId } from "@/lib/actions";
 import { getSearchData as dbGetSearchData, type SearchData } from "@/lib/db/search";
 
 type ActionResult<T> =
@@ -8,13 +8,11 @@ type ActionResult<T> =
   | { success: false; error: string };
 
 export async function getSearchData(): Promise<ActionResult<SearchData>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   try {
-    const data = await dbGetSearchData(session.user.id);
+    const data = await dbGetSearchData(gate.userId);
     return { success: true, data };
   } catch {
     return { success: false, error: "Failed to load search data" };

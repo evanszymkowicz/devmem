@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { requireUserId } from "@/lib/actions";
 import { prisma } from "@/lib/prisma";
 import {
   createCollection as dbCreateCollection,
@@ -19,20 +19,20 @@ type ActionResult<T> =
   | { success: false; error: string };
 
 export async function toggleCollectionFavorite(collectionId: string) {
-  const session = await auth();
-  if (!session?.user?.id) return;
+  const gate = await requireUserId();
+  if (!gate.ok) return;
 
   // Prisma has no atomic toggle, so we read the current value first to invert it.
   // Both queries scope to userId to prevent IDOR.
   const collection = await prisma.collection.findUnique({
-    where: { id: collectionId, userId: session.user.id },
+    where: { id: collectionId, userId: gate.userId },
     select: { isFavorite: true },
   });
 
   if (!collection) return;
 
   await prisma.collection.update({
-    where: { id: collectionId, userId: session.user.id },
+    where: { id: collectionId, userId: gate.userId },
     data: { isFavorite: !collection.isFavorite },
   });
 
@@ -43,10 +43,8 @@ export async function toggleCollectionFavorite(collectionId: string) {
 export async function createCollection(
   raw: unknown,
 ): Promise<ActionResult<{ id: string }>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = createCollectionSchema.safeParse(raw);
   if (!parsed.success) {
@@ -55,7 +53,7 @@ export async function createCollection(
   }
 
   try {
-    const created = await dbCreateCollection(session.user.id, parsed.data);
+    const created = await dbCreateCollection(gate.userId, parsed.data);
     revalidatePath("/dashboard");
     revalidatePath("/collections");
     return { success: true, data: { id: created.id } };
@@ -74,10 +72,8 @@ export async function updateCollection(
   collectionId: string,
   raw: unknown,
 ): Promise<ActionResult<null>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = updateCollectionSchema.safeParse(raw);
   if (!parsed.success) {
@@ -86,7 +82,7 @@ export async function updateCollection(
   }
 
   try {
-    const ok = await dbUpdateCollection(session.user.id, collectionId, parsed.data);
+    const ok = await dbUpdateCollection(gate.userId, collectionId, parsed.data);
     if (!ok) {
       return { success: false, error: "Collection not found" };
     }
@@ -102,13 +98,11 @@ export async function updateCollection(
 export async function deleteCollection(
   collectionId: string,
 ): Promise<ActionResult<null>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   try {
-    const ok = await dbDeleteCollection(session.user.id, collectionId);
+    const ok = await dbDeleteCollection(gate.userId, collectionId);
     if (!ok) {
       return { success: false, error: "Collection not found" };
     }

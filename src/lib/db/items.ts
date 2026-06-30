@@ -5,7 +5,7 @@ import { isItemLimitReached } from "@/lib/db/usage-limits";
 import { FEATURE_GATING_ENABLED } from "@/lib/config/features";
 import type { CreateItemInput } from "@/lib/validations/items";
 
-const itemWithTypeInclude = {
+export const itemWithTypeInclude = {
   itemType: true,
   tags: true,
 } satisfies Prisma.ItemInclude;

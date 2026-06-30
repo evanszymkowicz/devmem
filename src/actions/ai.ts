@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { auth } from "@/auth";
+import { requireUserId } from "@/lib/actions";
 import { getOpenAIClient, AI_MODEL } from "@/lib/openai";
 import { aiTagLimiter, aiDescriptionLimiter, aiExplainLimiter, aiOptimizeLimiter, checkRateLimit } from "@/lib/rate-limit";
 
@@ -22,16 +22,13 @@ const generateAutoTagsSchema = z.object({
 export async function generateAutoTags(
   input: z.infer<typeof generateAutoTagsSchema>,
 ): Promise<ActionResult<string[]>> {
-  const session = await auth();
-  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
-  if (!session.user.isPro) {
-    return { success: false, error: "AI features require a Pro subscription." };
-  }
+  const gate = await requireUserId({ requirePro: true });
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = generateAutoTagsSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid input" };
 
-  const outcome = await checkRateLimit(aiTagLimiter, `ai-tags:${session.user.id}`);
+  const outcome = await checkRateLimit(aiTagLimiter, `ai-tags:${gate.userId}`);
   if (outcome.limited) {
     const minutes = Math.ceil(outcome.retryAfter / 60);
     return {
@@ -91,16 +88,13 @@ const explainCodeSchema = z.object({
 export async function explainCode(
   input: z.infer<typeof explainCodeSchema>,
 ): Promise<ActionResult<string>> {
-  const session = await auth();
-  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
-  if (!session.user.isPro) {
-    return { success: false, error: "AI features require a Pro subscription." };
-  }
+  const gate = await requireUserId({ requirePro: true });
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = explainCodeSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid input" };
 
-  const outcome = await checkRateLimit(aiExplainLimiter, `ai-explain:${session.user.id}`);
+  const outcome = await checkRateLimit(aiExplainLimiter, `ai-explain:${gate.userId}`);
   if (outcome.limited) {
     const minutes = Math.ceil(outcome.retryAfter / 60);
     return {
@@ -139,16 +133,13 @@ const optimizePromptSchema = z.object({
 export async function optimizePrompt(
   input: z.infer<typeof optimizePromptSchema>,
 ): Promise<ActionResult<string>> {
-  const session = await auth();
-  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
-  if (!session.user.isPro) {
-    return { success: false, error: "AI features require a Pro subscription." };
-  }
+  const gate = await requireUserId({ requirePro: true });
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = optimizePromptSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid input" };
 
-  const outcome = await checkRateLimit(aiOptimizeLimiter, `ai-optimize:${session.user.id}`);
+  const outcome = await checkRateLimit(aiOptimizeLimiter, `ai-optimize:${gate.userId}`);
   if (outcome.limited) {
     const minutes = Math.ceil(outcome.retryAfter / 60);
     return {
@@ -190,16 +181,13 @@ const generateDescriptionSchema = z.object({
 export async function generateDescription(
   input: z.infer<typeof generateDescriptionSchema>,
 ): Promise<ActionResult<string>> {
-  const session = await auth();
-  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
-  if (!session.user.isPro) {
-    return { success: false, error: "AI features require a Pro subscription." };
-  }
+  const gate = await requireUserId({ requirePro: true });
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = generateDescriptionSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Invalid input" };
 
-  const outcome = await checkRateLimit(aiDescriptionLimiter, `ai-desc:${session.user.id}`);
+  const outcome = await checkRateLimit(aiDescriptionLimiter, `ai-desc:${gate.userId}`);
   if (outcome.limited) {
     const minutes = Math.ceil(outcome.retryAfter / 60);
     return {
