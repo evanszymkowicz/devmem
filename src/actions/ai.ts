@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { auth } from "@/auth";
 import { getOpenAIClient, AI_MODEL } from "@/lib/openai";
-import { aiTagLimiter, aiDescriptionLimiter, aiExplainLimiter, checkRateLimit } from "@/lib/rate-limit";
+import { aiTagLimiter, aiDescriptionLimiter, aiExplainLimiter, aiOptimizeLimiter, checkRateLimit } from "@/lib/rate-limit";
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
 
@@ -127,6 +127,52 @@ export async function explainCode(
     if (!explanation) return { success: false, error: "AI returned an empty explanation" };
 
     return { success: true, data: explanation };
+  } catch (err) {
+    return { success: false, error: aiError(err) };
+  }
+}
+
+const optimizePromptSchema = z.object({
+  content: z.string().trim().min(1),
+});
+
+export async function optimizePrompt(
+  input: z.infer<typeof optimizePromptSchema>,
+): Promise<ActionResult<string>> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+  if (!session.user.isPro) {
+    return { success: false, error: "AI features require a Pro subscription." };
+  }
+
+  const parsed = optimizePromptSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Invalid input" };
+
+  const outcome = await checkRateLimit(aiOptimizeLimiter, `ai-optimize:${session.user.id}`);
+  if (outcome.limited) {
+    const minutes = Math.ceil(outcome.retryAfter / 60);
+    return {
+      success: false,
+      error: `Rate limit reached. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`,
+    };
+  }
+
+  const { content } = parsed.data;
+  const truncated = content.slice(0, 4000);
+
+  try {
+    const client = getOpenAIClient();
+    const response = await client.responses.create({
+      model: AI_MODEL,
+      instructions:
+        "You are an expert prompt engineer. Refine the given AI prompt for clarity, specificity, and effectiveness while preserving its original intent and tone. Return only the improved prompt text — no commentary, no preamble, no labels.",
+      input: `Optimize this prompt:\n\n${truncated}`,
+    });
+
+    const optimized = response.output_text.trim();
+    if (!optimized) return { success: false, error: "AI returned an empty result" };
+
+    return { success: true, data: optimized };
   } catch (err) {
     return { success: false, error: aiError(err) };
   }

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Crown, Loader2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { MACOS_DOTS, EDITOR_MIN_HEIGHT, EDITOR_MAX_HEIGHT } from "@/lib/editor-constants";
 
 interface MarkdownEditorProps {
@@ -11,6 +12,12 @@ interface MarkdownEditorProps {
   onChange?: (value: string) => void;
   readOnly?: boolean;
   className?: string;
+  isPro?: boolean;
+  onOptimize?: () => void;
+  optimizing?: boolean;
+  optimizedContent?: string | null;
+  onUseOptimized?: (content: string) => void;
+  onDismissOptimized?: () => void;
 }
 
 export function MarkdownEditor({
@@ -18,13 +25,24 @@ export function MarkdownEditor({
   onChange,
   readOnly = false,
   className,
+  isPro = false,
+  onOptimize,
+  optimizing = false,
+  optimizedContent = null,
+  onUseOptimized,
+  onDismissOptimized,
 }: MarkdownEditorProps) {
-  const [tab, setTab] = useState<"write" | "preview">(readOnly ? "preview" : "write");
+  const [tab, setTab] = useState<"write" | "preview">("write");
+  const [activePane, setActivePane] = useState<"original" | "optimized">("original");
   const [copied, setCopied] = useState(false);
+  const [prevOptimizedContent, setPrevOptimizedContent] = useState<string | null>(null);
 
-  useEffect(() => {
-    setTab(readOnly ? "preview" : "write");
-  }, [readOnly]);
+  // Switch to optimized pane as soon as content arrives (avoids setState-in-effect)
+  if (optimizedContent !== prevOptimizedContent) {
+    setPrevOptimizedContent(optimizedContent);
+    if (optimizedContent) setActivePane("optimized");
+    else if (!optimizing) setActivePane("original");
+  }
 
   function handleCopy() {
     navigator.clipboard.writeText(value).then(() => {
@@ -34,6 +52,7 @@ export function MarkdownEditor({
   }
 
   const showPreview = readOnly || tab === "preview";
+  const showOptimizedTabs = readOnly && (optimizing || optimizedContent !== null);
 
   return (
     <div className={`overflow-hidden rounded-md border border-border${className ? ` ${className}` : ""}`}>
@@ -68,6 +87,33 @@ export function MarkdownEditor({
               </button>
             </div>
           )}
+          {showOptimizedTabs && (
+            <div className="ml-3 flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => setActivePane("original")}
+                className={`rounded px-2 py-0.5 text-[11px] transition-colors ${
+                  activePane === "original"
+                    ? "bg-[#1e1e1e] text-[#cccccc]"
+                    : "text-[#858585] hover:text-[#cccccc]"
+                }`}
+              >
+                Original
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePane("optimized")}
+                disabled={!optimizedContent && !optimizing}
+                className={`rounded px-2 py-0.5 text-[11px] transition-colors ${
+                  activePane === "optimized"
+                    ? "bg-[#1e1e1e] text-[#cccccc]"
+                    : "text-[#858585] hover:text-[#cccccc]"
+                }`}
+              >
+                Optimized
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span className="font-mono text-[11px] text-[#858585]">Markdown</span>
@@ -79,10 +125,74 @@ export function MarkdownEditor({
             {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
             {copied ? "Copied" : "Copy"}
           </button>
+          {onOptimize && (
+            isPro ? (
+              <button
+                type="button"
+                onClick={onOptimize}
+                disabled={optimizing}
+                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-[#858585] transition-colors hover:bg-[#1e1e1e] hover:text-[#cccccc] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {optimizing ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <Sparkles className="size-3" />
+                )}
+                {optimizing ? "Optimizing…" : "Optimize"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                title="AI features require Pro subscription"
+                className="flex cursor-not-allowed items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-[#858585] opacity-50"
+              >
+                <Crown className="size-3" />
+                Optimize
+              </button>
+            )
+          )}
         </div>
       </div>
 
-      {showPreview ? (
+      {showOptimizedTabs && activePane === "optimized" ? (
+        <div className="flex flex-col bg-[#1e1e1e]" style={{ maxHeight: EDITOR_MAX_HEIGHT }}>
+          <div
+            className="prose prose-invert prose-sm max-w-none prose-code:before:content-none prose-code:after:content-none overflow-y-auto px-4 py-3"
+            style={{ minHeight: EDITOR_MIN_HEIGHT }}
+          >
+            {optimizing && !optimizedContent ? (
+              <div className="flex items-center gap-2 text-[#858585]">
+                <Loader2 className="size-4 animate-spin" />
+                <span className="text-xs">Optimizing prompt…</span>
+              </div>
+            ) : optimizedContent ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{optimizedContent}</ReactMarkdown>
+            ) : null}
+          </div>
+          {optimizedContent && (
+            <div className="flex shrink-0 items-center gap-2 border-t border-[#333] px-4 py-2.5">
+              <Button
+                size="sm"
+                variant="default"
+                className="h-7 gap-1.5 text-xs"
+                onClick={() => onUseOptimized?.(optimizedContent)}
+              >
+                <Check className="size-3" />
+                Use this
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-[#858585] hover:text-[#cccccc]"
+                onClick={onDismissOptimized}
+              >
+                Dismiss
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : showPreview ? (
         <div
           className="prose prose-invert prose-sm max-w-none prose-code:before:content-none prose-code:after:content-none overflow-y-auto bg-[#1e1e1e] px-4 py-3"
           style={{ minHeight: EDITOR_MIN_HEIGHT, maxHeight: EDITOR_MAX_HEIGHT }}

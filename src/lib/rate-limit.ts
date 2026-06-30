@@ -30,6 +30,7 @@ export const uploadLimiter = makeLimiter(10, "1 h");
 export const aiTagLimiter = makeLimiter(20, "1 h");
 export const aiDescriptionLimiter = makeLimiter(20, "1 h");
 export const aiExplainLimiter = makeLimiter(20, "1 h");
+export const aiOptimizeLimiter = makeLimiter(20, "1 h");
 
 export function getIp(request: Request): string {
   return request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";

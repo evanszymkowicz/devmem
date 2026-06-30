@@ -150,6 +150,12 @@ export function ItemDrawer({ collections, isPro = false }: ItemDrawerProps) {
     dispatch({ type: "START_EDIT", item });
   }
 
+  function handleUseOptimized(optimizedContent: string) {
+    if (!item) return;
+    dispatch({ type: "START_EDIT", item });
+    dispatch({ type: "SET_FIELD", key: "content", value: optimizedContent });
+  }
+
   function handleCancel() {
     dispatch({ type: "CANCEL_EDIT" });
     setTagSuggestions([]);
@@ -470,7 +476,7 @@ export function ItemDrawer({ collections, isPro = false }: ItemDrawerProps) {
                 onGenerateDescription={handleGenerateDescription}
               />
             ) : item ? (
-              <ItemDrawerViewBody item={item} isPro={isPro} />
+              <ItemDrawerViewBody item={item} isPro={isPro} onUseOptimized={handleUseOptimized} />
             ) : null}
           </div>
         </SheetContent>

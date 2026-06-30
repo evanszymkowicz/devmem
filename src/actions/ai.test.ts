@@ -13,10 +13,11 @@ vi.mock("@/lib/rate-limit", () => ({
   aiTagLimiter: null,
   aiDescriptionLimiter: null,
   aiExplainLimiter: null,
+  aiOptimizeLimiter: null,
   checkRateLimit: vi.fn(),
 }));
 
-import { generateAutoTags, generateDescription, explainCode } from "./ai";
+import { generateAutoTags, generateDescription, explainCode, optimizePrompt } from "./ai";
 import { auth } from "@/auth";
 import { getOpenAIClient } from "@/lib/openai";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -345,6 +346,87 @@ describe("explainCode", () => {
     mockGetClient.mockReturnValue(client as never);
 
     const result = await explainCode({ content: "console.log('hi')", typeSlug: "snippets" });
+    expect(result).toEqual({ success: false, error: "OpenAI quota exceeded. Add credits at platform.openai.com." });
+  });
+});
+
+describe("optimizePrompt", () => {
+  it("returns unauthorized when not logged in", async () => {
+    mockAuth.mockResolvedValue(null as never);
+    const result = await optimizePrompt({ content: "You are a helpful assistant." });
+    expect(result).toEqual({ success: false, error: "Unauthorized" });
+    expect(mockGetClient).not.toHaveBeenCalled();
+  });
+
+  it("returns Pro-gating error for free users", async () => {
+    mockAuth.mockResolvedValue(FREE_SESSION as never);
+    const result = await optimizePrompt({ content: "You are a helpful assistant." });
+    expect(result.success).toBe(false);
+    expect((result as { success: false; error: string }).error).toMatch(/Pro/i);
+    expect(mockGetClient).not.toHaveBeenCalled();
+  });
+
+  it("returns rate-limit error when limit is hit", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    mockCheckRateLimit.mockResolvedValue({ limited: true, retryAfter: 90 });
+    const result = await optimizePrompt({ content: "You are a helpful assistant." });
+    expect(result.success).toBe(false);
+    expect((result as { success: false; error: string }).error).toMatch(/rate limit/i);
+    expect(mockGetClient).not.toHaveBeenCalled();
+  });
+
+  it("returns validation error when content is empty", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const result = await optimizePrompt({ content: "" });
+    expect(result).toEqual({ success: false, error: "Invalid input" });
+  });
+
+  it("returns the trimmed optimized prompt on success", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = makeClient("  You are a concise and helpful assistant.  ");
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await optimizePrompt({ content: "You are a helpful assistant." });
+    expect(result).toEqual({ success: true, data: "You are a concise and helpful assistant." });
+  });
+
+  it("truncates content to 4000 chars before sending to API", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = makeClient("Optimized.");
+    mockGetClient.mockReturnValue(client as never);
+
+    await optimizePrompt({ content: "p".repeat(6000) });
+
+    const callArg = client.responses.create.mock.calls[0][0] as { input: string };
+    expect(callArg.input).toContain("p".repeat(4000));
+    expect(callArg.input).not.toContain("p".repeat(4001));
+  });
+
+  it("returns error when AI returns empty output", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = makeClient("   ");
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await optimizePrompt({ content: "You are a helpful assistant." });
+    expect(result).toEqual({ success: false, error: "AI returned an empty result" });
+  });
+
+  it("returns service error when client.responses.create throws", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = { responses: { create: vi.fn().mockRejectedValue(new Error("Network error")) } };
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await optimizePrompt({ content: "You are a helpful assistant." });
+    expect(result).toEqual({ success: false, error: "AI service error. Please try again." });
+  });
+
+  it("returns quota exceeded message on OpenAI 429", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const quotaError = Object.assign(new Error("quota"), { status: 429 });
+    const client = { responses: { create: vi.fn().mockRejectedValue(quotaError) } };
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await optimizePrompt({ content: "You are a helpful assistant." });
     expect(result).toEqual({ success: false, error: "OpenAI quota exceeded. Add credits at platform.openai.com." });
   });
 });
