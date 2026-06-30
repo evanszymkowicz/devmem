@@ -6,15 +6,9 @@ Not Started
 
 ## Goals
 
-<!-- bullet points of what success looks like -->
-
 ## TODOs
 
-<!-- checklist of implementation steps -->
-
 ## Notes
-
-<!-- additional context, constraints, or details -->
 
 ## History
 
@@ -68,3 +62,4 @@ Not Started
 - AI Description Generator
 - AI Explain Code
 - AI Prompt Optimizer
+- UI Polish (Auth Layout + Footer Cleanup)

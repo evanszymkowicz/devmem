@@ -20,7 +20,7 @@ export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCo
     <header className="flex h-16 shrink-0 items-center gap-3 border-b px-4 md:px-6">
       <Button
         variant="ghost"
-        size="icon-sm"
+        size="icon"
         aria-label="Toggle sidebar"
         onClick={onToggleSidebar}
         className={cn("md:inline-flex", desktopSidebarOpen && "md:hidden")}
@@ -50,7 +50,7 @@ export function TopBar({ desktopSidebarOpen, onToggleSidebar, onNewItem, onNewCo
             </Link>
           </Button>
         )}
-        <Button variant="ghost" size="icon-sm" aria-label="Favorites" asChild>
+        <Button variant="ghost" size="icon" aria-label="Favorites" asChild>
           <Link href="/favorites">
             <Star className="size-4" />
           </Link>

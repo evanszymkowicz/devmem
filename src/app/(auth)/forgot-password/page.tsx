@@ -4,6 +4,7 @@ import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 // which responds generically so account existence is never revealed.
 export default function ForgotPasswordPage() {
   return (
+    <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-sm">
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1 text-center">
         <h1 className="text-xl font-semibold tracking-tight">Forgot your password?</h1>
@@ -12,6 +13,7 @@ export default function ForgotPasswordPage() {
         </p>
       </div>
       <ForgotPasswordForm />
+    </div>
     </div>
   );
 }

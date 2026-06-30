@@ -28,7 +28,7 @@ export function ItemFavoriteButton({ itemId, initialFavorite }: ItemFavoriteButt
       disabled={pending}
       aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
       className={cn(
-        "rounded p-0.5 transition-opacity hover:bg-accent",
+        "rounded p-1.5 transition-opacity hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isFavorite
           ? "opacity-100"
           : "opacity-0 group-hover:opacity-100 focus:opacity-100",

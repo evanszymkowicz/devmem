@@ -40,7 +40,7 @@ export function CollectionActionsDropdown({
           <button
             type="button"
             aria-label="Collection actions"
-            className="-mr-1 -mt-1 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100"
+            className="-mr-1 -mt-1 rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:opacity-100 data-[state=open]:opacity-100"
           >
             <MoreHorizontal className="size-4" />
           </button>

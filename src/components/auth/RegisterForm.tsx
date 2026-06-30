@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { signInWithGitHub } from "@/actions/auth";
+import { GithubIcon } from "@/components/ui/github-icon";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -133,6 +135,22 @@ export function RegisterForm() {
         {pending && <Loader2 className="size-4 animate-spin" />}
         Create account
       </Button>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">or</span>
+        </div>
+      </div>
+
+      <form action={signInWithGitHub}>
+        <Button type="submit" variant="outline" className="w-full">
+          <GithubIcon className="size-4" />
+          Sign up with GitHub
+        </Button>
+      </form>
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}

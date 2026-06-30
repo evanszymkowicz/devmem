@@ -357,53 +357,22 @@ export default function HomePage() {
               Your developer knowledge hub.
             </p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-3">
-            <div>
-              <h4 className="mb-3.5 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-[#6b7384]">
-                Product
-              </h4>
-              {[
-                { label: "Features", href: "#features" },
-                { label: "Pricing", href: "#pricing" },
-                { label: "Changelog", href: "#" },
-              ].map(({ label, href }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  className="block py-1 text-[0.92rem] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-            <div>
-              <h4 className="mb-3.5 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-[#6b7384]">
-                Company
-              </h4>
-              {["About", "Blog", "Contact"].map((label) => (
-                <Link
-                  key={label}
-                  href="#"
-                  className="block py-1 text-[0.92rem] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-            <div>
-              <h4 className="mb-3.5 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-[#6b7384]">
-                Legal
-              </h4>
-              {["Privacy", "Terms"].map((label) => (
-                <Link
-                  key={label}
-                  href="#"
-                  className="block py-1 text-[0.92rem] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
+          <div>
+            <h4 className="mb-3.5 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-[#6b7384]">
+              Product
+            </h4>
+            {[
+              { label: "Features", href: "#features" },
+              { label: "Pricing", href: "#pricing" },
+            ].map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
+                className="block py-1 text-[0.92rem] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
         <div className="border-t border-[#232838] py-5 text-center text-[0.88rem] text-[#6b7384]">
