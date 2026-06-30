@@ -1,41 +1,20 @@
-# Current Feature: AI Explain Code
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- `explainCode` server action with auth, Pro gating, Zod validation, and rate limiting
-- "Explain" button (Sparkles icon) in the code editor window controls header, next to the Copy button
-- Only shown for snippet and command item types in the item drawer (read view only, not create/edit)
-- After generating, show Code/Explain tabs in the editor header to toggle between views
-- Explanation rendered as markdown in the same container space as the code editor
-- Concise explanation (~200–300 words) covering what the code does and key concepts
-- Loading state: Loader2 spinner while generating
-- Pro gating in UI: Crown icon + tooltip ("AI features require Pro subscription") for free users
-- Error handling via toast (Pro gating, rate limit, AI service errors)
-- Unit tests for the server action
+<!-- bullet points of what success looks like -->
 
 ## TODOs
 
-- [ ] Create `src/actions/explain-code.ts` server action
-- [ ] Add unit tests for the server action
-- [ ] Pass `isPro` prop through to item drawer and code editor
-- [ ] Add Explain button to code editor window controls header
-- [ ] Add Code/Explain tab toggle state to code editor
-- [ ] Render markdown explanation in the code editor container
-- [ ] Add loading state (Loader2 spinner)
-- [ ] Add Pro gating UI (Crown icon + tooltip for free users)
+<!-- checklist of implementation steps -->
 
 ## Notes
 
-- Explanations are NOT saved to the database — regenerated on each click
-- Feature is only available in the item drawer read view (not create/edit forms)
-- Only applies to snippet and command item types
-- Model: OpenAI `gpt-5-nano`
-- Follow existing AI action patterns (see `src/actions/generate-summary.ts` or similar)
-- See `docs/ai-integration-plan.md` for full architectural context
+<!-- additional context, constraints, or details -->
 
 ## History
 
@@ -87,3 +66,4 @@ In Progress
 - Upgrade Button & Page
 - AI Auto-Tagging (language dropdown + tag suggestions)
 - AI Description Generator
+- AI Explain Code
