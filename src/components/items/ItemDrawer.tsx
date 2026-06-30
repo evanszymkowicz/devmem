@@ -470,7 +470,7 @@ export function ItemDrawer({ collections, isPro = false }: ItemDrawerProps) {
                 onGenerateDescription={handleGenerateDescription}
               />
             ) : item ? (
-              <ItemDrawerViewBody item={item} />
+              <ItemDrawerViewBody item={item} isPro={isPro} />
             ) : null}
           </div>
         </SheetContent>

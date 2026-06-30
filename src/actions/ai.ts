@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { auth } from "@/auth";
 import { getOpenAIClient, AI_MODEL } from "@/lib/openai";
-import { aiTagLimiter, aiDescriptionLimiter, checkRateLimit } from "@/lib/rate-limit";
+import { aiTagLimiter, aiDescriptionLimiter, aiExplainLimiter, checkRateLimit } from "@/lib/rate-limit";
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
 
@@ -77,6 +77,56 @@ export async function generateAutoTags(
       .slice(0, 5);
 
     return { success: true, data: tags };
+  } catch (err) {
+    return { success: false, error: aiError(err) };
+  }
+}
+
+const explainCodeSchema = z.object({
+  content: z.string().trim().min(1),
+  language: z.string().nullable().optional(),
+  typeSlug: z.string().min(1),
+});
+
+export async function explainCode(
+  input: z.infer<typeof explainCodeSchema>,
+): Promise<ActionResult<string>> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+  if (!session.user.isPro) {
+    return { success: false, error: "AI features require a Pro subscription." };
+  }
+
+  const parsed = explainCodeSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Invalid input" };
+
+  const outcome = await checkRateLimit(aiExplainLimiter, `ai-explain:${session.user.id}`);
+  if (outcome.limited) {
+    const minutes = Math.ceil(outcome.retryAfter / 60);
+    return {
+      success: false,
+      error: `Rate limit reached. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`,
+    };
+  }
+
+  const { content, language, typeSlug } = parsed.data;
+  const truncated = content.slice(0, 2000);
+  const kind = typeSlug === "commands" ? "terminal command" : "code snippet";
+  const langHint = language ? ` (${language})` : "";
+
+  try {
+    const client = getOpenAIClient();
+    const response = await client.responses.create({
+      model: AI_MODEL,
+      instructions:
+        "You are a developer tool assistant. Explain code clearly and concisely for developers. Use markdown formatting.",
+      input: `Explain this ${kind}${langHint} in 200-300 words. Cover what it does and any key concepts or patterns used.\n\n\`\`\`\n${truncated}\n\`\`\``,
+    });
+
+    const explanation = response.output_text.trim();
+    if (!explanation) return { success: false, error: "AI returned an empty explanation" };
+
+    return { success: true, data: explanation };
   } catch (err) {
     return { success: false, error: aiError(err) };
   }
