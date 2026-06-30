@@ -12,7 +12,21 @@ export const CREATABLE_TYPE_SLUGS = [
 
 export type CreatableTypeSlug = (typeof CREATABLE_TYPE_SLUGS)[number];
 
-export const FILE_TYPE_SLUGS = new Set<CreatableTypeSlug>(["files", "images"]);
+// Typed as Set<string> so .has(string) works at call sites that receive a plain
+// string slug from the database. The `satisfies` clause validates that every
+// value is a known CreatableTypeSlug at definition time.
+export const FILE_TYPE_SLUGS = new Set<string>(
+  (["files", "images"] satisfies CreatableTypeSlug[]),
+);
+export const CONTENT_TYPE_SLUGS = new Set<string>(
+  (["snippets", "prompts", "commands", "notes"] satisfies CreatableTypeSlug[]),
+);
+export const LANGUAGE_TYPE_SLUGS = new Set<string>(
+  (["snippets", "commands"] satisfies CreatableTypeSlug[]),
+);
+export const URL_TYPE_SLUGS = new Set<string>(
+  (["links"] satisfies CreatableTypeSlug[]),
+);
 
 export const createItemSchema = z
   .object({
@@ -20,7 +34,7 @@ export const createItemSchema = z
     title: z.string().trim().min(1, "Title is required"),
     description: z.string().trim().nullable().optional(),
     content: z.string().nullable().optional(),
-    language: z.string().trim().nullable().optional(),
+    language: z.string().trim().max(50).nullable().optional(),
     url: z.preprocess(
       (v) => (typeof v === "string" && v.trim() === "" ? null : v),
       z.string().url("Must be a valid URL").nullable().optional(),
@@ -70,7 +84,7 @@ export const updateItemSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   description: z.string().trim().nullable().optional(),
   content: z.string().nullable().optional(),
-  language: z.string().trim().nullable().optional(),
+  language: z.string().trim().max(50).nullable().optional(),
   url: z.preprocess(
     (v) => (typeof v === "string" && v.trim() === "" ? null : v),
     z.string().url("Must be a valid URL").nullable().optional(),

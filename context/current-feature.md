@@ -6,9 +6,15 @@ Not Started
 
 ## Goals
 
+<!-- bullet points of what success looks like -->
+
 ## TODOs
 
+<!-- checklist of implementation steps -->
+
 ## Notes
+
+<!-- additional context, constraints, or details -->
 
 ## History
 
@@ -58,3 +64,7 @@ Not Started
 - Stripe Integration Phase 1: Core Infrastructure
 - Stripe Integration Phase 2: Webhooks, Feature Gating & UI
 - Upgrade Button & Page
+- AI Auto-Tagging (language dropdown + tag suggestions)
+- AI Description Generator
+- AI Explain Code
+- AI Prompt Optimizer

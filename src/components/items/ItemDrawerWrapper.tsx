@@ -9,9 +9,10 @@ import { ItemDrawer } from "./ItemDrawer";
 interface ItemDrawerWrapperProps {
   children: React.ReactNode;
   collections?: SidebarCollection[];
+  isPro?: boolean;
 }
 
-export function ItemDrawerWrapper({ children, collections = [] }: ItemDrawerWrapperProps) {
+export function ItemDrawerWrapper({ children, collections = [], isPro = false }: ItemDrawerWrapperProps) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
   return (
@@ -23,7 +24,7 @@ export function ItemDrawerWrapper({ children, collections = [] }: ItemDrawerWrap
       }}
     >
       {children}
-      <ItemDrawer collections={collections} />
+      <ItemDrawer collections={collections} isPro={isPro} />
     </ItemDrawerContext.Provider>
   );
 }

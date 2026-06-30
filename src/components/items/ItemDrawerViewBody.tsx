@@ -1,22 +1,66 @@
 "use client";
 
+import { useState } from "react";
 import { File as FileIcon } from "lucide-react";
+import { toast } from "sonner";
 import { CodeEditor } from "@/components/ui/code-editor";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { formatFileSize } from "@/lib/files";
 import { formatDateLong } from "@/lib/format-date";
+import { explainCode, optimizePrompt } from "@/actions/ai";
 import type { ItemDetail } from "@/lib/db/items";
 
 const LANGUAGE_TYPE_SLUGS = new Set(["snippets", "commands"]);
 
 interface ItemDrawerViewBodyProps {
   item: ItemDetail;
+  isPro?: boolean;
+  onUseOptimized?: (content: string) => void;
 }
 
-export function ItemDrawerViewBody({ item }: ItemDrawerViewBodyProps) {
+export function ItemDrawerViewBody({ item, isPro = false, onUseOptimized }: ItemDrawerViewBodyProps) {
   const typeSlug = item.itemType.slug;
   const showLanguage = LANGUAGE_TYPE_SLUGS.has(typeSlug);
   const showFile = typeSlug === "files" || typeSlug === "images";
+  const showExplain = showLanguage;
+  const showOptimize = typeSlug === "prompts";
+
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [explaining, setExplaining] = useState(false);
+  const [optimizedContent, setOptimizedContent] = useState<string | null>(null);
+  const [optimizing, setOptimizing] = useState(false);
+
+  async function handleExplain() {
+    if (!item.content) return;
+    setExplaining(true);
+    const result = await explainCode({
+      content: item.content,
+      language: item.language ?? null,
+      typeSlug,
+    });
+    setExplaining(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setExplanation(result.data);
+  }
+
+  async function handleOptimize() {
+    if (!item.content) return;
+    setOptimizing(true);
+    const result = await optimizePrompt({ content: item.content });
+    setOptimizing(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setOptimizedContent(result.data);
+  }
+
+  function handleDismissOptimized() {
+    setOptimizedContent(null);
+  }
 
   return (
     <div className="divide-y divide-border">
@@ -39,9 +83,22 @@ export function ItemDrawerViewBody({ item }: ItemDrawerViewBodyProps) {
               value={item.content}
               language={item.language ?? undefined}
               readOnly
+              isPro={isPro}
+              onExplain={showExplain ? handleExplain : undefined}
+              explaining={explaining}
+              explanation={explanation}
             />
           ) : (
-            <MarkdownEditor value={item.content} readOnly />
+            <MarkdownEditor
+              value={item.content}
+              readOnly
+              isPro={isPro}
+              onOptimize={showOptimize ? handleOptimize : undefined}
+              optimizing={optimizing}
+              optimizedContent={optimizedContent}
+              onUseOptimized={onUseOptimized}
+              onDismissOptimized={handleDismissOptimized}
+            />
           )}
         </section>
       )}

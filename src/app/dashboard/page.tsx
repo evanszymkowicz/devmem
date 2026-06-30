@@ -49,7 +49,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-8">
           <StatsCards userId={userId} />
           <RecentCollections userId={userId} />
-          <ItemDrawerWrapper collections={collections}>
+          <ItemDrawerWrapper collections={collections} isPro={sidebarUser.isPro}>
             <PinnedItems userId={userId} />
             <RecentItems userId={userId} />
           </ItemDrawerWrapper>

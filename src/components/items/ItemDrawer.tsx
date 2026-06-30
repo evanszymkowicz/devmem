@@ -28,6 +28,7 @@ import { ICON_MAP } from "@/lib/icon-map";
 import type { ItemDetail } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
 import { updateItem, deleteItem, toggleItemPin, toggleItemFavorite } from "@/actions/items";
+import { generateAutoTags, generateDescription } from "@/actions/ai";
 import { useItemDrawer } from "./ItemDrawerContext";
 import { ItemDrawerViewBody } from "./ItemDrawerViewBody";
 import { ItemDrawerEditBody } from "./ItemDrawerEditBody";
@@ -78,9 +79,10 @@ function drawerReducer(state: DrawerCoreState, action: DrawerCoreAction): Drawer
 
 interface ItemDrawerProps {
   collections: SidebarCollection[];
+  isPro?: boolean;
 }
 
-export function ItemDrawer({ collections }: ItemDrawerProps) {
+export function ItemDrawer({ collections, isPro = false }: ItemDrawerProps) {
   const { activeItemId, closeDrawer } = useItemDrawer();
   const router = useRouter();
 
@@ -95,6 +97,9 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
   const [deleting, setDeleting] = useState(false);
   const [pinning, setPinning] = useState(false);
   const [favoriting, setFavoriting] = useState(false);
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [suggestingTags, setSuggestingTags] = useState(false);
+  const [generatingDescription, setGeneratingDescription] = useState(false);
 
   useEffect(() => {
     if (!activeItemId) return;
@@ -145,12 +150,64 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
     dispatch({ type: "START_EDIT", item });
   }
 
+  function handleUseOptimized(optimizedContent: string) {
+    if (!item) return;
+    dispatch({ type: "START_EDIT", item });
+    dispatch({ type: "SET_FIELD", key: "content", value: optimizedContent });
+  }
+
   function handleCancel() {
     dispatch({ type: "CANCEL_EDIT" });
+    setTagSuggestions([]);
   }
 
   function setField<K extends keyof EditState>(key: K, value: EditState[K]) {
     dispatch({ type: "SET_FIELD", key, value });
+  }
+
+  async function handleSuggestTags() {
+    if (!item || !editState) return;
+    setSuggestingTags(true);
+    const result = await generateAutoTags({ title: editState.title, content: editState.content || null });
+    setSuggestingTags(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    const existing = editState.tags.split(",").map((t) => t.trim()).filter(Boolean);
+    setTagSuggestions(result.data.filter((t) => !existing.includes(t)));
+  }
+
+  function handleAcceptTag(tag: string) {
+    if (!editState) return;
+    const existing = editState.tags.split(",").map((t) => t.trim()).filter(Boolean);
+    if (!existing.includes(tag)) {
+      setField("tags", [...existing, tag].join(", "));
+    }
+    setTagSuggestions((prev) => prev.filter((t) => t !== tag));
+  }
+
+  function handleRejectTag(tag: string) {
+    setTagSuggestions((prev) => prev.filter((t) => t !== tag));
+  }
+
+  async function handleGenerateDescription() {
+    if (!item || !editState) return;
+    setGeneratingDescription(true);
+    const result = await generateDescription({
+      title: editState.title,
+      typeSlug: item.itemType.slug,
+      content: editState.content || null,
+      url: editState.url || null,
+      language: editState.language || null,
+      fileName: item.fileName ?? null,
+    });
+    setGeneratingDescription(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setField("description", result.data);
   }
 
   async function handlePin() {
@@ -409,9 +466,17 @@ export function ItemDrawer({ collections }: ItemDrawerProps) {
                 setField={setField}
                 typeSlug={typeSlug}
                 collections={collections}
+                isPro={isPro}
+                tagSuggestions={tagSuggestions}
+                suggestingTags={suggestingTags}
+                onSuggestTags={handleSuggestTags}
+                onAcceptTag={handleAcceptTag}
+                onRejectTag={handleRejectTag}
+                generatingDescription={generatingDescription}
+                onGenerateDescription={handleGenerateDescription}
               />
             ) : item ? (
-              <ItemDrawerViewBody item={item} />
+              <ItemDrawerViewBody item={item} isPro={isPro} onUseOptimized={handleUseOptimized} />
             ) : null}
           </div>
         </SheetContent>

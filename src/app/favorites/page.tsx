@@ -53,7 +53,7 @@ export default async function FavoritesPage() {
           </div>
         </header>
 
-        <ItemDrawerWrapper collections={sidebarCollections}>
+        <ItemDrawerWrapper collections={sidebarCollections} isPro={sidebarUser.isPro}>
           <FavoritesView
             items={favorites.items}
             collections={favorites.collections}

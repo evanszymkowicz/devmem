@@ -152,6 +152,7 @@ export function DashboardShell({ children, itemTypes, collections, user, editorP
         open={searchOpen}
         onOpenChange={setSearchOpen}
         collections={collections}
+        isPro={user.isPro}
       />
     </div>
     </EditorPreferencesProvider>

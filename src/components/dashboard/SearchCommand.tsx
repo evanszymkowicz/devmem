@@ -23,14 +23,15 @@ interface SearchCommandProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   collections: SidebarCollection[];
+  isPro?: boolean;
 }
 
 // Wraps the palette in an ItemDrawerWrapper so selecting an item opens the
 // existing drawer. This is a separate context instance from the page-level
 // drawers, so the palette works on every page without conflicting with them.
-export function SearchCommand({ open, onOpenChange, collections }: SearchCommandProps) {
+export function SearchCommand({ open, onOpenChange, collections, isPro = false }: SearchCommandProps) {
   return (
-    <ItemDrawerWrapper collections={collections}>
+    <ItemDrawerWrapper collections={collections} isPro={isPro}>
       <SearchCommandInner open={open} onOpenChange={onOpenChange} />
     </ItemDrawerWrapper>
   );
