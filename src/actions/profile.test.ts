@@ -53,7 +53,7 @@ describe("changePassword", () => {
       newPassword: "newpassword1",
       confirmPassword: "newpassword1",
     });
-    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(result).toEqual({ success: false, error: "Unauthorized" });
   });
 
   it("returns error on validation failure", async () => {
@@ -119,7 +119,7 @@ describe("deleteAccount", () => {
   it("returns error when not authenticated", async () => {
     mockAuth.mockResolvedValue(null as never);
     const result = await deleteAccount();
-    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(result).toEqual({ success: false, error: "Unauthorized" });
   });
 
   it("deletes the account for the session user", async () => {

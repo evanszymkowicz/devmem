@@ -3,7 +3,7 @@ import path from "path";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { auth } from "@/auth";
+import { requireApiSession } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { getPresignedUploadUrl } from "@/lib/r2";
 import { uploadLimiter, checkRateLimit, getIp, rateLimitResponse } from "@/lib/rate-limit";
@@ -18,17 +18,15 @@ import { FEATURE_GATING_ENABLED } from "@/lib/config/features";
 const UPLOAD_SLUGS = new Set(["files", "images"]);
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const authed = await requireApiSession();
+  if (authed instanceof NextResponse) return authed;
 
-  const rl = await checkRateLimit(uploadLimiter, `upload:${getIp(req)}:${session.user.id}`);
+  const rl = await checkRateLimit(uploadLimiter, `upload:${getIp(req)}:${authed.userId}`);
   if (rl.limited) return rateLimitResponse(rl.retryAfter);
 
   if (FEATURE_GATING_ENABLED) {
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: authed.userId },
       select: { isPro: true },
     });
     if (!user?.isPro) {
@@ -74,7 +72,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = path.extname(fileName).toLowerCase();
-  const key = `users/${session.user.id}/${randomUUID()}${ext}`;
+  const key = `users/${authed.userId}/${randomUUID()}${ext}`;
 
   try {
     const uploadUrl = await getPresignedUploadUrl(key, contentType);

@@ -39,7 +39,7 @@ describe("updateEditorPreferences", () => {
   it("returns error when not authenticated", async () => {
     mockAuth.mockResolvedValue(null as never);
     const result = await updateEditorPreferences(VALID_PREFS);
-    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(result).toEqual({ success: false, error: "Unauthorized" });
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 

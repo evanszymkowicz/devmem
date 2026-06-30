@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
+import { parseJsonBody } from "@/lib/api/parse-body";
 import { hashPassword } from "@/lib/auth/password";
 import { consumeResetToken } from "@/lib/auth/reset-token";
 import { resetPasswordSchema } from "@/lib/validations/auth";
@@ -13,30 +13,10 @@ export async function POST(request: Request) {
   const rl = await checkRateLimit(resetPasswordLimiter, `reset-password:${getIp(request)}`);
   if (rl.limited) return rateLimitResponse(rl.retryAfter);
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { success: false, error: "Invalid JSON body" },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(request, resetPasswordSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
-  let parsed;
-  try {
-    parsed = resetPasswordSchema.parse(body);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.issues[0]?.message ?? "Invalid input" },
-        { status: 400 },
-      );
-    }
-    throw error;
-  }
-
-  const { token, password } = parsed;
+  const { token, password } = parsed.data;
 
   // Consume the token first (single-use). An invalid/expired/already-used token
   // is rejected before we touch any password.

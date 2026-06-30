@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
+import { parseJsonBody } from "@/lib/api/parse-body";
 import { issueAndSendVerification } from "@/lib/auth/send-verification";
 import { resendVerificationSchema } from "@/lib/validations/auth";
 import { EMAIL_VERIFICATION_ENABLED } from "@/lib/config/features";
@@ -13,30 +13,10 @@ export async function POST(request: Request) {
   const rl = await checkRateLimit(resendVerificationLimiter, `resend-verification:${getIp(request)}`);
   if (rl.limited) return rateLimitResponse(rl.retryAfter);
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { success: false, error: "Invalid JSON body" },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(request, resendVerificationSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
-  let parsed;
-  try {
-    parsed = resendVerificationSchema.parse(body);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.issues[0]?.message ?? "Invalid input" },
-        { status: 400 },
-      );
-    }
-    throw error;
-  }
-
-  const email = parsed.email.toLowerCase();
+  const email = parsed.data.email.toLowerCase();
 
   // When verification is disabled there's nothing to resend. Skip the lookup and
   // send, but still fall through to the identical generic response below so the

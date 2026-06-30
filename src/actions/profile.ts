@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/auth";
+import { requireUserId } from "@/lib/actions";
 import { deleteFromR2 } from "@/lib/r2";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { changePasswordSchema } from "@/lib/validations/auth";
@@ -16,10 +16,8 @@ export async function changePassword(input: {
   newPassword: string;
   confirmPassword: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   const parsed = changePasswordSchema.safeParse(input);
   if (!parsed.success) {
@@ -31,7 +29,7 @@ export async function changePassword(input: {
 
   const { currentPassword, newPassword } = parsed.data;
 
-  const passwordHash = await getUserPasswordHash(session.user.id);
+  const passwordHash = await getUserPasswordHash(gate.userId);
 
   if (!passwordHash) {
     return { success: false, error: "No password set on this account" };
@@ -43,7 +41,7 @@ export async function changePassword(input: {
   }
 
   const hashed = await hashPassword(newPassword);
-  await updateUserPassword(session.user.id, hashed);
+  await updateUserPassword(gate.userId, hashed);
 
   return { success: true };
 }
@@ -52,15 +50,13 @@ export async function deleteAccount(): Promise<{
   success: boolean;
   error?: string;
 }> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
+  const gate = await requireUserId();
+  if (!gate.ok) return { success: false, error: gate.error };
 
   try {
-    const fileUrls = await getUserFileUrls(session.user.id);
+    const fileUrls = await getUserFileUrls(gate.userId);
 
-    await deleteUser(session.user.id);
+    await deleteUser(gate.userId);
 
     await Promise.allSettled(
       fileUrls.map((url) =>
