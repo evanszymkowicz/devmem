@@ -1,29 +1,14 @@
-# Current Feature: AI Description Generator
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- An icon button appears next to the description input in the item drawer (edit mode) that triggers AI generation
-- Clicking the button calls an AI endpoint to generate a 1-2 sentence description based on whatever is currently in the title, content, type, language, and any other available fields — no save required first
-- Works for all content types (TEXT, FILE, URL) using whatever fields are available (e.g. URL items use title + url, file items use title + filename, text items use title + content)
-- The generated description is inserted directly into the description input field, ready for the user to accept or edit
-- Button shows a loading state while the AI is generating
-- Errors are shown via toast without breaking the form
-
 ## TODOs
 
-- [ ] Add OpenAI credits — account hit quota limit (429) during testing; add at platform.openai.com/settings/billing
-
 ## Notes
-
-- Model: OpenAI `gpt-5-nano` (matches existing AI features)
-- This is a Pro-only AI feature — gate behind the existing feature flag pattern
-- No need to save the item before generating; read directly from the current form state
-- Keep the prompt concise: title + content type + content (truncated if long) + language + url/filename as available
-- The button should be a small icon button (e.g. Sparkles icon) placed inline with the description label or at the end of the description textarea
 
 ## History
 
@@ -74,3 +59,4 @@ In Progress
 - Stripe Integration Phase 2: Webhooks, Feature Gating & UI
 - Upgrade Button & Page
 - AI Auto-Tagging (language dropdown + tag suggestions)
+- AI Description Generator
