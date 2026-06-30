@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Rocket } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -134,7 +134,7 @@ export function UpgradePricing() {
             className="flex w-full items-center justify-center gap-2 rounded-[9px] py-2.5 text-sm font-semibold text-white shadow-[0_6px_20px_rgba(59,130,246,0.3)] transition-shadow hover:shadow-[0_8px_26px_rgba(99,102,241,0.45)] disabled:opacity-60"
             style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}
           >
-            <Sparkles className="size-4" />
+            <Rocket className="size-4" />
             {loading ? "Redirecting to checkout..." : `Upgrade to Pro — ${isAnnual ? "$72/yr" : "$8/mo"}`}
           </button>
         </div>
