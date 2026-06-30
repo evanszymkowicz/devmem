@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createItem } from "@/actions/items";
-import { generateAutoTags } from "@/actions/ai";
+import { generateAutoTags, generateDescription } from "@/actions/ai";
 import {
   CREATABLE_TYPE_SLUGS,
   FILE_TYPE_SLUGS,
@@ -70,6 +70,7 @@ export function useNewItemForm({
   const [submitting, setSubmitting] = useState(false);
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [suggestingTags, setSuggestingTags] = useState(false);
+  const [generatingDescription, setGeneratingDescription] = useState(false);
 
   // Track previous prop values in state so we can reset the form synchronously
   // during render when the dialog opens or the requested type changes.
@@ -127,6 +128,24 @@ export function useNewItemForm({
       setTagSuggestions([]);
     }
     onOpenChange(next);
+  }
+
+  async function handleGenerateDescription() {
+    setGeneratingDescription(true);
+    const result = await generateDescription({
+      title: form.title,
+      typeSlug,
+      content: form.content || null,
+      url: form.url || null,
+      language: form.language || null,
+      fileName: form.fileName || null,
+    });
+    setGeneratingDescription(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setField("description", result.data);
   }
 
   async function handleSuggestTags() {
@@ -219,5 +238,7 @@ export function useNewItemForm({
     handleSuggestTags,
     handleAcceptTag,
     handleRejectTag,
+    generatingDescription,
+    handleGenerateDescription,
   };
 }

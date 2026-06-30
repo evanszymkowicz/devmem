@@ -59,6 +59,8 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, collections, defa
     handleSuggestTags,
     handleAcceptTag,
     handleRejectTag,
+    generatingDescription,
+    handleGenerateDescription,
   } = useNewItemForm({ open, onOpenChange, itemTypes, defaultTypeSlug, isPro });
 
   return (
@@ -120,9 +122,24 @@ export function NewItemDialog({ open, onOpenChange, itemTypes, collections, defa
 
             {/* Description */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Description
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Description
+                </label>
+                {isPro && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 gap-1 px-2 text-[11px]"
+                    onClick={handleGenerateDescription}
+                    disabled={!form.title.trim() || generatingDescription}
+                  >
+                    <Sparkles className="size-3" />
+                    {generatingDescription ? "Generating…" : "Generate"}
+                  </Button>
+                )}
+              </div>
               <Textarea
                 value={form.description}
                 onChange={(e) => setField("description", e.target.value)}

@@ -28,7 +28,7 @@ import { ICON_MAP } from "@/lib/icon-map";
 import type { ItemDetail } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
 import { updateItem, deleteItem, toggleItemPin, toggleItemFavorite } from "@/actions/items";
-import { generateAutoTags } from "@/actions/ai";
+import { generateAutoTags, generateDescription } from "@/actions/ai";
 import { useItemDrawer } from "./ItemDrawerContext";
 import { ItemDrawerViewBody } from "./ItemDrawerViewBody";
 import { ItemDrawerEditBody } from "./ItemDrawerEditBody";
@@ -99,6 +99,7 @@ export function ItemDrawer({ collections, isPro = false }: ItemDrawerProps) {
   const [favoriting, setFavoriting] = useState(false);
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [suggestingTags, setSuggestingTags] = useState(false);
+  const [generatingDescription, setGeneratingDescription] = useState(false);
 
   useEffect(() => {
     if (!activeItemId) return;
@@ -182,6 +183,25 @@ export function ItemDrawer({ collections, isPro = false }: ItemDrawerProps) {
 
   function handleRejectTag(tag: string) {
     setTagSuggestions((prev) => prev.filter((t) => t !== tag));
+  }
+
+  async function handleGenerateDescription() {
+    if (!item || !editState) return;
+    setGeneratingDescription(true);
+    const result = await generateDescription({
+      title: editState.title,
+      typeSlug: item.itemType.slug,
+      content: editState.content || null,
+      url: editState.url || null,
+      language: editState.language || null,
+      fileName: item.fileName ?? null,
+    });
+    setGeneratingDescription(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setField("description", result.data);
   }
 
   async function handlePin() {
@@ -446,6 +466,8 @@ export function ItemDrawer({ collections, isPro = false }: ItemDrawerProps) {
                 onSuggestTags={handleSuggestTags}
                 onAcceptTag={handleAcceptTag}
                 onRejectTag={handleRejectTag}
+                generatingDescription={generatingDescription}
+                onGenerateDescription={handleGenerateDescription}
               />
             ) : item ? (
               <ItemDrawerViewBody item={item} />

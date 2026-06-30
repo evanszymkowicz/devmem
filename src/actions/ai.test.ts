@@ -11,10 +11,11 @@ vi.mock("@/lib/openai", () => ({
 
 vi.mock("@/lib/rate-limit", () => ({
   aiTagLimiter: null,
+  aiDescriptionLimiter: null,
   checkRateLimit: vi.fn(),
 }));
 
-import { generateAutoTags } from "./ai";
+import { generateAutoTags, generateDescription } from "./ai";
 import { auth } from "@/auth";
 import { getOpenAIClient } from "@/lib/openai";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -138,5 +139,118 @@ describe("generateAutoTags", () => {
 
     const result = await generateAutoTags({ title: "Test" });
     expect(result).toEqual({ success: false, error: "AI service error. Please try again." });
+  });
+
+  it("returns quota exceeded message on OpenAI 429", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const quotaError = Object.assign(new Error("quota"), { status: 429 });
+    const client = { responses: { create: vi.fn().mockRejectedValue(quotaError) } };
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await generateAutoTags({ title: "Test" });
+    expect(result).toEqual({ success: false, error: "OpenAI quota exceeded. Add credits at platform.openai.com." });
+  });
+});
+
+describe("generateDescription", () => {
+  it("returns unauthorized when not logged in", async () => {
+    mockAuth.mockResolvedValue(null as never);
+    const result = await generateDescription({ title: "Test" });
+    expect(result).toEqual({ success: false, error: "Unauthorized" });
+    expect(mockGetClient).not.toHaveBeenCalled();
+  });
+
+  it("returns Pro-gating error for free users", async () => {
+    mockAuth.mockResolvedValue(FREE_SESSION as never);
+    const result = await generateDescription({ title: "Test" });
+    expect(result.success).toBe(false);
+    expect((result as { success: false; error: string }).error).toMatch(/Pro/i);
+    expect(mockGetClient).not.toHaveBeenCalled();
+  });
+
+  it("returns rate-limit error when limit is hit", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    mockCheckRateLimit.mockResolvedValue({ limited: true, retryAfter: 60 });
+    const result = await generateDescription({ title: "Test" });
+    expect(result.success).toBe(false);
+    expect((result as { success: false; error: string }).error).toMatch(/rate limit/i);
+    expect(mockGetClient).not.toHaveBeenCalled();
+  });
+
+  it("returns validation error when title is empty", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const result = await generateDescription({ title: "" });
+    expect(result).toEqual({ success: false, error: "Invalid input" });
+  });
+
+  it("returns the trimmed description on success", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = makeClient("  A TypeScript hook for debouncing values.  ");
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await generateDescription({ title: "useDebounce", typeSlug: "snippets", language: "typescript" });
+    expect(result).toEqual({ success: true, data: "A TypeScript hook for debouncing values." });
+  });
+
+  it("includes all available context fields in the prompt", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = makeClient("A useful link.");
+    mockGetClient.mockReturnValue(client as never);
+
+    await generateDescription({
+      title: "React docs",
+      typeSlug: "links",
+      url: "https://react.dev",
+      content: null,
+      language: null,
+      fileName: null,
+    });
+
+    const callArg = client.responses.create.mock.calls[0][0] as { input: string };
+    expect(callArg.input).toContain("React docs");
+    expect(callArg.input).toContain("links");
+    expect(callArg.input).toContain("https://react.dev");
+  });
+
+  it("truncates content to 2000 chars before sending to API", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = makeClient("A snippet.");
+    mockGetClient.mockReturnValue(client as never);
+
+    await generateDescription({ title: "Big snippet", content: "z".repeat(5000) });
+
+    const callArg = client.responses.create.mock.calls[0][0] as { input: string };
+    expect(callArg.input).toContain("z".repeat(2000));
+    expect(callArg.input).not.toContain("z".repeat(2001));
+  });
+
+  it("returns error when AI returns empty output", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = makeClient("   ");
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await generateDescription({ title: "Test" });
+    expect(result).toEqual({ success: false, error: "AI returned an empty description" });
+  });
+
+  it("returns service error when client.responses.create throws", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const client = {
+      responses: { create: vi.fn().mockRejectedValue(new Error("Network error")) },
+    };
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await generateDescription({ title: "Test" });
+    expect(result).toEqual({ success: false, error: "AI service error. Please try again." });
+  });
+
+  it("returns quota exceeded message on OpenAI 429", async () => {
+    mockAuth.mockResolvedValue(PRO_SESSION as never);
+    const quotaError = Object.assign(new Error("quota"), { status: 429 });
+    const client = { responses: { create: vi.fn().mockRejectedValue(quotaError) } };
+    mockGetClient.mockReturnValue(client as never);
+
+    const result = await generateDescription({ title: "Test" });
+    expect(result).toEqual({ success: false, error: "OpenAI quota exceeded. Add credits at platform.openai.com." });
   });
 });
